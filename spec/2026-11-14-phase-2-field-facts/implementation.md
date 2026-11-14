@@ -2,9 +2,9 @@
 
 Date: 2026-11-14.
 
-**Status: built, checked in a local production run, committed. Not deployed.** Nothing was pushed, so the public URL still shows Phase 1. What to check there after the push is listed under "Deployment", with a live map click first.
+**Status: deployed, and checked on the public URL.** Angel asked Claude to push `main`. It was pushed at about 16:14 CST on 2026-11-14 and Vercel published it. Between 16:15 and 16:17 CST the checks under "Deployment" passed on https://space-apps-2026-field-shift.vercel.app, and both USDA services answer Vercel's servers.
 
-The phase's "done when" was met locally: each of the three sample fields shows its 8-year rotation and its soil in under 0.1 second, and a bad point gets a clean error (400 from each route, and a notice in the panel).
+The phase's "done when" is met on the public URL: each of the three sample fields shows its 8-year rotation and its soil in about 0.1 to 0.2 seconds, and a bad point gets a clean error (400 from each route, and a notice in the panel). The checks were made in Claude's own browser, with the phone check at an emulated 390 x 844 size. A real phone has not been tried.
 
 The build was interrupted once by a usage limit and finished after it reset. An earlier version of this file said "not finished"; this version replaces it.
 
@@ -205,20 +205,32 @@ Which build each check ran on: build A is the code with freeze dates and the re-
 | Mock mode | B (dev server) | `npm run dev:mock` | Header badge shown. A sample loads all three facts. A map click gets 404 from all three routes with the mock-mode message |
 | Sample files agree with the code | n/a | Unit tests | Each file matches the sample list, passes the three shape checks, has 8 library crops named as USDA names them, and has a hot-day trend equal to what the trend maths gives |
 
-Not verified: the public URL (not deployed), whether USDA's services answer Vercel's servers the way they answered this machine, any real phone, a screen reader, automated accessibility tests (Playwright and axe are not set up), and the soil-down panel after build A.
+Not verified by these local checks: the public URL and whether USDA's services answer Vercel's servers (both checked later, see "Deployment"), any real phone, a screen reader, automated accessibility tests (Playwright and axe are not set up), and the soil-down panel after build A.
 
 One thing these checks do not cover, carried over from Phase 0: if the map itself never finishes loading, its placeholder stays up with no message. The sample buttons still work in that case.
 
 ## Deployment
 
-Nothing was pushed. After Angel pushes `main`, check on https://space-apps-2026-field-shift.vercel.app in a private window:
+Angel asked Claude to push. `main` was pushed at about 16:14 CST on 2026-11-14; GitHub's `main` and the local `main` then pointed at the same commit, "Phase 2: record the last browser checks on the final build", and Vercel published it within about a minute.
 
-1. **First, click any spot in Kansas that is not a sample field.** Expect crops for 8 years, soil facts and the chart. This is the only test of whether USDA's two services answer Vercel's servers. If one fails, its block will say so, and the Vercel function log will show a line starting `[api/history]` or `[api/soil]`.
-2. Open `/api/climate?lat=37.97&lon=-100.72` and look at the first row of `years`: `lastSpringFreezeDoy` and `firstFallFreezeDoy` should be numbers, not `null`. That shows the deployed answer is the new one and not an older cached copy.
-3. Click each of the three sample buttons. Expect the crops and soil in the table under "The three sample fields", well inside 5 seconds.
-4. Change one year's crop. Expect "Yours" on it, then press "Back to detected crops".
-5. Click outside Kansas. Expect the "outside Kansas" notice.
-6. Open it on a phone and scroll to the panel.
+Checked on https://space-apps-2026-field-shift.vercel.app between 16:15 and 16:17 CST:
+
+| # | Check | Result |
+| --- | --- | --- |
+| 1 | Clicked a spot in Kansas that is not a sample field (38.327°N, 98.983°W) | Three requests, each 200. Eight years of crops (winter wheat, alfalfa, sorghum), the soil map unit "Harney silt loam, 1 to 3 percent slopes" with its seven facts, and the chart, with no error notice. So both USDA services answer Vercel's servers |
+| 2 | The routes, by `curl` | `/api/history`: 200 in 0.64 s, then served by the CDN (`X-Vercel-Cache: HIT`). `/api/soil`: 200 in 0.48 s (`MISS`), then 0.23 s (`HIT`). `/api/climate?lat=37.97&lon=-100.72`: 200 in 1.21 s with 45 years; its first year has `lastSpringFreezeDoy` 130 and `firstFallFreezeDoy` 295, so the published answer carries freeze dates. The monthly arrays are empty |
+| 3 | Clicked each sample button | Finney 156 ms, Thomas 101 ms, Brown 100 ms until the rotation, soil and chart were on screen, with the crops and soils in the table above. The live crop history and soil answers at each sample point, fetched from the public URL, equal the saved sample files |
+| 4 | Changed one year's crop (Brown County, 2019, to sorghum) | "Yours" on the chip and "1 of 8 years changed by you" in the caption. "Back to detected crops" restored it |
+| 5 | Clicked outside Kansas | "That spot is outside Kansas" notice with the three sample buttons, and no pin. The routes answer 400 for a point that is not a number or is outside the state |
+| 6 | Phone width, emulated at 390 x 844 | No sideways scroll. Chips in two columns. Sample buttons 40 px tall. The top of the panel is in view under the map right after a tap |
+| | A reservoir point, by `curl` | Soil map unit "Water" with every fact null |
+| | Browser console | No messages |
+
+Still not tried: a real phone, a private window on Angel's own machine, and a screen reader.
+
+If a live click ever fails while the samples work, the failing block will say which service it was, and the Vercel function log will show a line starting `[api/history]`, `[api/soil]` or `[api/climate]`.
+
+This section was written after the push, so its commit is ahead of GitHub until the next push.
 
 ## UI review
 
