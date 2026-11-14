@@ -190,10 +190,13 @@ Which build each check ran on: build A is the code with freeze dates and the re-
 | Live map click | final | Clicked a point in central Kansas (38.374°N, 98.945°W) once the map had loaded | Three requests, each 200: climate at two decimals, history and soil at five. Eight years of crops, the soil map unit and the chart shown, with no error notice |
 | Routes live | A | `curl` | History and soil answers as in "Measurements". The live climate answer has freeze dates for all 45 years and empty monthly arrays |
 | A bad point | A | `curl` with `lat=north`, with no longitude, and with points south and west of Kansas, on both new routes | 400 each time, in about 3 ms, with a plain message |
-| A point with no soil facts | A | `curl` at a reservoir (37.76, -97.84) | Soil: map unit "Water" with every fact null, which the panel shows as "Not available". History: "Open Water" in all 8 years |
+| A point with no soil facts | A, final | `curl` at a reservoir (37.76, -97.84) on build A. On the final build a debugging-only script in the page pointed the soil request at that point | Route: map unit "Water" with every fact null, and "Open Water" in all 8 years of crop history. Panel: "Water", with "Not available" for all seven facts |
 | Soil service down, the others up | A | Started the server so that only Soil Data Access was unreachable, then clicked the map | Crops and chart shown; the soil block says "Soil data unavailable" with "Try again". The route answers 502, and 200 with the cached copy at a sample field |
-| Crop history service down, the others up | A | Same, with only the CDL service unreachable | Error notice with "Try again", 8 empty chips for 2018 to 2025 to fill in by hand, and the note "these years are yours to fill in". Soil and chart shown. Choosing a crop marks the year as changed |
-| Changing a crop | A, B | Changed a year, by script on build A and with the arrow keys on build B | The chip says "Yours" with a dashed border, the caption counts the changed years, and "Back to detected crops" restores them |
+| Crop history service down, the others up | A, final | Same, with only the CDL service unreachable | Error notice with "Try again", 8 empty chips for 2018 to 2025, and the note "these years are yours to fill in". Soil and chart shown |
+| Filling the years in by hand | final | On that server, chose a crop for 2025, then pressed "Clear my entries" with the keyboard | The chip shows the chosen name with "Yours" and a dashed border. After clearing, all 8 chips are empty again and focus is on the panel |
+| Saved-copy note | final | On that server, a debugging-only script pointed the crop history request at the Finney sample point, where the route falls back to its cached copy | The note "The crop history could not be fetched just now. Showing the copy saved for this sample field." It is not an alert. The toast "Live data unavailable, showing cached data" appeared |
+| Click outside Kansas | final | Clicked north of the state line | "That spot is outside Kansas" notice with the three sample buttons and no pin. Pressing "Brown County" in the notice loaded that sample and moved focus to the panel |
+| Changing a crop | first, B | Changed a year by script on the first build that had the Field summary (before freeze dates were added), and with the arrow keys on build B | The chip says "Yours" with a dashed border, the caption counts the changed years, and "Back to detected crops" restores them |
 | Chip names | B | Screenshot at desktop width | Names wrap ("Winter Wheat", "Wheat then soybeans") instead of being cut off |
 | Keyboard | B | Tab from the source badge, arrow down, then Enter on "Back to detected crops" | The chip takes focus with a solid 2 px outline; the arrow key changes the crop; after the reset, focus is on the panel, not the page body |
 | The chosen sample is marked | B | Read the button's style | Darker background and border, and `aria-current` |
@@ -202,7 +205,9 @@ Which build each check ran on: build A is the code with freeze dates and the re-
 | Mock mode | B (dev server) | `npm run dev:mock` | Header badge shown. A sample loads all three facts. A map click gets 404 from all three routes with the mock-mode message |
 | Sample files agree with the code | n/a | Unit tests | Each file matches the sample list, passes the three shape checks, has 8 library crops named as USDA names them, and has a hot-day trend equal to what the trend maths gives |
 
-Not verified: the public URL (not deployed), whether USDA's services answer Vercel's servers the way they answered this machine, any real phone, a screen reader, automated accessibility tests (Playwright and axe are not set up), and the soil-down and history-down panels on build B.
+Not verified: the public URL (not deployed), whether USDA's services answer Vercel's servers the way they answered this machine, any real phone, a screen reader, automated accessibility tests (Playwright and axe are not set up), and the soil-down panel after build A.
+
+One thing these checks do not cover, carried over from Phase 0: if the map itself never finishes loading, its placeholder stays up with no message. The sample buttons still work in that case.
 
 ## Deployment
 
