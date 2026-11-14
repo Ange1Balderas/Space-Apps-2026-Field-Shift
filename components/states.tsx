@@ -1,5 +1,6 @@
 // Ported from Stragents (github.com/Ange1Balderas/hack_the_midwest, agent-flow branch): fe/src/components/states.tsx
-// AI-assisted: ported with Claude (#/ alias now @/; "use client" added for Next.js), reviewed by Angel Balderas.
+// AI-assisted: ported with Claude (#/ alias now @/; "use client" added for Next.js; EmptyState takes an
+// optional headingLevel so it can sit under a panel's own heading), reviewed by Angel Balderas.
 
 "use client";
 
@@ -67,12 +68,15 @@ export function EmptyState({
 	description,
 	icon,
 	action,
+	headingLevel = 2,
 }: {
 	title: string;
 	description?: string;
 	icon?: ReactNode;
 	action?: ReactNode;
+	headingLevel?: 2 | 3;
 }) {
+	const Heading = headingLevel === 3 ? "h3" : "h2";
 	return (
 		<div className="flex flex-col items-center rounded-lg border border-dashed px-6 py-12 text-center">
 			{icon ? (
@@ -83,7 +87,7 @@ export function EmptyState({
 					{icon}
 				</div>
 			) : null}
-			<h2 className="text-sm font-medium">{title}</h2>
+			<Heading className="text-sm font-medium">{title}</Heading>
 			{description ? (
 				<p className="mt-1 max-w-sm text-sm text-muted-foreground">
 					{description}

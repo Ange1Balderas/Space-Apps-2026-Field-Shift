@@ -26,7 +26,9 @@ const EPA_BOX_4_10 = [10, 10, 10, 5, 10, 20, 18, 17, 15, 24, 15];
 const EPA_BOX_4_8 = [5, 6, 11, 8, 10];
 
 describe("normalUpperTail", () => {
-	// PRINTED: Table A-1, last row (page A-3), "critical values for a standard normal distribution".
+	// PRINTED: Table A-1, "Critical Values of Student's t Distribution" (page A-3), last row.
+	// The note under the table says that row gives "the critical values for a standard normal
+	// distribution (z)".
 	it.each([
 		[0.7, 0.524],
 		[0.75, 0.674],

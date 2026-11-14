@@ -12,9 +12,9 @@ export const KANSAS_BOUNDS: [[number, number], [number, number]] = [
 /**
  * True when the point is inside the Kansas bounding box.
  *
- * This is a rectangle, not the state line. The north-east corner of Kansas follows the
- * Missouri River, so a small piece of Missouri sits inside the box and passes this check.
- * The exact border test waits for the county boundary file (see SPEC.md, feature 1).
+ * This is a rectangle, not the state line, so ground just outside Kansas can pass this
+ * check where the border is not straight. The exact border test waits for the county
+ * boundary file (see SPEC.md, feature 1).
  */
 export function isInKansasBounds(lat: number, lon: number): boolean {
 	const [[west, south], [east, north]] = KANSAS_BOUNDS;

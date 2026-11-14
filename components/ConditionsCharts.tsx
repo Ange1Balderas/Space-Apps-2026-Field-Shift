@@ -39,6 +39,7 @@ export function ConditionsCharts({ climate }: { climate: ClimateResponse }) {
 	if (climate.years.length === 0) {
 		return (
 			<EmptyState
+				headingLevel={3}
 				title="No complete years for this point"
 				description="NASA POWER returned no full calendar year of daily data here, so there is nothing to chart."
 			/>
@@ -159,12 +160,15 @@ function HotDaysChart({
 			<figure className="m-0">
 				{/* The value axis title, set above the plot so it costs no width on a phone. */}
 				<p className="mb-1 text-xs text-muted-foreground">Days per year</p>
-				<div className="h-56 w-full">
+				{/* Recharts makes the plot a keyboard stop: the arrow keys step through the years.
+				    It gets a name, and the same focus outline as the map. */}
+				<div className="h-56 w-full [&_.recharts-surface]:focus-visible:outline-2 [&_.recharts-surface]:focus-visible:outline-offset-2 [&_.recharts-surface]:focus-visible:outline-ring">
 					<ResponsiveContainer width="100%" height="100%">
 						<BarChart
 							data={[...years]}
 							margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
 							barCategoryGap={2}
+							aria-label={`Hot days each year, ${firstYear} to ${lastYear}. Use the left and right arrow keys to read each year.`}
 						>
 							<CartesianGrid vertical={false} stroke="var(--border)" />
 							<XAxis
@@ -194,6 +198,9 @@ function HotDaysChart({
 								maxBarSize={24}
 								isAnimationActive={false}
 							/>
+							{/* The average line crosses dark bars. A wider line in the surface colour under
+							    it keeps the dashes readable there. */}
+							<ReferenceLine y={average} stroke="var(--card)" strokeWidth={3} />
 							<ReferenceLine
 								y={average}
 								stroke="var(--muted-foreground)"
@@ -219,7 +226,7 @@ function HotDaysChart({
 			</figure>
 
 			<details className="text-xs">
-				<summary className="w-fit cursor-pointer rounded-sm text-muted-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50">
+				<summary className="w-fit min-h-6 cursor-pointer rounded-sm py-1 text-muted-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50">
 					Show the numbers as a table
 				</summary>
 				<section
@@ -229,12 +236,14 @@ function HotDaysChart({
 					className="mt-2 max-h-56 overflow-y-auto rounded-md border outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
 				>
 					<table className="w-full border-collapse text-left tabular-nums">
+						{/* The header stays put while the rows scroll. Its rule sits on the cells,
+						    because a collapsed row border does not travel with a sticky header. */}
 						<thead className="sticky top-0 bg-card">
-							<tr className="border-b">
-								<th scope="col" className="px-3 py-1.5 font-medium">
+							<tr>
+								<th scope="col" className="border-b px-3 py-1.5 font-medium">
 									Year
 								</th>
-								<th scope="col" className="px-3 py-1.5 font-medium">
+								<th scope="col" className="border-b px-3 py-1.5 font-medium">
 									Days at or above {HOT_DAY_F}°F
 								</th>
 							</tr>

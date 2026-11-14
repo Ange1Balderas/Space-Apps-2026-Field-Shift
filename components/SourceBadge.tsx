@@ -13,7 +13,7 @@ export type SourceName = keyof typeof SOURCE_LINKS;
 
 export function SourceBadge({ source }: { source: SourceName }) {
 	return (
-		<Badge asChild variant="outline">
+		<Badge asChild variant="outline" className="min-h-6">
 			<a href={SOURCE_LINKS[source]} target="_blank" rel="noreferrer">
 				<span className="sr-only">Source: </span>
 				{source}

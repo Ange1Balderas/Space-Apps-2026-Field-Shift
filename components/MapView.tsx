@@ -65,7 +65,7 @@ export function MapView() {
 						type="button"
 						variant="outline"
 						size="sm"
-						aria-pressed={selection?.sampleId === sample.id}
+						aria-current={selection?.sampleId === sample.id ? "true" : undefined}
 						onClick={() => selectSample(sample.id)}
 					>
 						<MapPinIcon aria-hidden="true" />

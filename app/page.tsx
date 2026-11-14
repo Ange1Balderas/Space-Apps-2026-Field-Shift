@@ -17,7 +17,7 @@ export default function Home() {
 				</h1>
 				<ToneBadge tone="neutral">Early preview</ToneBadge>
 				{isMockMode() ? (
-					<ToneBadge tone="info">Mock data: cached samples only</ToneBadge>
+					<ToneBadge tone="neutral">Mock data: cached samples only</ToneBadge>
 				) : null}
 				<p className="w-full text-sm text-muted-foreground">
 					Compare crop rotations for a Kansas field using NASA Earth data, USDA
@@ -32,12 +32,10 @@ export default function Home() {
 					<MapView />
 				</div>
 
-				<aside
-					aria-label="Field details"
-					className="border-t p-4 lg:overflow-y-auto lg:border-t-0 lg:border-l"
-				>
+				{/* The panel names itself: FieldPanel renders a region labelled by its "Field" heading. */}
+				<div className="border-t p-4 lg:overflow-y-auto lg:border-t-0 lg:border-l">
 					<FieldPanel />
-				</aside>
+				</div>
 			</main>
 		</div>
 	);
