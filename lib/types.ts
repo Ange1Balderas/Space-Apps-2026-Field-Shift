@@ -49,8 +49,11 @@ export type SoilResponse = {
   source: "USDA NRCS SSURGO";
 };
 
-// A published value always travels with its source.
-export type Sourced<T> = { value: T; source: string } | null;
+// A published value always travels with its source. `assumption` is set when the value is
+// the tool's own pick among published numbers (one row of a table, one end of a printed
+// range) or is worked out from them: it says what the source prints and what the tool did.
+// Such a value is shown as a tool assumption. (`assumption` approved by Angel, 2026-11-14.)
+export type Sourced<T> = { value: T; source: string; assumption?: string } | null;
 
 // data/crops.json
 export type Crop = {
@@ -81,10 +84,22 @@ export type Rotation = {
   benefits: { text: string; source: string }[]; risks: { text: string; source: string }[];
 };
 
+// The farmer's four priority sliders and the seven indicators a rotation is scored on.
+export type Priority = "saveWater" | "protectSoil" | "income" | "simplicity";
+export type IndicatorId = "waterFit" | "heatExposure" | "soilProtection" | "soilBuilding"
+                        | "pestBreak" | "marketFit" | "simplicity";
+
 // config/scoring.json: tool assumptions, all shown on the About the Data tab
 export type ScoringConfig = {
   hotDayF: number; regionRainBandsIn: [number, number];
   growingSeasonMonths: [number, number]; // first and last month of "growing season rain"; tool assumption, April to September
   effectiveRainFraction: Sourced<number>; fallowEfficiency: Sourced<number>;
   irrigationNeedCapIn: number; hotDaysCap: number; risingTrendPenalty: number;
+  // The five fields below were approved by Angel on 2026-11-14: constants that formulas 5 to 9
+  // and the sliders need.
+  erosion: { kTimesSlopeCap: number; windIndexCap: number };          // formula 5: where each risk reaches its maximum
+  soilBuildingPoints: { nFixing: number; highResidue: number; coverCrop: number; deepRoots: number }; // formula 6
+  marketScores: { local: number; regional: number; contract: number }; // formula 8
+  simplicity: { perExtraCrop: number; missingNoTillPenalty: number };  // formula 9
+  priorityIndicators: Record<Priority, IndicatorId[]>;                 // which indicators each slider weighs
 };

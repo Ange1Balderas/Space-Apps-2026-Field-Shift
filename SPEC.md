@@ -50,6 +50,7 @@ Angel made these with Claude before Phase 3. Where they change text elsewhere in
 4. **Crop values.** Order of work in Phase 3: the `data-verifier` re-opens the source of each researched value before it is loaded; a value the research marked as an inference is not loaded as a fact (it becomes a tool assumption or stays "not sourced yet"); Angel then reviews the data files.
 5. **The field's own rotation from CDL classes.** By class code: 1 Corn is `corn`, 4 Sorghum is `grain_sorghum`, 5 Soybeans is `soybean`, 24 Winter Wheat is `winter_wheat`, 36 Alfalfa is `alfalfa`, and 61 Fallow/Idle Cropland is a fallow year. Three double-crop classes are winter wheat plus a second crop in the same year: 26 (winter wheat then soybeans), 225 (winter wheat then corn) and 236 (winter wheat then sorghum). Every other class has no `CropId`. That includes the other double-crop classes, such as 238 (winter wheat then cotton) and 241 (corn then soybeans). A year whose class has no `CropId` is named on the existing rotation card and left out of its score, and the card says how many of the 8 years were scored.
 6. **Growing season.** April through September, as a tool assumption in `config/scoring.json` (`growingSeasonMonths`), listed on the About the Data tab. No public source defines it.
+7. **Two additions to the data contracts, made during Phase 3.** `Sourced` gains an optional `assumption` note, for a value that is the tool's own pick among published numbers; the app labels such a value a tool assumption. `ScoringConfig` gains five fields for the constants that formulas 5 to 9 and the sliders need: `erosion`, `soilBuildingPoints`, `marketScores`, `simplicity` and `priorityIndicators` (see "Data contracts").
 
 ## User flow
 
@@ -364,8 +365,11 @@ type SoilResponse = {
   source: "USDA NRCS SSURGO";
 };
 
-// A published value always travels with its source.
-type Sourced<T> = { value: T; source: string } | null;
+// A published value always travels with its source. `assumption` is set when the value is
+// the tool's own pick among published numbers (one row of a table, one end of a printed
+// range) or is worked out from them: it says what the source prints and what the tool did.
+// Such a value is shown as a tool assumption. (`assumption` approved by Angel, 2026-11-14.)
+type Sourced<T> = { value: T; source: string; assumption?: string } | null;
 
 // Confirmed by Angel on 2026-11-14. Fallow has no id: a year with no planting is fallow.
 // Double-crop soybean gets its own decision when its rotation is added.
@@ -400,12 +404,24 @@ type Rotation = {
   benefits: { text: string; source: string }[]; risks: { text: string; source: string }[];
 };
 
+// The farmer's four priority sliders and the seven indicators a rotation is scored on.
+type Priority = "saveWater" | "protectSoil" | "income" | "simplicity";
+type IndicatorId = "waterFit" | "heatExposure" | "soilProtection" | "soilBuilding"
+                 | "pestBreak" | "marketFit" | "simplicity";
+
 // config/scoring.json: tool assumptions, all shown on the About the Data tab
 type ScoringConfig = {
   hotDayF: number; regionRainBandsIn: [number, number];
   growingSeasonMonths: [number, number]; // first and last month of "growing season rain"; tool assumption, April to September
   effectiveRainFraction: Sourced<number>; fallowEfficiency: Sourced<number>;
   irrigationNeedCapIn: number; hotDaysCap: number; risingTrendPenalty: number;
+  // The five fields below were approved by Angel on 2026-11-14: constants that formulas 5 to 9
+  // and the sliders need.
+  erosion: { kTimesSlopeCap: number; windIndexCap: number };          // formula 5: where each risk reaches its maximum
+  soilBuildingPoints: { nFixing: number; highResidue: number; coverCrop: number; deepRoots: number }; // formula 6
+  marketScores: { local: number; regional: number; contract: number }; // formula 8
+  simplicity: { perExtraCrop: number; missingNoTillPenalty: number };  // formula 9
+  priorityIndicators: Record<Priority, IndicatorId[]>;                 // which indicators each slider weighs
 };
 ```
 

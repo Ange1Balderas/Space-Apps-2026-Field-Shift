@@ -3,6 +3,7 @@
 // Yearly climate indicators from daily weather. Everything here is metric, the units
 // NASA POWER reports. Conversion to inches and °F happens in lib/climate.ts.
 
+import scoring from "@/config/scoring.json";
 import { fToC } from "@/lib/units";
 
 /** One day of weather. `null` marks a value NASA POWER could not supply. */
@@ -66,16 +67,19 @@ export type MonthNormal = {
 export type Season = { firstMonth: number; lastMonth: number };
 
 // Hot day threshold. SPEC.md, "Contracts and formulas" > "Thresholds": "Hot day: daily max at
-// or above 95°F. Common crop heat stress threshold; configurable." It is a tool setting, and
-// it moves to config/scoring.json (ScoringConfig.hotDayF) when Phase 3 creates that file.
-export const HOT_DAY_F = 95;
+// or above 95°F. Common crop heat stress threshold; configurable." It is a tool setting, read
+// from config/scoring.json (hotDayF) so that it is listed with the other tool assumptions.
+export const HOT_DAY_F: number = scoring.hotDayF;
 
 // TOOL ASSUMPTION, not a published fact. SPEC.md asks for "growing season rain", and no public
 // source defines the months for Kansas. Angel chose April through September on 2026-11-14
-// (SPEC.md, "Decisions made on 2026-11-14"). It moves to config/scoring.json
-// (ScoringConfig.growingSeasonMonths) when Phase 3 creates that file, so that it is listed on
-// the About the Data tab. Its chart arrives in Phase 4.
-export const GROWING_SEASON: Season = { firstMonth: 4, lastMonth: 9 };
+// (SPEC.md, "Decisions made on 2026-11-14"). The months are read from config/scoring.json
+// (growingSeasonMonths) so that they are listed with the other tool assumptions. The chart
+// of this indicator arrives in Phase 4.
+export const GROWING_SEASON: Season = {
+	firstMonth: scoring.growingSeasonMonths[0],
+	lastMonth: scoring.growingSeasonMonths[1],
+};
 
 // Freeze threshold. SPEC.md, "Thresholds": "Freeze day: daily min at or below 32°F".
 // The 32°F figure is the threshold in the National Weather Service's definition of a freeze:

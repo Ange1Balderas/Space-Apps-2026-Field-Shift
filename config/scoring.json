@@ -1,0 +1,28 @@
+{
+  "hotDayF": 95,
+  "regionRainBandsIn": [23.1, 31.6],
+  "growingSeasonMonths": [4, 9],
+  "effectiveRainFraction": {
+    "value": 0.75,
+    "source": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Chapter 3, Table 9 and the text beside it: a simulated water budget for dryland corn on a northwest Kansas silt loam, with 19.24 inches of average annual precipitation, 14.40 inches of evapotranspiration, 3.90 inches of interception, 0.94 inch of runoff and no percolation. https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf",
+    "assumption": "No source opened gives one share of rain that a dryland crop can use in Kansas. In this simulated budget 14.40 of 19.24 inches, about 75 percent, became evapotranspiration. The tool counts 75 percent of the rain in a crop's season as usable, everywhere in Kansas."
+  },
+  "fallowEfficiency": {
+    "value": 0.2,
+    "source": "Nielsen and Vigil (2010), Precipitation Storage Efficiency during Fallow in Wheat-Fallow Systems, Agronomy Journal 102(2):537-543, USDA-ARS, Akron, Colorado: \"The 14-mo fallow PSE averaged 20% (range 8-34%) for CT and 35% (range 20-51%) for NT.\" https://www.ars.usda.gov/ARSUserFiles/30100500/Publications%202010-2019/544%20Nielsen%20Vigil%20-%20Precipitation%20storage%20efficiency%20during%20fallow%20in%20wheat-fallow%20systems.PDF",
+    "assumption": "The tool uses the conventional-tillage average, 20 percent, for every bare period in every rotation. Measured values differ by tillage and rotation: no-till averaged 35 percent in the same study, and K-State measured 15 to 28 percent before wheat at Tribune, Kansas, in 2008 to 2019 (Schlegel, Haag and Burnett, 2020, https://journals.newprairiepress.org/kaesrr/article/11125/galley/11018/download/)."
+  },
+  "irrigationNeedCapIn": 24,
+  "hotDaysCap": 31,
+  "risingTrendPenalty": 10,
+  "erosion": { "kTimesSlopeCap": 4, "windIndexCap": 100 },
+  "soilBuildingPoints": { "nFixing": 25, "highResidue": 25, "coverCrop": 25, "deepRoots": 25 },
+  "marketScores": { "local": 100, "regional": 50, "contract": 0 },
+  "simplicity": { "perExtraCrop": 20, "missingNoTillPenalty": 30 },
+  "priorityIndicators": {
+    "saveWater": ["waterFit"],
+    "protectSoil": ["soilProtection", "soilBuilding"],
+    "income": ["heatExposure", "pestBreak", "marketFit"],
+    "simplicity": ["simplicity"]
+  }
+}

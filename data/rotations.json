@@ -1,0 +1,127 @@
+[
+  {
+    "id": "continuous-wheat",
+    "name": "Continuous winter wheat",
+    "cycleYears": 1,
+    "plantings": [{ "crop": "winter_wheat", "plantYear": 1 }],
+    "water": "dryland",
+    "regions": ["west", "central", "east"],
+    "needsNoTill": false,
+    "benefits": [
+      {
+        "text": "Wheat leaves a lot of residue on the ground: K-State calls it a large residue producer.",
+        "source": "K-State, The Value of Crop Residue (MF2604, October 2003). https://bookstore.ksre.ksu.edu/download/value-of-crop-residue_MF2604"
+      }
+    ],
+    "risks": []
+  },
+  {
+    "id": "wheat-fallow",
+    "name": "Wheat-fallow",
+    "cycleYears": 2,
+    "plantings": [{ "crop": "winter_wheat", "plantYear": 1 }],
+    "water": "dryland",
+    "regions": ["west"],
+    "needsNoTill": false,
+    "benefits": [],
+    "risks": [
+      {
+        "text": "The long fallow stores little of the rain that falls on it: K-State reports that often less than 25 percent of the precipitation in the 14-month fallow between wheat crops is stored in the soil.",
+        "source": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Fallow and Water Storage. https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
+      }
+    ]
+  },
+  {
+    "id": "wheat-sorghum-fallow",
+    "name": "Wheat-sorghum-fallow",
+    "cycleYears": 3,
+    "plantings": [
+      { "crop": "winter_wheat", "plantYear": 1 },
+      { "crop": "grain_sorghum", "plantYear": 3 }
+    ],
+    "water": "dryland",
+    "regions": ["west", "central"],
+    "needsNoTill": false,
+    "benefits": [
+      {
+        "text": "K-State describes wheat-summer crop-fallow as more efficient in its water use than wheat-fallow.",
+        "source": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Fallow and Water Storage. https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
+      }
+    ],
+    "risks": [
+      {
+        "text": "Sorghum has to be planted so that it flowers outside the hottest, driest part of summer.",
+        "source": "K-State Grain Sorghum Production Handbook (C687). https://bookstore.ksre.ksu.edu/pubs/C687.pdf"
+      }
+    ]
+  },
+  {
+    "id": "wheat-corn-fallow",
+    "name": "Wheat-corn-fallow",
+    "cycleYears": 3,
+    "plantings": [
+      { "crop": "winter_wheat", "plantYear": 1 },
+      { "crop": "corn", "plantYear": 3 }
+    ],
+    "water": "dryland",
+    "regions": ["west", "central"],
+    "needsNoTill": false,
+    "benefits": [
+      {
+        "text": "K-State describes wheat-summer crop-fallow as more efficient in its water use than wheat-fallow.",
+        "source": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Fallow and Water Storage. https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
+      }
+    ],
+    "risks": [
+      {
+        "text": "Hot, dry weather at flowering can leave corn poorly pollinated. K-State puts the loss at up to 8 percent of yield for one day of moisture stress in the week after silking.",
+        "source": "K-State Corn Production Handbook (C560, September 2007). https://bookstore.ksre.ksu.edu/pubs/C560.pdf"
+      }
+    ]
+  },
+  {
+    "id": "continuous-corn",
+    "name": "Continuous corn",
+    "cycleYears": 1,
+    "plantings": [{ "crop": "corn", "plantYear": 1 }],
+    "water": "irrigated",
+    "regions": ["west"],
+    "needsNoTill": false,
+    "benefits": [
+      {
+        "text": "Corn is a high-residue crop, which helps keep the soil covered.",
+        "source": "USDA NRCS, Nebraska Conservation Planning Sheet No. 4, Crop Residue Management (revised December 2006). https://www.mssoy.org/sites/default/files/documents/residue-mgmt-nrcs-2006.pdf"
+      }
+    ],
+    "risks": [
+      {
+        "text": "Hot, dry weather at flowering can leave corn poorly pollinated. K-State puts the loss at up to 8 percent of yield for one day of moisture stress in the week after silking.",
+        "source": "K-State Corn Production Handbook (C560, September 2007). https://bookstore.ksre.ksu.edu/pubs/C560.pdf"
+      }
+    ]
+  },
+  {
+    "id": "corn-soybean",
+    "name": "Corn-soybean",
+    "cycleYears": 2,
+    "plantings": [
+      { "crop": "corn", "plantYear": 1 },
+      { "crop": "soybean", "plantYear": 2 }
+    ],
+    "water": "dryland",
+    "regions": ["east"],
+    "needsNoTill": false,
+    "benefits": [
+      {
+        "text": "Soybeans fix their own nitrogen and normally need no nitrogen fertilizer.",
+        "source": "K-State Soybean Production Handbook (C449, October 2016). https://bookstore.ksre.ksu.edu/pubs/C449.pdf"
+      }
+    ],
+    "risks": [
+      {
+        "text": "Soybean is a low-residue crop, so the ground has less cover after it.",
+        "source": "K-State, The Value of Crop Residue (MF2604, October 2003). https://bookstore.ksre.ksu.edu/download/value-of-crop-residue_MF2604"
+      }
+    ]
+  }
+]
