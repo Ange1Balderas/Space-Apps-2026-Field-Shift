@@ -9,6 +9,22 @@ export const KANSAS_BOUNDS: [[number, number], [number, number]] = [
 	[-94.588387, 40.003166],
 ];
 
+// Crop history comes in 30 m pixels and soil map units have field-scale edges, so requests
+// for them keep five decimal places (about 1 m). Climate requests use two (lib/climate.ts).
+export const FIELD_COORDINATE_DECIMALS = 5;
+
+/** The point a crop history or soil request is made for: the given point at five decimal places. */
+export function fieldPoint(
+	lat: number,
+	lon: number,
+): { lat: number; lon: number } {
+	const factor = 10 ** FIELD_COORDINATE_DECIMALS;
+	return {
+		lat: Math.round(lat * factor) / factor,
+		lon: Math.round(lon * factor) / factor,
+	};
+}
+
 /**
  * True when the point is inside the Kansas bounding box.
  *

@@ -1,13 +1,19 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
 import { describe, expect, it } from "vitest";
-import { cToF, fToC, mmToIn, roundTo } from "@/lib/units";
+import { cmToIn, cToF, fToC, mmToIn, roundTo } from "@/lib/units";
 
 describe("unit conversions", () => {
 	it("converts millimetres to inches (25.4 mm is one inch)", () => {
 		expect(mmToIn(25.4)).toBe(1);
 		expect(mmToIn(0)).toBe(0);
 		expect(mmToIn(508)).toBe(20);
+	});
+
+	it("converts centimetres to inches (2.54 cm is one inch)", () => {
+		expect(cmToIn(2.54)).toBe(1);
+		expect(cmToIn(25.4)).toBe(10);
+		expect(cmToIn(0)).toBe(0);
 	});
 
 	it("converts °C to °F", () => {

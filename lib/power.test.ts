@@ -4,12 +4,8 @@
 // (keys and header fields), with made-up values.
 
 import { describe, expect, it } from "vitest";
-import {
-	buildPowerUrl,
-	lastFullYear,
-	PowerError,
-	parsePowerDaily,
-} from "@/lib/power";
+import { buildPowerUrl, lastFullYear, parsePowerDaily } from "@/lib/power";
+import { UpstreamError } from "@/lib/upstream";
 
 function powerBody(overrides: Record<string, unknown> = {}): unknown {
 	return {
@@ -103,7 +99,7 @@ describe("parsePowerDaily", () => {
 				},
 			}),
 		],
-	])("rejects %s with a PowerError", (_name, body) => {
-		expect(() => parsePowerDaily(body)).toThrow(PowerError);
+	])("rejects %s with an UpstreamError", (_name, body) => {
+		expect(() => parsePowerDaily(body)).toThrow(UpstreamError);
 	});
 });

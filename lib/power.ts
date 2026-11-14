@@ -6,6 +6,7 @@
 // Server only. The browser never calls POWER; it calls /api/climate (CLAUDE.md rule 4).
 
 import type { DailyWeather } from "@/lib/indicators";
+import { fetchUpstreamJson, isRecord, UpstreamError } from "@/lib/upstream";
 
 export const POWER_DAILY_ENDPOINT =
 	"https://power.larc.nasa.gov/api/temporal/daily/point";
@@ -13,25 +14,11 @@ export const POWER_DAILY_ENDPOINT =
 // SPEC.md, "Thresholds": "Analysis window: 1981 to the last full year. POWER record start."
 export const POWER_FIRST_YEAR = 1981;
 
-// Only what Phase 1 computes from. Phase 3 adds the four reference ET inputs
+// Only what Phases 1 and 2 compute from. Phase 3 adds the four reference ET inputs
 // (ALLSKY_SFC_SW_DWN, T2MDEW, RH2M, WS2M) listed in SPEC.md, "Data sources".
 export const POWER_PARAMETERS = ["T2M_MAX", "T2M_MIN", "PRECTOTCORR"] as const;
 
-// CLAUDE.md rule 4: every external call has a 15-second timeout.
-export const POWER_TIMEOUT_MS = 15_000;
-
-export type PowerErrorKind = "timeout" | "unavailable" | "unexpected";
-
-/** A failed POWER request. `message` is plain language and safe to show to a person. */
-export class PowerError extends Error {
-	readonly kind: PowerErrorKind;
-
-	constructor(kind: PowerErrorKind, message: string) {
-		super(message);
-		this.name = "PowerError";
-		this.kind = kind;
-	}
-}
+const SERVICE = "NASA POWER";
 
 export type PowerDaily = {
 	/** Elevation POWER reports for the point: the average of its MERRA-2 grid cell, in metres. */
@@ -62,20 +49,19 @@ export function buildPowerUrl(
 	return `${POWER_DAILY_ENDPOINT}?${query.toString()}`;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-const UNEXPECTED_ANSWER =
-	"NASA POWER sent an answer this tool could not read.";
+const unexpected = () =>
+	new UpstreamError(
+		"unexpected",
+		`${SERVICE} sent an answer this tool could not read.`,
+	);
 
 /**
  * Turns a POWER daily JSON answer into daily records. Values equal to POWER's fill value
- * (-999 unless the header says otherwise) become null. Throws a PowerError when the answer
- * does not have the expected shape.
+ * (-999 unless the header says otherwise) become null. Throws an UpstreamError when the
+ * answer does not have the expected shape.
  */
 export function parsePowerDaily(body: unknown): PowerDaily {
-	if (!isRecord(body)) throw new PowerError("unexpected", UNEXPECTED_ANSWER);
+	if (!isRecord(body)) throw unexpected();
 
 	const geometry = isRecord(body.geometry) ? body.geometry : {};
 	const coordinates = Array.isArray(geometry.coordinates)
@@ -94,7 +80,7 @@ export function parsePowerDaily(body: unknown): PowerDaily {
 		!isRecord(tmin) ||
 		!isRecord(rain)
 	) {
-		throw new PowerError("unexpected", UNEXPECTED_ANSWER);
+		throw unexpected();
 	}
 
 	const header = isRecord(body.header) ? body.header : {};
@@ -108,7 +94,7 @@ export function parsePowerDaily(body: unknown): PowerDaily {
 	const dates = Object.keys(tmax)
 		.filter((date) => /^\d{8}$/.test(date))
 		.sort();
-	if (dates.length === 0) throw new PowerError("unexpected", UNEXPECTED_ANSWER);
+	if (dates.length === 0) throw unexpected();
 
 	const days = dates.map((date) => ({
 		date,
@@ -119,52 +105,20 @@ export function parsePowerDaily(body: unknown): PowerDaily {
 	return { elevationM, days };
 }
 
-function isAbort(error: unknown): boolean {
-	return (
-		isRecord(error) &&
-		(error.name === "TimeoutError" || error.name === "AbortError")
-	);
-}
-
-const TIMED_OUT = "NASA POWER did not answer within 15 seconds.";
-
 /**
  * Fetches daily weather for a point from 1 January of `startYear` to 31 December of
  * `endYear` in one request. Timed on 2026-11-14 for 1981 to 2025: about 0.8 to 1.0 seconds
  * at four Kansas points, so the request is not split by decade (SPEC.md, Phase 1).
- * The 15-second limit covers the whole exchange, headers and body.
  */
 export async function fetchPowerDaily(
 	point: { lat: number; lon: number },
 	startYear: number,
 	endYear: number,
 ): Promise<PowerDaily> {
-	const signal = AbortSignal.timeout(POWER_TIMEOUT_MS);
-
-	let response: Response;
-	try {
-		response = await fetch(buildPowerUrl(point, startYear, endYear), {
-			signal,
-			headers: { Accept: "application/json" },
-		});
-	} catch (error) {
-		if (isAbort(error)) throw new PowerError("timeout", TIMED_OUT);
-		throw new PowerError("unavailable", "NASA POWER could not be reached.");
-	}
-
-	if (!response.ok) {
-		throw new PowerError(
-			"unavailable",
-			`NASA POWER answered with an error (HTTP ${response.status}).`,
-		);
-	}
-
-	let body: unknown;
-	try {
-		body = await response.json();
-	} catch (error) {
-		if (isAbort(error)) throw new PowerError("timeout", TIMED_OUT);
-		throw new PowerError("unexpected", UNEXPECTED_ANSWER);
-	}
+	const body = await fetchUpstreamJson(
+		SERVICE,
+		buildPowerUrl(point, startYear, endYear),
+		{ headers: { Accept: "application/json" } },
+	);
 	return parsePowerDaily(body);
 }

@@ -1,11 +1,11 @@
 {
   "id": "finney",
   "name": "Finney County",
-  "lat": 38.0498,
-  "lon": -100.74,
+  "lat": 37.96548,
+  "lon": -100.72299,
   "climate": {
-    "lat": 38.05,
-    "lon": -100.74,
+    "lat": 37.97,
+    "lon": -100.72,
     "elevationM": 858.35,
     "years": [
       { "year": 1981, "seasonRainIn": 15.3, "hotDays": 36, "lastSpringFreezeDoy": null, "firstFallFreezeDoy": null, "meanTempF": 58.46 },
@@ -62,6 +62,31 @@
       "meanTempF": { "perDecade": 0.407, "linearPerDecade": 0.421, "pValue": 0.001805, "label": "likely" }
     },
     "source": "NASA POWER",
-    "fetchedAt": "2026-11-14T18:31:29.769Z"
+    "fetchedAt": "2026-11-14T20:14:25.836Z"
+  },
+  "history": {
+    "years": [
+      { "year": 2018, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2019, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2020, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2021, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2022, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2023, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2024, "cdlCode": 1, "crop": "Corn" },
+      { "year": 2025, "cdlCode": 1, "crop": "Corn" }
+    ],
+    "source": "USDA NASS Cropland Data Layer"
+  },
+  "soil": {
+    "mukey": "2668639",
+    "mapUnitName": "Ulysses silt loam, 1 to 3 percent slopes",
+    "texture": "Silt loam",
+    "availableWaterIn": 8.81,
+    "organicMatterPct": 1.8,
+    "kFactor": 0.43,
+    "windErodibilityIndex": 48,
+    "slopePct": 2,
+    "hydrologicGroup": "B",
+    "source": "USDA NRCS SSURGO"
   }
 }

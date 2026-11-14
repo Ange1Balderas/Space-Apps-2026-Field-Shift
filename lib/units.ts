@@ -14,6 +14,10 @@ export function mmToIn(mm: number): number {
 	return mm / MM_PER_INCH;
 }
 
+export function cmToIn(cm: number): number {
+	return (cm * 10) / MM_PER_INCH;
+}
+
 export function cToF(celsius: number): number {
 	return (celsius * 9) / 5 + 32;
 }
