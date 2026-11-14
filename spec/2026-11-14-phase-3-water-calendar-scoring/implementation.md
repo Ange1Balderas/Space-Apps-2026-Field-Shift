@@ -57,6 +57,14 @@ Things in these numbers that Angel should look at before the demo:
 3. **Potential demand is high.** FAO-56 coefficients describe a well-watered crop, so every dryland rotation in the west shows a large shortfall, and water fit sits between 36 and 50. The ranking between rotations is what carries meaning, not the level.
 4. **The hot-day penalty did not fire.** No sample has a "likely" rising hot-day trend, so the 10-point penalty was only exercised in tests.
 
+## What was cut or left for later
+
+- **The trend of crop water demand.** SPEC.md formula 2 says demand is "reported as the 10-year average plus its trend". The average is computed and shown; the trend is not computed. It belongs with the evidence on the Phase 4 cards.
+- **"Any computed advantage" in a card's benefits.** SPEC.md says benefits are "library benefits plus any computed advantage". `benefitLines` returns the library's benefits only.
+- **Four of the ten rotations** (see open item 3), and with them the cover-crop and no-till parts of the scoring, which have nothing to act on yet.
+- **The three switches** (irrigation, no-till equipment, market access), the rotation cards and the calendar strip: Phase 4. The logic for irrigation and no-till exists and is tested; nothing on screen sets it.
+- **Four of the five card fields on screen.** Evidence, benefits, information gaps and risks exist as tested templates in `lib/card-text.ts`; only "why suggested" is shown.
+
 ## Decisions Angel made in this phase
 
 One question was put to Angel before `lib/types.ts` was touched, and Angel chose "Add both":
@@ -96,8 +104,8 @@ Angel's decision: the `data-verifier` opens each source again before a value is 
 
 | Run | What it covered | Result |
 | --- | --- | --- |
-| 1 | FAO-56 Tables 11 and 12, Example 18 and the Chapter 3 equations; USDA Handbook 628; four NASS Kansas Crop Progress reports; K-State C529, C687, C683, MF2604; the Tribune report; Nielsen and Vigil | Confirmed. It could not read eight PDFs through the page fetcher |
-| 2 | Those eight (K-State C560, C449, SRP1173, MF2586, L904, MF3066, MF3335 and the NRCS residue sheet) | All confirmed. The PDFs were fetched from their public URLs, converted to text with `pdftotext`, and the verifier read the text |
+| 1 | FAO-56 Tables 11 and 12, Example 18 and the Chapter 3 equations; USDA Handbook 628; four NASS Kansas Crop Progress reports; K-State C529, C687, C683, MF2604; the Tribune report; Nielsen and Vigil | Confirmed. It could not read seven PDFs through the page fetcher |
+| 2 | Those seven (K-State C560, C449, SRP1173, MF2586, L904, MF3066 and the NRCS residue sheet), and K-State MF3335 for the rainfall of the three thirds of Kansas | All confirmed. The PDFs were fetched from their public URLs, converted to text with `pdftotext`, and the verifier read the text |
 | 3 | The four loaded files and `data/README.md` against the same sources | See "Data check after loading" |
 
 What the checks changed in the data:
@@ -159,7 +167,7 @@ The two sanity rules of CLAUDE.md rule 11, as tests in `lib/scoring.test.ts`:
 - With "save water" at 100 and irrigation available, continuous irrigated corn is never the top-scoring rotation at Finney, Thomas or Brown, for any of the 27 combinations of the other three sliders at 0, 50 and 100. The comparison takes in every rotation the tool scores, including the field's own and the ones shown apart.
 - At both western samples, wheat-fallow has a higher water fit than continuous wheat (50 against 36).
 
-In the browser, on the development server (`npm run dev`, live services), 2026-11-14 about 17:25 to 17:30 CST:
+In the browser, on the development server (`npm run dev`, live services), 2026-11-14 about 17:25 to 17:30 CST. **These rows were checked before the UI review's fixes**; the rows in the next table repeat the main ones on the final build.
 
 | Check | Result |
 | --- | --- |
@@ -172,6 +180,17 @@ In the browser, on the development server (`npm run dev`, live services), 2026-1
 | 375 x 812 | No sideways scrolling; sliders in two columns; rows in one |
 | Console | No errors |
 | Production build (`next start`) with the crop history service blocked, a point chosen with the keyboard | Crop history answered 502 and climate and soil 200. Field raised the one alert. Rotations showed four sliders, a quiet note that the crop history could not be loaded, and the central Kansas rotations ranked |
+
+On the final production build (`next start`, commit b2869b9), about 17:50 CST. The browser pane was not drawing by then, so clicks and keys were sent from the page's own script and the results read from its text and attributes:
+
+| Check | Result |
+| --- | --- |
+| Thomas sample | Its own rotation scored 63; four ranked rotations (wheat-fallow first, 68); corn-soybean shown apart; NASA POWER and SSURGO badges; the not-a-forecast line above the list; no alert in the section |
+| Sliders by keyboard events | 0, 100, 0, 0 put continuous wheat first, and the screen-reader line changed to "Best match for these priorities: Continuous winter wheat." |
+| Reset | Sliders back to 50, wheat-fallow first again, focus on "Save water" |
+| Names | Each thumb carries its label and "50 of 100"; the slider root carries no ARIA attribute; each toggle is named for its rotation |
+| 375 x 812 | No sideways scrolling; the slider's touch band is 44 px tall |
+| Console | No errors |
 
 Not checked in a browser: the climate-failure note and the soil-failure note of the Rotations section (they are two short branches, read in the code), the public URL, a real phone, a screen reader, automated accessibility tests. Screenshots stopped working late in the session, so the last check was read from the page's text and attributes.
 
@@ -227,11 +246,14 @@ It flagged 15 points. What was done:
 
 Not re-checked in this run: the UC Davis and University of Nebraska quotes (confirmed in the first run), and whether each link still opens.
 
+**The corrections in the table above were not sent back to the `data-verifier`.** CLAUDE.md asks for it after any change to `data/` or `config/`. They change wording and links only, no value, and each new sentence was written from text the earlier runs had quoted. The three runs together used about 0.9 million subagent tokens, most of it in the first run before the PDFs were turned into text; a fourth run was not worth that. If Angel wants it, it is one short run over five files.
+
 ## Open items for Angel
 
 1. **Review the data files**: `data/crops.json`, `data/calendar.json`, `data/rotations.json` and `config/scoring.json`. `data/README.md` is the guide. This is the review SPEC.md asks for in Phase 3.
-2. **Confirm or change the 19 choices above**, above all 1 (region limits the suggestions), 5 (one usable share of rain and one fallow efficiency), 7 (the constants) and 8 (which slider weighs what).
+2. **Confirm or change the 19 choices above** ("Choices Claude made"), above all 1 (region limits the suggestions), 5 (one usable share of rain and one fallow efficiency), 7 (the constants) and 8 (which slider weighs what).
 3. **The four rotations not loaded.** Corn-wheat needs nothing new and can be added at once. Double-crop soybean needs its own dates (decision 3 of 2026-11-14). The cover crop has no sourced values at all. Alfalfa has coefficients but no stage lengths or usual dates.
 4. **The points listed under "What the three samples show"**: one candidate at Brown, no yield or price in the score, high potential demand.
 5. **Irrigation.** The Finney sample is corn every year and is scored as dryland until the Phase 4 switch exists. SPEC.md describes it as irrigated.
-6. Still open from earlier phases: a public source for the 95°F threshold, colour for the rotation chips, the mean temperature definition, the pin's accent token, the phone bottom sheet.
+6. **Turning irrigation on can raise a rotation's water fit.** Dryland and irrigated water fit are two different measures on one scale. Thomas's own rotation (wheat and fallow) scores 45 as dryland and 60 as irrigated, because the irrigation need is averaged over the fallow years. Once the switch exists, a farmer who turns irrigation on will see "save water" favour that rotation more, not less. The formula follows SPEC.md, so this needs your decision before Phase 4: for example, show the two measures under different names, or score a rotation that can be either as dryland unless it needs the water.
+7. Still open from earlier phases: a public source for the 95°F threshold, colour for the rotation chips, the mean temperature definition, the pin's accent token, the phone bottom sheet.
