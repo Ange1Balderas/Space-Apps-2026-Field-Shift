@@ -57,6 +57,7 @@ The hackathon requires this disclosure, and it is kept current each phase.
 - Claude (Anthropic), running in Claude Code, researched the data sources, proposed the architecture and scoring model written up in SPEC.md, and writes most of the code.
 - Angel Balderas chose the challenge and the Kansas focus, decides each design choice, and reviews the code, data and results at the end of every build phase before the next phase starts.
 - Files written or ported mostly by AI start with an `AI-assisted` comment. Each phase's `spec/<date>-<phase>/implementation.md` lists those files and what was verified.
+- [research/2026-11-14-crop-values.md](research/2026-11-14-crop-values.md) is an AI-compiled list of sourced crop reference values waiting for Angel's review. Nothing from it is in the app yet, and only its USDA dates part was independently re-checked.
 - Any AI-generated text shown in the app will be labeled as AI-generated. There is none yet.
 
 ## Other references
