@@ -9,7 +9,7 @@
 
 import { motion } from "framer-motion";
 import { MapPinIcon } from "lucide-react";
-import { useRef } from "react";
+import { type ReactNode, useRef } from "react";
 import { ConditionsCharts } from "@/components/ConditionsCharts";
 import { FieldSummary } from "@/components/FieldSummary";
 import { Section } from "@/components/layout/page";
@@ -49,6 +49,18 @@ function formatDate(isoTime: string): string {
 	});
 }
 
+/**
+ * A quiet note that a saved copy is on screen. It is not an alert: the toast and the status
+ * line already announce it, and several alerts at once would talk over each other.
+ */
+function SavedCopyNote({ children }: { children: ReactNode }) {
+	return (
+		<p className="rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground">
+			{children}
+		</p>
+	);
+}
+
 /** A placeholder with the outline of the chart block: title, trend box, plot and caption. */
 function ChartSkeleton() {
 	return (
@@ -79,6 +91,23 @@ export function FieldPanel() {
 	const panelRef = useRef<HTMLDivElement>(null);
 
 	const selection = selectionOf(panel);
+
+	// Facts on screen that are a saved copy because their live source failed just now.
+	const savedCopies: string[] = [];
+	if (panel.kind === "field") {
+		if (
+			panel.history.status === "ready" &&
+			panel.history.origin === "sample-fallback"
+		) {
+			savedCopies.push("crop history");
+		}
+		if (
+			panel.soil.status === "ready" &&
+			panel.soil.origin === "sample-fallback"
+		) {
+			savedCopies.push("soil facts");
+		}
+	}
 
 	// A button inside the panel disappears when its own action changes the panel. Keyboard
 	// focus moves to the panel first, so it is never dropped back to the top of the page.
@@ -152,30 +181,22 @@ export function FieldPanel() {
 
 					{panel.kind === "field" ? (
 						<div className="space-y-3">
-							{panel.history.status === "ready" &&
-							panel.history.origin === "sample-fallback" ? (
-								<Notice tone="neutral" title="Showing cached crop history">
-									<p>
-										The Cropland Data Layer service could not be reached just
-										now. These crops are the saved copy for this sample field.
-									</p>
-								</Notice>
-							) : null}
-							{panel.soil.status === "ready" &&
-							panel.soil.origin === "sample-fallback" ? (
-								<Notice tone="neutral" title="Showing cached soil facts">
-									<p>
-										The USDA soil survey service could not be reached just now.
-										These facts are the saved copy for this sample field.
-									</p>
-								</Notice>
+							{savedCopies.length > 0 ? (
+								<SavedCopyNote>
+									The {savedCopies.join(" and ")} could not be fetched just now.
+									Showing the copy saved for this sample field.
+								</SavedCopyNote>
 							) : null}
 							<FieldSummary
 								history={panel.history}
 								soil={panel.soil}
 								cropEdits={panel.cropEdits}
 								onEditCrop={editCrop}
-								onResetCrops={resetCrops}
+								onResetCrops={() => {
+									// The reset button disappears when it is pressed.
+									focusPanel();
+									resetCrops();
+								}}
 								onRetryHistory={() => {
 									focusPanel();
 									retry("history");
@@ -210,13 +231,10 @@ export function FieldPanel() {
 						{panel.climate.status === "ready" ? (
 							<div className="space-y-3">
 								{panel.climate.origin === "sample-fallback" ? (
-									<Notice tone="neutral" title="Showing cached data">
-										<p>
-											NASA POWER could not be reached just now. These numbers
-											are the copy saved on{" "}
-											{formatDate(panel.climate.data.fetchedAt)}.
-										</p>
-									</Notice>
+									<SavedCopyNote>
+										NASA POWER could not be reached just now. Showing the copy
+										saved on {formatDate(panel.climate.data.fetchedAt)}.
+									</SavedCopyNote>
 								) : null}
 								<ConditionsCharts climate={panel.climate.data} />
 							</div>

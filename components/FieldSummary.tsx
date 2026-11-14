@@ -5,6 +5,7 @@
 // The field itself (SPEC.md, user flow step 3): the crops it grew in the last 8 years, which
 // the farmer can correct, and its soil. The two halves load and fail on their own.
 
+import { ChevronDownIcon } from "lucide-react";
 import { useId } from "react";
 import { SourceBadge } from "@/components/SourceBadge";
 import { ErrorState } from "@/components/states";
@@ -30,20 +31,29 @@ function CropChip({
 	return (
 		<div
 			className={cn(
-				"rounded-md border bg-background px-2 py-1.5",
+				"relative min-h-[3.25rem] rounded-md border bg-background px-2 py-1.5 has-[select:focus-visible]:outline-2 has-[select:focus-visible]:outline-offset-1 has-[select:focus-visible]:outline-ring",
 				// A corrected year looks different, so it is never mistaken for a detected one.
 				row.edited && "border-dashed border-foreground/50",
 			)}
 		>
-			<div className="flex items-baseline justify-between gap-1 text-xs text-muted-foreground">
+			<div className="flex items-center justify-between gap-1 text-xs text-muted-foreground">
 				<span>{row.year}</span>
-				{row.edited ? (
-					<span className="font-medium text-foreground">Yours</span>
-				) : null}
+				<span className="flex items-center gap-1">
+					{row.edited ? (
+						<span className="font-medium text-foreground">Yours</span>
+					) : null}
+					<ChevronDownIcon aria-hidden="true" className="size-3" />
+				</span>
 			</div>
+			{/* The name is plain text so a long one wraps instead of being cut off. The real
+			    control is the select laid over the whole chip: a click or tap anywhere on the
+			    chip opens it, and the keyboard reaches it like any other select. */}
+			<p aria-hidden="true" className="mt-0.5 text-sm leading-snug font-medium">
+				{row.cdlCode === null ? "Choose a crop" : cropLabel(row.cdlCode)}
+			</p>
 			<select
 				aria-label={`Crop in ${row.year}${row.edited ? ", changed by you" : ""}`}
-				className="mt-0.5 min-h-6 w-full min-w-0 cursor-pointer truncate rounded-sm bg-transparent text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+				className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
 				value={row.cdlCode ?? ""}
 				onChange={(event) => onEdit(row.year, Number(event.target.value))}
 			>
@@ -77,7 +87,7 @@ function Rotation({
 	const edited = rows.filter((row) => row.edited).length;
 
 	return (
-		<section aria-labelledby={headingId} className="space-y-2">
+		<div role="group" aria-labelledby={headingId} className="space-y-2">
 			<header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
 				<h3 id={headingId} className="text-sm font-medium">
 					Crops grown here
@@ -121,20 +131,20 @@ function Rotation({
 						) : (
 							<p>Not from the Cropland Data Layer: these years are yours to fill in.</p>
 						)}
-						{edited > 0 && detected ? (
+						{edited > 0 ? (
 							<Button
 								type="button"
 								variant="outline"
-								size="xs"
+								size="sm"
 								onClick={onResetCrops}
 							>
-								Back to detected crops
+								{detected ? "Back to detected crops" : "Clear my entries"}
 							</Button>
 						) : null}
 					</div>
 				</>
 			)}
-		</section>
+		</div>
 	);
 }
 
@@ -153,7 +163,7 @@ function Soil({
 }) {
 	const headingId = useId();
 	return (
-		<section aria-labelledby={headingId} className="space-y-2">
+		<div role="group" aria-labelledby={headingId} className="space-y-2">
 			<header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
 				<h3 id={headingId} className="text-sm font-medium">
 					Soil
@@ -165,7 +175,7 @@ function Soil({
 				<div aria-hidden="true" className="space-y-2">
 					<Skeleton className="h-4 w-3/4" />
 					<div className="grid grid-cols-2 gap-x-4 gap-y-2">
-						{Array.from({ length: 6 }, (_, index) => (
+						{Array.from({ length: 7 }, (_, index) => (
 							<Skeleton key={index} className="h-9" />
 						))}
 					</div>
@@ -182,7 +192,7 @@ function Soil({
 
 			{soil.status === "ready" ? (
 				<>
-					<p className="text-sm">{soil.data.mapUnitName}</p>
+					<p className="text-sm break-words">{soil.data.mapUnitName}</p>
 					<dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
 						{[
 							["Texture", soil.data.texture ?? NOT_AVAILABLE],
@@ -217,7 +227,7 @@ function Soil({
 					</p>
 				</>
 			) : null}
-		</section>
+		</div>
 	);
 }
 

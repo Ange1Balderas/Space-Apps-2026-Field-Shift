@@ -58,8 +58,9 @@ export function MapView() {
 			{/* Sample fields load from cached files, so they stay usable above the loading
 			    placeholder and above the error notice (both z-10). They come first in the page
 			    order so the keyboard reaches them before the map, matching where they sit. */}
-			<fieldset className="absolute top-3 left-3 z-20 m-0 max-w-[calc(100%-4.5rem)] border-0 p-0">
-				<legend className="mb-1 flex w-fit items-center gap-1 rounded-md border bg-card px-2 py-0.5 text-xs font-medium">
+			<fieldset className="pointer-events-none absolute top-3 left-3 z-20 m-0 max-w-[calc(100%-4.5rem)] border-0 p-0">
+				{/* Only the legend and the buttons take clicks. The gaps around them stay part of the map. */}
+				<legend className="pointer-events-auto mb-1 flex w-fit items-center gap-1 rounded-md border bg-card px-2 py-0.5 text-xs font-medium">
 					<MapPinIcon aria-hidden="true" className="size-3" />
 					Sample fields
 				</legend>
@@ -70,6 +71,8 @@ export function MapView() {
 							type="button"
 							variant="outline"
 							size="sm"
+							// Taller on a phone, and the chosen sample is marked for the eye as well.
+							className="pointer-events-auto max-sm:h-10 aria-[current=true]:border-foreground/50 aria-[current=true]:bg-muted"
 							aria-current={
 								selection?.sampleId === sample.id ? "true" : undefined
 							}
