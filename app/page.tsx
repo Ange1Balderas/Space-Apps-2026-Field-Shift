@@ -1,14 +1,13 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
-import { MapPinIcon } from "lucide-react";
 import { Disclaimer } from "@/components/Disclaimer";
-import { Section } from "@/components/layout/page";
+import { FieldPanel } from "@/components/FieldPanel";
 import { MapView } from "@/components/MapView";
-import { EmptyState } from "@/components/states";
 import { ToneBadge } from "@/components/tone-badge";
+import { isMockMode } from "@/lib/data-mode";
 
-// Phase 0 placeholder: the Kansas base map beside an empty field panel.
-// Field selection and data arrive in Phase 1 (see SPEC.md, "Build phases").
+// Phase 1: the Kansas map beside the Field panel. A map click or the sample field button
+// loads that place's climate history (see SPEC.md, "Build phases").
 export default function Home() {
 	return (
 		<div className="flex min-h-dvh flex-col lg:h-dvh">
@@ -17,6 +16,9 @@ export default function Home() {
 					Field Shift Kansas
 				</h1>
 				<ToneBadge tone="neutral">Early preview</ToneBadge>
+				{isMockMode() ? (
+					<ToneBadge tone="info">Mock data: cached samples only</ToneBadge>
+				) : null}
 				<p className="w-full text-sm text-muted-foreground">
 					Compare crop rotations for a Kansas field using NASA Earth data, USDA
 					soil and crop data, and your own priorities.
@@ -34,13 +36,7 @@ export default function Home() {
 					aria-label="Field details"
 					className="border-t p-4 lg:overflow-y-auto lg:border-t-0 lg:border-l"
 				>
-					<Section title="Field">
-						<EmptyState
-							icon={<MapPinIcon />}
-							title="No field selected"
-							description="Picking a field is not built yet. This early preview shows the base map of Kansas only."
-						/>
-					</Section>
+					<FieldPanel />
 				</aside>
 			</main>
 		</div>

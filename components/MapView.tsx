@@ -3,22 +3,22 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useRef, useState } from "react";
-import MapGL, { NavigationControl } from "react-map-gl/maplibre";
+import { MapPinIcon, PlusIcon } from "lucide-react";
+import { useId, useRef, useState } from "react";
+import MapGL, {
+	type MapRef,
+	Marker,
+	NavigationControl,
+} from "react-map-gl/maplibre";
 import { ErrorState } from "@/components/states";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { selectionOf, useFieldStore } from "@/lib/field-store";
+import { KANSAS_BOUNDS } from "@/lib/kansas";
+import { SAMPLE_FIELDS } from "@/lib/samples";
 
 // OpenFreeMap Positron: the muted basemap SPEC.md names under "UI rules". No API key.
 const BASEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
-
-// Bounding box of the State of Kansas, longitude and latitude in degrees: [[west, south], [east, north]].
-// Source: U.S. Census Bureau TIGERweb, State_County map service, "States" layer, extent of
-// STUSAB = 'KS' with outSR=4326, retrieved 2026-11-14 and rounded to 6 decimal places:
-// https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STUSAB%3D%27KS%27&returnExtentOnly=true&outSR=4326&f=json
-const KANSAS_BOUNDS: [[number, number], [number, number]] = [
-	[-102.051769, 36.993016],
-	[-94.588387, 40.003166],
-];
 
 // Space kept between Kansas and the edge of the map, in pixels.
 const FIT_OPTIONS = { padding: 24 };
@@ -37,6 +37,12 @@ export function MapView() {
 	const [status, setStatus] = useState<MapStatus>("loading");
 	// True once a person has panned or zoomed. Until then the view belongs to the tool.
 	const movedByUser = useRef(false);
+	const mapRef = useRef<MapRef>(null);
+	const keyboardHintId = useId();
+
+	const selection = useFieldStore((state) => selectionOf(state.panel));
+	const selectPoint = useFieldStore((state) => state.selectPoint);
+	const selectSample = useFieldStore((state) => state.selectSample);
 
 	return (
 		<section aria-label="Map of Kansas" className="relative h-full w-full">
@@ -44,21 +50,63 @@ export function MapView() {
 			<p role="status" className="sr-only">
 				{STATUS_MESSAGE[status]}
 			</p>
+			<p id={keyboardHintId} className="sr-only">
+				Click the map to choose a field. With a keyboard, the arrow keys move
+				the map, plus and minus zoom, and Enter chooses the point at the center.
+			</p>
+
+			{/* Sample fields load from cached files, so they stay usable above the loading
+			    placeholder and above the error notice (both z-10). They come first in the page
+			    order so the keyboard reaches them before the map, matching where they sit. */}
+			<div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-4.5rem)] flex-wrap gap-2">
+				{SAMPLE_FIELDS.map((sample) => (
+					<Button
+						key={sample.id}
+						type="button"
+						variant="outline"
+						size="sm"
+						aria-pressed={selection?.sampleId === sample.id}
+						onClick={() => selectSample(sample.id)}
+					>
+						<MapPinIcon aria-hidden="true" />
+						Sample field: {sample.name}
+					</Button>
+				))}
+			</div>
 
 			{/* MapLibre clips the browser's default focus outline, so the canvas gets an inset one.
 			    While the error notice covers the map, the map is taken out of the tab order. */}
 			<div
 				inert={status === "error"}
-				className="h-full w-full [&_canvas]:focus-visible:outline-2 [&_canvas]:focus-visible:-outline-offset-2 [&_canvas]:focus-visible:outline-ring"
+				className="group relative h-full w-full [&_canvas]:focus-visible:outline-2 [&_canvas]:focus-visible:-outline-offset-2 [&_canvas]:focus-visible:outline-ring"
+				onKeyDown={(event) => {
+					// A mouse can click any point. A keyboard gets the same reach this way: Enter on
+					// the focused map chooses the point under the crosshair at its center.
+					if (event.key !== "Enter") return;
+					if (!(event.target instanceof HTMLCanvasElement)) return;
+					const center = mapRef.current?.getCenter().wrap();
+					if (center) selectPoint(center.lat, center.lng);
+				}}
 			>
 				<MapGL
+					ref={mapRef}
 					initialViewState={{
 						bounds: KANSAS_BOUNDS,
 						fitBoundsOptions: FIT_OPTIONS,
 					}}
 					mapStyle={BASEMAP_STYLE_URL}
 					style={{ width: "100%", height: "100%" }}
-					onLoad={() => setStatus("ready")}
+					cursor="crosshair"
+					onLoad={(event) => {
+						event.target
+							.getCanvas()
+							.setAttribute("aria-describedby", keyboardHintId);
+						setStatus("ready");
+					}}
+					onClick={(event) => {
+						const point = event.lngLat.wrap();
+						selectPoint(point.lat, point.lng);
+					}}
 					onMoveStart={(event) => {
 						// MapLibre attaches the browser event only when a person moved the map.
 						if (event.originalEvent) movedByUser.current = true;
@@ -81,7 +129,32 @@ export function MapView() {
 					}}
 				>
 					<NavigationControl position="top-right" showCompass={false} />
+					{selection ? (
+						<Marker
+							longitude={selection.lon}
+							latitude={selection.lat}
+							anchor="bottom"
+						>
+							{/* The one accent colour marks the chosen field (SPEC.md, "UI rules"). */}
+							<MapPinIcon
+								aria-hidden="true"
+								strokeWidth={1.5}
+								className="size-8 fill-chart-1 stroke-background drop-shadow-sm"
+							/>
+						</Marker>
+					) : null}
 				</MapGL>
+
+				{/* Shown only while the map has keyboard focus: where Enter will choose. */}
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 hidden flex-col items-center justify-center group-has-[canvas:focus-visible]:flex"
+				>
+					<PlusIcon className="size-6 text-foreground" />
+					<span className="absolute top-[calc(50%+1.25rem)] rounded-md border bg-card px-2 py-1 text-xs text-foreground shadow-xs">
+						Press Enter to choose this point
+					</span>
+				</div>
 			</div>
 
 			{/* z-10 keeps both overlays above MapLibre's own controls, which sit at z-index 2.
@@ -94,11 +167,15 @@ export function MapView() {
 			) : null}
 
 			{status === "error" ? (
-				<div className="absolute inset-0 z-10 flex items-start justify-center bg-background p-4">
+				<div className="absolute inset-0 z-10 flex items-start justify-center bg-background p-4 pt-16">
 					<div className="w-full max-w-md">
 						<ErrorState
 							title="The map could not be loaded"
-							error={new Error("Check your connection, then try again.")}
+							error={
+								new Error(
+									"Check your connection, then try again. The sample field still works without the map.",
+								)
+							}
 							onRetry={() => window.location.reload()}
 						/>
 					</div>

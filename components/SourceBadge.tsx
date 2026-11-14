@@ -1,0 +1,25 @@
+// AI-assisted: written with Claude, reviewed by Angel Balderas.
+
+import { ExternalLinkIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+// SPEC.md, "UI rules": every number carries a small source badge that opens its About the
+// Data entry. That tab arrives in Phase 5. Until then the badge opens the provider's own site.
+const SOURCE_LINKS = {
+	"NASA POWER": "https://power.larc.nasa.gov/",
+} as const;
+
+export type SourceName = keyof typeof SOURCE_LINKS;
+
+export function SourceBadge({ source }: { source: SourceName }) {
+	return (
+		<Badge asChild variant="outline">
+			<a href={SOURCE_LINKS[source]} target="_blank" rel="noreferrer">
+				<span className="sr-only">Source: </span>
+				{source}
+				<ExternalLinkIcon aria-hidden="true" />
+				<span className="sr-only"> (opens in a new tab)</span>
+			</a>
+		</Badge>
+	);
+}
