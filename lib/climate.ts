@@ -3,12 +3,16 @@
 // Builds the /api/climate answer (the ClimateResponse contract in lib/types.ts) from daily
 // weather, and checks that a value read from JSON has that shape.
 //
-// What Phase 1 fills, and what waits:
-//   years[].hotDays, seasonRainIn, meanTempF     filled
-//   years[].lastSpringFreezeDoy, firstFallFreezeDoy   null until Phase 2 (freeze dates)
-//   monthlyByYear, monthlyNormals                empty until Phase 2 (monthly climatology)
-//                                                and Phase 3 (reference ET, `et0In`)
-//   trends                                       one entry per filled yearly series
+// What is filled, and what waits:
+//   years[].hotDays, seasonRainIn, meanTempF     filled (Phase 1)
+//   years[].lastSpringFreezeDoy, firstFallFreezeDoy   filled (Phase 2); null in a year
+//                                                with no freeze in that half of the year
+//   monthlyByYear, monthlyNormals                empty until Phase 3: every row needs
+//                                                reference ET (`et0In`), which is not
+//                                                nullable. The monthly rain and temperature
+//                                                functions exist in lib/indicators.ts.
+//   trends                                       one entry per yearly series with at
+//                                                least 10 values
 // Nothing is estimated to fill a gap.
 
 import { type DailyWeather, summarizeYears } from "@/lib/indicators";
@@ -16,8 +20,14 @@ import { analyzeTrend } from "@/lib/trends";
 import type { ClimateResponse } from "@/lib/types";
 import { cToF, mmToIn, roundTo } from "@/lib/units";
 
-/** The yearly series that get a trend in Phase 1. Each name is a field of `years[]`. */
-export const TREND_SERIES = ["hotDays", "seasonRainIn", "meanTempF"] as const;
+/** The yearly series that get a trend. Each name is a field of `years[]`. */
+export const TREND_SERIES = [
+	"hotDays",
+	"seasonRainIn",
+	"meanTempF",
+	"lastSpringFreezeDoy",
+	"firstFallFreezeDoy",
+] as const;
 
 export function buildClimateResponse(input: {
 	lat: number;
@@ -32,16 +42,24 @@ export function buildClimateResponse(input: {
 		hotDays: row.hotDays,
 		seasonRainIn: mmToIn(row.seasonRainMm),
 		meanTempF: cToF(row.meanTempC),
+		lastSpringFreezeDoy: row.lastSpringFreezeDoy,
+		firstFallFreezeDoy: row.firstFallFreezeDoy,
 	}));
 
-	// Trends use the unrounded values. Each slope is in that series' own unit per decade:
-	// days, inches or °F.
-	const yearNumbers = exactYears.map((row) => row.year);
+	// Trends use the unrounded values. Each slope is in the unit of its series per decade:
+	// days, inches, °F, or days of the year for the freeze dates. A year with no value for a
+	// series (no freeze that spring or fall) is left out of that series, with its real year
+	// kept, so the slope is not distorted.
 	const trends: ClimateResponse["trends"] = {};
 	for (const series of TREND_SERIES) {
+		const points: { year: number; value: number }[] = [];
+		for (const row of exactYears) {
+			const value = row[series];
+			if (value !== null) points.push({ year: row.year, value });
+		}
 		const trend = analyzeTrend(
-			yearNumbers,
-			exactYears.map((row) => row[series]),
+			points.map((point) => point.year),
+			points.map((point) => point.value),
 		);
 		if (trend) {
 			trends[series] = {
@@ -61,8 +79,8 @@ export function buildClimateResponse(input: {
 			year: row.year,
 			seasonRainIn: roundTo(row.seasonRainIn, 2),
 			hotDays: row.hotDays,
-			lastSpringFreezeDoy: null,
-			firstFallFreezeDoy: null,
+			lastSpringFreezeDoy: row.lastSpringFreezeDoy,
+			firstFallFreezeDoy: row.firstFallFreezeDoy,
 			meanTempF: roundTo(row.meanTempF, 2),
 		})),
 		monthlyByYear: [],

@@ -40,14 +40,56 @@ describe("buildClimateResponse", () => {
 		]);
 	});
 
-	it("leaves the fields that later phases fill empty, without estimates", () => {
+	it("leaves the monthly arrays empty until reference ET exists, without estimates", () => {
 		const climate = build(makeRisingYears(1981, 12));
 		expect(climate.monthlyByYear).toEqual([]);
 		expect(climate.monthlyNormals).toEqual([]);
-		for (const row of climate.years) {
+	});
+
+	it("fills the freeze dates, and leaves them null in a year with no freeze", () => {
+		// Lows of 10°C: no freeze, so both dates are null and there is no freeze trend.
+		const mild = build(makeRisingYears(1981, 12));
+		for (const row of mild.years) {
 			expect(row.lastSpringFreezeDoy).toBeNull();
 			expect(row.firstFallFreezeDoy).toBeNull();
 		}
+		expect(mild.trends.lastSpringFreezeDoy).toBeUndefined();
+
+		// A freeze on 12 April (day 102) and 20 October (day 293) of 2025.
+		const cold = build(
+			makeYear(
+				2025,
+				{ tmaxC: 20, tminC: 5, rainMm: 0 },
+				{ "20250412": { tminC: -1 }, "20251020": { tminC: -1 } },
+			),
+		);
+		expect(cold.years[0].lastSpringFreezeDoy).toBe(102);
+		expect(cold.years[0].firstFallFreezeDoy).toBe(293);
+	});
+
+	it("gives the freeze dates a trend from the years that have one", () => {
+		// Twelve years. The last spring freeze falls one day later each year, starting on
+		// 1 April (day 91), except that the third year has no freeze at all.
+		const days: DailyWeather[] = [];
+		for (let k = 0; k < 12; k += 1) {
+			const year = 1981 + k;
+			const date = `${year}04${String(1 + k).padStart(2, "0")}`;
+			days.push(
+				...makeYear(
+					year,
+					{ tmaxC: 20, tminC: 5, rainMm: 0 },
+					k === 2 ? {} : { [date]: { tminC: -1 } },
+				),
+			);
+		}
+		const climate = build(days);
+		expect(climate.years[2].lastSpringFreezeDoy).toBeNull();
+		// One day a year is ten days a decade. Leap years shift the day number by one, so the
+		// slope is close to 10, not exactly 10.
+		expect(climate.trends.lastSpringFreezeDoy.perDecade).toBeGreaterThan(9.5);
+		expect(climate.trends.lastSpringFreezeDoy.perDecade).toBeLessThan(11);
+		expect(climate.trends.lastSpringFreezeDoy.label).toBe("likely");
+		expect(climate.trends.firstFallFreezeDoy).toBeUndefined();
 	});
 
 	it("carries the point, the elevation, the source and the fetch time", () => {

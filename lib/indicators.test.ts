@@ -7,10 +7,16 @@ import { describe, expect, it } from "vitest";
 import {
 	countHotDays,
 	type DailyWeather,
+	dayOfYear,
+	daysInMonth,
 	daysInYear,
+	firstFallFreezeDoy,
+	lastSpringFreezeDoy,
 	meanTempC,
+	monthlyNormals,
 	monthOf,
 	sumSeasonRainMm,
+	summarizeMonths,
 	summarizeYears,
 	yearOf,
 } from "@/lib/indicators";
@@ -95,6 +101,132 @@ describe("meanTempC", () => {
 	});
 });
 
+describe("freeze dates", () => {
+	// Lows of 5°C all year, with freezes on 10 January, 12 April (exactly 0°C), 20 October
+	// and 5 November 2025. Day numbers: 12 April is 31 + 28 + 31 + 12 = 102, and 20 October
+	// is 273 + 20 = 293.
+	const year = makeYear(
+		2025,
+		{ tmaxC: 20, tminC: 5, rainMm: 0 },
+		{
+			"20250110": { tminC: -2 },
+			"20250412": { tminC: 0 },
+			"20251020": { tminC: -1 },
+			"20251105": { tminC: -3 },
+		},
+	);
+
+	it("numbers the days of the year from 1, with leap years", () => {
+		expect(dayOfYear("20250101")).toBe(1);
+		expect(dayOfYear("20250412")).toBe(102);
+		expect(dayOfYear("20251231")).toBe(365);
+		// 2024 is a leap year: 1 March is day 61, and 31 December is day 366.
+		expect(dayOfYear("20240301")).toBe(61);
+		expect(dayOfYear("20241231")).toBe(366);
+	});
+
+	it("finds the last freeze from January to June, counting a low of exactly 32°F", () => {
+		expect(lastSpringFreezeDoy(year)).toBe(102);
+	});
+
+	it("finds the first freeze from July to December", () => {
+		expect(firstFallFreezeDoy(year)).toBe(293);
+	});
+
+	it("splits the year between June and July", () => {
+		const edge = makeYear(
+			2025,
+			{ tmaxC: 20, tminC: 5, rainMm: 0 },
+			{ "20250630": { tminC: -1 }, "20250701": { tminC: -1 } },
+		);
+		expect(lastSpringFreezeDoy(edge)).toBe(181);
+		expect(firstFallFreezeDoy(edge)).toBe(182);
+	});
+
+	it("returns null when that half of the year has no freeze, or no low to judge by", () => {
+		const mild = makeYear(2025, { tmaxC: 20, tminC: 5, rainMm: 0 });
+		expect(lastSpringFreezeDoy(mild)).toBeNull();
+		expect(firstFallFreezeDoy(mild)).toBeNull();
+		const unknown = makeYear(2025, { tmaxC: 20, tminC: null, rainMm: 0 });
+		expect(lastSpringFreezeDoy(unknown)).toBeNull();
+	});
+
+	it("accepts another threshold in °F", () => {
+		// 28°F is -2.22°C, so only the -3°C day in November counts, and 10 January (-2°C) does not.
+		expect(lastSpringFreezeDoy(year, 28)).toBeNull();
+		expect(firstFallFreezeDoy(year, 28)).toBe(309);
+	});
+
+	it("is part of the summary of each year", () => {
+		const { years } = summarizeYears(year);
+		expect(years[0].lastSpringFreezeDoy).toBe(102);
+		expect(years[0].firstFallFreezeDoy).toBe(293);
+	});
+});
+
+describe("monthly climatology", () => {
+	it("knows the length of each month, with leap years", () => {
+		expect(daysInMonth(2025, 2)).toBe(28);
+		expect(daysInMonth(2024, 2)).toBe(29);
+		expect(daysInMonth(2025, 12)).toBe(31);
+	});
+
+	it("totals rain and hot days and averages highs and lows for each month", () => {
+		// 1 mm a day, highs of 30°C and lows of 10°C, with two hot days in July.
+		const days = makeYear(
+			2025,
+			{ tmaxC: 30, tminC: 10, rainMm: 1 },
+			{ "20250704": { tmaxC: 36 }, "20250705": { tmaxC: 36 } },
+		);
+		const months = summarizeMonths(days);
+		expect(months).toHaveLength(12);
+		expect(months[0]).toEqual({
+			year: 2025,
+			month: 1,
+			rainMm: 31,
+			hotDays: 0,
+			meanTmaxC: 30,
+			meanTminC: 10,
+		});
+		expect(months[1].rainMm).toBe(28);
+		expect(months[6].hotDays).toBe(2);
+		// Two days at 36°C among 31: (29 x 30 + 2 x 36) / 31.
+		expect(months[6].meanTmaxC).toBeCloseTo((29 * 30 + 2 * 36) / 31, 10);
+	});
+
+	it("leaves out a month with a missing day", () => {
+		const days = makeYear(
+			2025,
+			{ tmaxC: 30, tminC: 10, rainMm: 1 },
+			{ "20250315": { rainMm: null } },
+		);
+		expect(summarizeMonths(days).map((row) => row.month)).toEqual([
+			1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+		]);
+	});
+
+	it("averages each calendar month across years", () => {
+		// January rain is 31 mm in the first year and 62 mm in the second: the normal is 46.5.
+		const months = summarizeMonths([
+			...makeYear(2024, { tmaxC: 20, tminC: 0, rainMm: 1 }),
+			...makeYear(2025, { tmaxC: 30, tminC: 10, rainMm: 2 }),
+		]);
+		const normals = monthlyNormals(months);
+		expect(normals).toHaveLength(12);
+		expect(normals[0]).toEqual({
+			month: 1,
+			rainMm: 46.5,
+			meanTmaxC: 25,
+			meanTminC: 5,
+		});
+	});
+
+	it("has no normal for a calendar month that never appears", () => {
+		const january = makeYear(2025, { tmaxC: 30, tminC: 10, rainMm: 1 }).slice(0, 31);
+		expect(monthlyNormals(summarizeMonths(january)).map((row) => row.month)).toEqual([1]);
+	});
+});
+
 describe("summarizeYears", () => {
 	it("computes one row per complete year, in year order", () => {
 		const days = [
@@ -120,6 +252,9 @@ describe("summarizeYears", () => {
 			hotDays: 0,
 			seasonRainMm: 366,
 			meanTempC: 20,
+			// Lows of 10°C all year: no freeze in either half.
+			lastSpringFreezeDoy: null,
+			firstFallFreezeDoy: null,
 		});
 	});
 
