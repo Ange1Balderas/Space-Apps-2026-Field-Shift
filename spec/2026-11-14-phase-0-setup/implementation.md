@@ -195,3 +195,23 @@ Two more problems turned up after the review, while taking screenshots, and were
 - Stragents reuse: resolved. Angel confirmed on 2026-11-14 that the Stragents teammates are fine with the frontend files being reused here. The matching checkbox in SPEC.md ("Still open") is Angel's to tick.
 - The project name is still open. The page and README use "Field Shift Kansas" as a working title.
 - Deploy: push, import into Vercel, open the public URL in a private window, then file the FortiGuard request.
+- Download the AppEEARS results when the completion email arrives (see the next section).
+
+## Done on the same day, outside Phase 0
+
+**Crop research.** The kickoff research run is saved as `research/2026-11-14-crop-values.md`. That file says what was and was not independently re-checked.
+
+**AppEEARS request (input for Phase 6).** Submitted on 2026-11-14 at 11:46 CST through the AppEEARS website. Angel signed in with their own Earthdata account and pressed Submit; Claude filled in the form.
+
+| Field | Value |
+| --- | --- |
+| Name | `kansas-county-centroids-smap` |
+| Request ID | `3905f525-f1d6-41fe-aef0-df4b873d8ad3` |
+| Type | Point sample at the 105 Kansas county centroids; each point's ID is the county FIPS code (20001 to 20209) and its category is the county name |
+| Dates | 03-31-2015 (first day of the product) to 11-14-2026 |
+| Product | `SPL3SMP_E.006`, SMAP Enhanced L3 Radiometer Soil Moisture, 9 km, daily |
+| Layers | `Soil_Moisture_Retrieval_Data_AM_soil_moisture`, `Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag`, `Soil_Moisture_Retrieval_Data_PM_soil_moisture_pm`, `Soil_Moisture_Retrieval_Data_PM_retrieval_qual_flag_pm` |
+| Status when last checked | Pending, the only request on the account (11:47 CST) |
+| Where to follow it | https://appeears.earthdatacloud.nasa.gov/explore |
+
+The centroid file used for the request, `kansas_county_centroids_appeears.csv`, is in Angel's Downloads folder and not in this repo. It was checked before use: 105 rows, exactly the odd FIPS codes 20001 to 20209, every point inside the Kansas bounding box. AppEEARS keeps outputs for a limited time after a request completes, so download them when the completion email arrives and put them under `data/raw/`, which Git ignores.
