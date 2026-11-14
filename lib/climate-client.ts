@@ -23,35 +23,56 @@ const REQUEST_TIMEOUT_MS = 20_000;
 
 const UNREADABLE = "The climate data arrived in a form this page could not read.";
 
+const TOO_SLOW =
+	"The climate data took too long to arrive. Try again in a moment.";
+
 async function fetchJson(
 	url: string,
 	signal: AbortSignal,
 ): Promise<{ response: Response; body: unknown }> {
-	let response: Response;
-	try {
-		response = await fetch(url, {
-			signal: AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]),
-			headers: { Accept: "application/json" },
-		});
-	} catch (error) {
-		// The caller cancelled because a newer selection replaced this one.
-		if (signal.aborted) throw error;
-		const timedOut = error instanceof Error && error.name === "TimeoutError";
-		throw new Error(
-			timedOut
-				? "The climate data took too long to arrive. Try again in a moment."
-				: "The climate data could not be reached. Check your connection, then try again.",
-		);
-	}
+	// One controller ends the request for either reason: the caller cancelled, or the time
+	// ran out. It is built by hand because AbortSignal.any is missing from browsers older
+	// than early 2024 (Safari before 17.4), and the sample field must work there too.
+	const request = new AbortController();
+	let timedOut = false;
+	const cancel = () => request.abort();
+	if (signal.aborted) cancel();
+	else signal.addEventListener("abort", cancel, { once: true });
+	const timer = setTimeout(() => {
+		timedOut = true;
+		request.abort();
+	}, REQUEST_TIMEOUT_MS);
 
-	let body: unknown = null;
 	try {
-		body = await response.json();
-	} catch (error) {
-		if (signal.aborted) throw error;
-		// Not JSON: an error page, for example. Handled below from the status.
+		let response: Response;
+		try {
+			response = await fetch(url, {
+				signal: request.signal,
+				headers: { Accept: "application/json" },
+			});
+		} catch (error) {
+			// The caller cancelled because a newer selection replaced this one.
+			if (signal.aborted) throw error;
+			throw new Error(
+				timedOut
+					? TOO_SLOW
+					: "The climate data could not be reached. Check your connection, then try again.",
+			);
+		}
+
+		let body: unknown = null;
+		try {
+			body = await response.json();
+		} catch (error) {
+			if (signal.aborted) throw error;
+			if (timedOut) throw new Error(TOO_SLOW);
+			// Not JSON: an error page, for example. Handled by the caller from the status.
+		}
+		return { response, body };
+	} finally {
+		clearTimeout(timer);
+		signal.removeEventListener("abort", cancel);
 	}
-	return { response, body };
 }
 
 function errorMessageFrom(body: unknown): string | null {
