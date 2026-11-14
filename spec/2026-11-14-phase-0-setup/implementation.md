@@ -2,7 +2,7 @@
 
 Date: 2026-11-14.
 
-**Status: built and committed locally. Not deployed.** The phase's "done when" (the public URL loads a Kansas map in a private window) can only be confirmed after Angel pushes and imports the repo into Vercel.
+**Status: deployed.** The public URL https://space-apps-2026-field-shift.vercel.app loads the Kansas map. Claude checked it on 2026-11-14, just after noon, in a browser that is not signed in to Vercel. The phase's "done when" asks for a private window, so Angel should still open it once that way.
 
 ## What was built
 
@@ -132,6 +132,7 @@ Checks beyond the four commands:
 | --- | --- | --- |
 | Map renders in a production run | `npm run build`, `npm start`, opened in a browser; repeated after the UI review fixes | Kansas map drawn; the style request and all six other OpenFreeMap requests returned 200; no console errors |
 | Map renders in dev mode | `npm run dev`, opened in a browser | Same result |
+| Map renders on the public URL | Fetched https://space-apps-2026-field-shift.vercel.app with a plain HTTP request, then opened it in a browser that is not signed in to Vercel | HTTP 200 with no login page; Kansas map drawn; all seven OpenFreeMap requests returned 200; no console errors |
 | Phone width | Browser viewport set to 390 x 844 | Panel stacks under the map; page is exactly 390 px wide, no sideways scroll |
 | Fonts | `getComputedStyle(document.body).fontFamily` and `document.fonts` | Body font is "Geist Sans"; weights 400, 500 and 600 loaded |
 | Error state | Forced in dev mode by pointing the style URL at a style that does not exist, then reverted | The notice covers the whole map area, including MapLibre's own controls; the hidden map is out of the tab order; the first Tab stop is "Try again" |
@@ -148,7 +149,18 @@ Checks beyond the four commands:
 | shadcn CLI accepts the config | `npx shadcn@latest info` | Reads Next.js, RSC, Tailwind v4, alias `@` |
 | `dev:mock` flag works on Windows | `npx cross-env NEXT_PUBLIC_DATA_MODE=mock node -p process.env.NEXT_PUBLIC_DATA_MODE` | Printed `mock` |
 
-Not verified: the Vercel deployment, any real phone, and automated accessibility tests (Playwright and axe are not set up).
+Not verified: any real phone, a private window on Angel's own machine, and automated accessibility tests (Playwright and axe are not set up).
+
+## Deployment
+
+| Item | Value |
+| --- | --- |
+| Public URL | https://space-apps-2026-field-shift.vercel.app |
+| Vercel project | `space-apps-2026-field-shift`, linked to this GitHub repo, production branch `main`, framework Next.js |
+| How it was set up | Through the Vercel connector on 2026-11-14, at Angel's request |
+| First production deployment | Built from the commit "Add rule 12 to CLAUDE.md: no AI credit in Git". Vercel's build log ends with "Build Completed in /vercel/output [29s]" |
+| From now on | Every push to `main` builds and publishes a new production deployment |
+| Access | The address above is public. Vercel's per-deployment addresses, the long ones with a random part, follow the account's default protection and may ask for a Vercel login |
 
 ## UI review
 
@@ -194,7 +206,7 @@ Two more problems turned up after the review, while taking screenshots, and were
 - Confirm `CropId` (Deviation 2).
 - Stragents reuse: resolved. Angel confirmed on 2026-11-14 that the Stragents teammates are fine with the frontend files being reused here. The matching checkbox in SPEC.md ("Still open") is Angel's to tick.
 - The project name is still open. The page and README use "Field Shift Kansas" as a working title.
-- Deploy: push, import into Vercel, open the public URL in a private window, then file the FortiGuard request.
+- Open https://space-apps-2026-field-shift.vercel.app once in a private window, then file the FortiGuard request for it.
 - Download the AppEEARS results when the completion email arrives (see the next section).
 
 ## Done on the same day, outside Phase 0

@@ -6,6 +6,8 @@ A decision support tool that uses NASA Earth data, USDA soil and crop data, and 
 
 > **Status: Phase 0 (setup).** The app shows a base map of Kansas beside an empty field panel. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
 
+Live app: https://space-apps-2026-field-shift.vercel.app
+
 ## What it will do (planned)
 
 A Kansas farmer clicks a field and sees:
