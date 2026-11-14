@@ -2,7 +2,7 @@
 
 Date: 2026-11-14.
 
-**Status: built, checked in a local production run, committed. Not deployed.** The phase's "done when" is about the public URL, and only Angel pushes. What to check there after the push is listed under "Deployment".
+**Status: built, checked in a local production run, committed, and approved by Angel on 2026-11-14. Not deployed yet.** When Angel approved, the seven Phase 1 commits were on the local `main` only. At 13:09 CST GitHub's `main` was still the last Phase 0 commit, and the public URL still served the Phase 0 page (`/api/climate` and `/data/samples/finney.json` answered 404 there). The phase's "done when" is about the public URL, so it is met only once Angel pushes and the checks under "Deployment" pass.
 
 **The result for the Finney County sample:** hot days per year from 1981 to 2025 are charted, and the trend label is **No clear trend**. Sen's slope is +1.43 hot days per decade, the least-squares slope is +1.71, and the Mann-Kendall p-value is 0.25. The panel says "Best estimate: about 1.4 more hot days per decade. The years vary too much to call that a trend." The average is 41 days a year, the fewest is 14 (1992) and the most is 75 (2011).
 
