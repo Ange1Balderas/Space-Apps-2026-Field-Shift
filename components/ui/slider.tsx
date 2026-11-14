@@ -1,5 +1,8 @@
 // Ported from Stragents (github.com/Ange1Balderas/hack_the_midwest, agent-flow branch): fe/src/components/ui/slider.tsx
 // AI-assisted: ported with Claude (cn import now @/lib/utils), reviewed by Angel Balderas.
+// Changed for Field Shift: the thumb is the element with role="slider", so it now takes the
+// slider's aria-label, aria-labelledby and aria-valuetext. Without them a screen reader
+// announces a slider with no name.
 
 "use client";
 
@@ -56,6 +59,9 @@ function Slider({
 					data-slot="slider-thumb"
 					// biome-ignore lint/suspicious/noArrayIndexKey: thumbs are positional and have no identity of their own
 					key={index}
+					aria-label={props["aria-label"]}
+					aria-labelledby={props["aria-labelledby"]}
+					aria-valuetext={props["aria-valuetext"]}
 					className="block size-4 shrink-0 rounded-full border border-primary bg-background shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
 				/>
 			))}

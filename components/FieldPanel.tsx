@@ -3,9 +3,10 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 //
 // The panel beside the map. With nothing selected it invites a click or a sample field.
-// With a field selected it has two sections (SPEC.md, "Reuse from Stragents"): Field, with
-// the crops grown and the soil, and Conditions, with the climate chart. Crop history, soil
-// and climate each load, fail and retry on their own.
+// With a field selected it has three sections (SPEC.md, "Reuse from Stragents"): Field, with
+// the crops grown and the soil; Rotations, with the ranked list and the priority sliders; and
+// Conditions, with the climate chart. Crop history, soil and climate each load, fail and
+// retry on their own.
 
 import { motion } from "framer-motion";
 import { MapPinIcon } from "lucide-react";
@@ -14,6 +15,7 @@ import { ConditionsCharts } from "@/components/ConditionsCharts";
 import { FieldSummary } from "@/components/FieldSummary";
 import { Section } from "@/components/layout/page";
 import { Notice } from "@/components/notice";
+import { RotationRanking } from "@/components/RotationRanking";
 import { EmptyState, ErrorState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -209,6 +211,24 @@ export function FieldPanel() {
 						</div>
 					) : null}
 				</Section>
+
+				{panel.kind === "field" ? (
+					<Section
+						title="Rotations"
+						description="Your current rotation and others, scored for this field and ordered by what matters to you."
+					>
+						<RotationRanking
+							climate={panel.climate}
+							history={panel.history}
+							soil={panel.soil}
+							cropEdits={panel.cropEdits}
+							onRetryClimate={() => {
+								focusPanel();
+								retry("climate");
+							}}
+						/>
+					</Section>
+				) : null}
 
 				{panel.kind === "field" ? (
 					<Section
