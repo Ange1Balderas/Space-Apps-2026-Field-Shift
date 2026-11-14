@@ -2,7 +2,7 @@
 
 Date: 2026-11-14.
 
-**Status: built, checked in a local production run, committed, and approved by Angel on 2026-11-14. Not deployed yet.** When Angel approved, the seven Phase 1 commits were on the local `main` only. At 13:09 CST GitHub's `main` was still the last Phase 0 commit, and the public URL still served the Phase 0 page (`/api/climate` and `/data/samples/finney.json` answered 404 there). The phase's "done when" is about the public URL, so it is met only once Angel pushes and the checks under "Deployment" pass.
+**Status: deployed, and checked on the public URL. Approved by Angel on 2026-11-14.** Angel approved the phase and then pushed `main`. Between 13:11 and 13:13 CST the five checks under "Deployment" passed on https://space-apps-2026-field-shift.vercel.app, so the phase's "done when" is met: the Finney County sample shows hot days since 1981 with a trend label there, and the label is "No clear trend". The checks were made in Claude's own browser, signed in to nothing, with the phone check at an emulated 390 x 844 size. A real phone and a private window on Angel's own machine have not been tried.
 
 **The result for the Finney County sample:** hot days per year from 1981 to 2025 are charted, and the trend label is **No clear trend**. Sen's slope is +1.43 hot days per decade, the least-squares slope is +1.71, and the Mann-Kendall p-value is 0.25. The panel says "Best estimate: about 1.4 more hot days per decade. The years vary too much to call that a trend." The average is 41 days a year, the fewest is 14 (1992) and the most is 75 (2011).
 
@@ -208,19 +208,29 @@ Which build each check ran on: the production build was remade several times aft
 | Mock mode | `npm run dev:mock` | Header badge shown; sample loads; a map click gets 404 in 43 ms with the mock-mode message; the route tests assert POWER is never called |
 | Sample file agrees with the code | Unit test | The cached hot-day trend equals what `lib/trends.ts` gives for the cached counts |
 
-Not verified: the public URL (not deployed yet), any real phone, a screen reader, and automated accessibility tests (Playwright and axe are not set up).
+Not verified by these local checks: the public URL (checked later, see "Deployment"), any real phone, a screen reader, and automated accessibility tests (Playwright and axe are not set up).
 
 ## Deployment
 
-Nothing was pushed. After Angel pushes `main`, check on https://space-apps-2026-field-shift.vercel.app in a private window:
+Angel pushed `main` on 2026-11-14 at about 13:10 CST. GitHub's `main` and the local `main` then pointed at the same commit, "Phase 1: record Angel's approval, and that it is not deployed yet", and Vercel published it. Before the push the public URL served the Phase 0 page and `/api/climate` answered 404 there.
 
-1. Click **Sample field: Finney County**. Expect the panel to show "Hot days each year", bars from 1981 to 2025, the label "No clear trend", "Best estimate: about 1.4 more hot days per decade...", "Average, 1981 to 2025: 41 days a year", "Fewest: 14 in 1992. Most: 75 in 2011." and the NASA POWER badge. This is the phase's "done when".
-2. Click any other spot in Kansas. This is the only step that exercises NASA POWER through the deployed route. Expect a chart within a second or two.
-3. Open https://space-apps-2026-field-shift.vercel.app/api/climate?lat=38.05&lon=-100.74 . Expect JSON with 45 `years`. Load it twice and look at the `x-vercel-cache` response header: `HIT` on the second load means the CDN cache works.
-4. Click outside Kansas (Nebraska or Oklahoma). Expect the "outside Kansas" message.
-5. Open it on a phone. The panel is under the map, so scroll down after choosing a field.
+Checked on https://space-apps-2026-field-shift.vercel.app between 13:11 and 13:13 CST:
 
-If step 2 fails but step 1 works, the route or POWER is the problem and the Vercel function log will show a line starting `[api/climate]`.
+| # | Check | Result |
+| --- | --- | --- |
+| 1 | Clicked **Sample field: Finney County** | 45 bars for 1981 to 2025, "No clear trend", "Best estimate: about 1.4 more hot days per decade. The years vary too much to call that a trend.", "Average, 1981 to 2025: 41 days a year", "Fewest: 14 in 1992. Most: 75 in 2011.", and the NASA POWER badge. The only data request was `/data/samples/finney.json` (200). This is the phase's "done when" |
+| 2 | Clicked another spot in Kansas (38.327°N, 95.832°W) | `GET /api/climate?lat=38.33&lon=-95.83` returned 200 and the chart for that point appeared. This is the step that goes through NASA POWER from Vercel |
+| 3 | Requested `/api/climate?lat=38.05&lon=-100.74` three times | 200 with 45 `years` each time. First: 0.99 s, `X-Vercel-Cache: MISS`. Second and third: 0.22 s, `HIT`, with the same `fetchedAt`. The answer equals the cached sample file apart from `fetchedAt`. Browsers receive `Cache-Control: public, max-age=300`; Vercel keeps the `s-maxage` part for its own cache |
+| 4 | Clicked outside Kansas | "That spot is outside Kansas" notice, and the pin was removed. The route itself answers 400 for an out-of-state point and for bad input |
+| 5 | Phone width, emulated at 390 x 844 | No sideways scroll; the chart is 324 px wide with 45 bars. Right after the tap, the top of the panel down to the trend label is in view under the map |
+| | Browser console | No messages |
+| | The published code is the last code commit | The published script holds the hand-built timeout and no `AbortSignal.any` |
+
+Still not tried: a real phone, a private window on Angel's own machine, and a screen reader.
+
+If a live click ever fails while the sample works, the route or POWER is the problem, and the Vercel function log will show a line starting `[api/climate]`.
+
+This section was written after the push, so its commit is ahead of GitHub until the next push.
 
 ## UI review
 
@@ -265,4 +275,4 @@ Outside what it checked: the Abramowitz and Stegun formula (see "The published w
 11. **Trend wording** uses one decimal ("about 1.4 more hot days per decade"). SPEC.md's example is a whole number ("about 2").
 12. **The EPA slip**, in case the worked example is quoted in the deck or README.
 13. **Known limit of the trend test:** it treats years as independent. Some year-to-year persistence would make a trend look slightly more certain than it is. Worth one line on the About the Data tab.
-14. **POWER's highs can sit just under the threshold.** At the test click in central Kansas (38.33, -97.32) the chart says "Fewest: 0 in 2019". That is what POWER holds: its highest daily maximum there in 2019 is 34.92°C (94.9°F), on 20 August, with 18 days at or above 90°F. A grid-cell value is smoother than a station reading, so a farmer may remember 95°F days that the chart does not count. This is a credibility risk for the chart. Options: say so in the chart note, or compare with Kansas Mesonet stations (a stretch goal in SPEC.md).
+14. **POWER's highs can sit just under the threshold.** At the test click in central Kansas (38.33, -97.32) the chart says "Fewest: 0 in 2019". That is what POWER holds: its highest daily maximum there in 2019 is 34.92°C (94.9°F), on 20 August, with 18 days at or above 90°F. A grid-cell value is smoother than a station reading, so a farmer may remember 95°F days that the chart does not count. The check on the public URL showed the same thing further east: at 38.33, -95.83 the chart reads "Fewest: 0 in 1985 and 8 other years", nine years of 45 with no hot day. This is a credibility risk for the chart. Options: say so in the chart note, or compare with Kansas Mesonet stations (a stretch goal in SPEC.md).
