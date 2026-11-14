@@ -14,3 +14,24 @@ data/raw/
 *.nc
 *.h5
 *.hdf
+
+# Node and Next.js
+/node_modules
+/.next/
+/out/
+/build
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# Local env files (never commit secrets)
+.env*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local Claude Code settings
+.claude/settings.local.json
