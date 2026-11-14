@@ -17,6 +17,6 @@ Small steps, each with the check that shows it worked.
 | 11 | Check the layout at 390 px wide | Panel stacks under the map; no sideways scroll |
 | 12 | README skeleton with the AI use section | Section present and accurate |
 | 13 | Run `typecheck`, `lint`, `test`, `build` | All exit 0; real output recorded in `implementation.md` |
-| 14 | UI review against `.claude/agents/ui-reviewer.md` | Must-fix findings fixed before the commit |
-| 15 | Commit. Do not push | `git status` clean; branch ahead of `origin/main` |
+| 14 | Commit. Do not push | `git status` clean; branch ahead of `origin/main` |
+| 15 | UI review against `.claude/agents/ui-reviewer.md` | Must-fix findings fixed in a follow-up commit, with the four checks re-run |
 | 16 | Hand Angel the push and Vercel import steps | Angel deploys and opens the public URL in a private window |

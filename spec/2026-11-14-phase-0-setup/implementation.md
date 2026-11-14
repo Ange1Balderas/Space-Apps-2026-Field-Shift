@@ -60,11 +60,12 @@ Every ported file starts with a header naming its source. A script compared each
 
 ## Verification
 
-All commands were run on Windows with Node 26.13.0, npm 11.20.0, after the last code change. Each exited 0.
+All four commands were run on Windows with Node 26.13.0 and npm 11.20.0 at 10:40 on 2026-11-14, on the tree that was committed as `d081b3d`. Each exited 0. The output below is verbatim, except that the local folder path is removed from the Vitest `RUN` line.
 
 `npm run typecheck`
 
 ```text
+> field-shift@0.1.0 typecheck
 > next typegen && tsc --noEmit
 
 Generating route types...
@@ -74,37 +75,52 @@ Generating route types...
 `npm run lint`
 
 ```text
+> field-shift@0.1.0 lint
 > eslint
 ```
 
-ESLint printed nothing, which means no findings.
+ESLint printed nothing after its banner, which means no findings.
 
 `npm run test`
 
 ```text
+> field-shift@0.1.0 test
+> vitest run
+
+
  RUN  v5.1.0
+
 
  Test Files  1 passed (1)
       Tests  2 passed (2)
+   Start at  10:40:49
+   Duration  232ms (transform 43%, import 33%, tests 13%, worker 10%)
 ```
 
 `npm run build`
 
 ```text
+> field-shift@0.1.0 build
+> next build
+
 ▲ Next.js 16.4.6 (Turbopack)
+✓ Running next.config.ts took 37ms
 - Cache Components enabled
 - Partial Prefetching enabled
 
   Creating an optimized production build ...
-✓ Compiled successfully
+✓ Compiled successfully in 637ms
   Running TypeScript ...
+  Finished TypeScript in 3.1s ...
   Collecting page data using 4 workers ...
-✓ Generating static pages using 4 workers (3/3)
+  Generating static pages using 4 workers (0/3) ...
+✓ Generating static pages using 4 workers (3/3) in 558ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ○ /
 └ ○ /_not-found
+
 
 ○  (Static)  prerendered as static content
 ```
@@ -126,6 +142,8 @@ Checks beyond the four commands:
 | Lockfile will install on Vercel (Linux) | Search `package-lock.json` for the Linux x64 builds of `@next/swc`, `lightningcss`, `@tailwindcss/oxide` | Present |
 | shadcn CLI accepts the config | `npx shadcn@latest info` | Reads Next.js, RSC, Tailwind v4, alias `@` |
 | `dev:mock` flag works on Windows | `npx cross-env NEXT_PUBLIC_DATA_MODE=mock node -p process.env.NEXT_PUBLIC_DATA_MODE` | Printed `mock` |
+
+UI review: CLAUDE.md asks for the `ui-reviewer` subagent after a UI change. That subagent was not registered in the session that built this phase, so a general-purpose agent was given `.claude/agents/ui-reviewer.md` as its checklist. It was started after commit `d081b3d` and had not reported when this file was last updated, so no findings are recorded here yet.
 
 Not verified: the Vercel deployment, any real phone, and automated accessibility tests (Playwright and axe are not set up).
 
