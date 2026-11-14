@@ -1,0 +1,32 @@
+// AI-assisted: written with Claude, reviewed by Angel Balderas.
+
+import { describe, expect, it } from "vitest";
+import { cToF, fToC, mmToIn, roundTo } from "@/lib/units";
+
+describe("unit conversions", () => {
+	it("converts millimetres to inches (25.4 mm is one inch)", () => {
+		expect(mmToIn(25.4)).toBe(1);
+		expect(mmToIn(0)).toBe(0);
+		expect(mmToIn(508)).toBe(20);
+	});
+
+	it("converts °C to °F", () => {
+		expect(cToF(0)).toBe(32);
+		expect(cToF(100)).toBe(212);
+		expect(cToF(35)).toBe(95);
+		expect(cToF(-40)).toBe(-40);
+	});
+
+	it("converts °F to °C, and 95°F is exactly 35°C", () => {
+		expect(fToC(95)).toBe(35);
+		expect(fToC(32)).toBe(0);
+		expect(fToC(212)).toBe(100);
+	});
+
+	it("rounds to a number of decimal places", () => {
+		expect(roundTo(15.2834, 2)).toBe(15.28);
+		expect(roundTo(41.36, 1)).toBe(41.4);
+		expect(roundTo(-0.126, 2)).toBe(-0.13);
+		expect(roundTo(57, 2)).toBe(57);
+	});
+});
