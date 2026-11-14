@@ -60,6 +60,7 @@ Keep these script names in `package.json` so the commands above always work.
 9. **Disclaimer banner** on every view: the tool supports farmer judgment and does not replace it.
 10. **Preserve scope.** Do not add features that are not in SPEC.md.
 11. **Scoring sanity.** With "save water" at maximum, continuous irrigated corn must never rank first, and on a dry western field wheat-fallow must beat continuous wheat on water fit. Keep these as tests.
+12. **No AI credit in Git.** Never add a `Co-Authored-By` line to a commit message or a "Generated with Claude Code" line to a pull request. Commits list Angel only. AI use is disclosed in the README and in file headers instead (see "AI disclosure" below).
 
 ## AI disclosure (required by the hackathon)
 
