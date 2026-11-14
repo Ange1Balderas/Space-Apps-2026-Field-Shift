@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(npx playwright *)",
+      "Bash(npx shadcn@latest add *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(python scripts/*)",
+      "Bash(.venv/bin/python scripts/*)",
+      "WebFetch(domain:power.larc.nasa.gov)",
+      "WebFetch(domain:nassgeodata.gmu.edu)",
+      "WebFetch(domain:sdmdataaccess.sc.egov.usda.gov)",
+      "WebFetch(domain:gibs.earthdata.nasa.gov)",
+      "WebFetch(domain:nasa-gibs.github.io)",
+      "WebFetch(domain:www.fao.org)",
+      "WebFetch(domain:www.nass.usda.gov)",
+      "WebFetch(domain:quickstats.nass.usda.gov)",
+      "WebFetch(domain:bookstore.ksre.ksu.edu)",
+      "WebFetch(domain:www.k-state.edu)",
+      "WebFetch(domain:eupdate.agronomy.ksu.edu)",
+      "WebFetch(domain:mesonet.ksu.edu)",
+      "WebFetch(domain:www.kgs.ku.edu)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ],
+    "ask": [
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.netrc)"
+    ]
+  },
+  "workflowSizeGuideline": "medium"
+}
