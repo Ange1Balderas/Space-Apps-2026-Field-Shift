@@ -222,10 +222,6 @@ export function FieldPanel() {
 							history={panel.history}
 							soil={panel.soil}
 							cropEdits={panel.cropEdits}
-							onRetryClimate={() => {
-								focusPanel();
-								retry("climate");
-							}}
 						/>
 					</Section>
 				) : null}

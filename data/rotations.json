@@ -44,14 +44,14 @@
     "needsNoTill": false,
     "benefits": [
       {
-        "text": "K-State describes wheat-summer crop-fallow as more efficient in its water use than wheat-fallow.",
+        "text": "K-State describes wheat-summer crop-fallow as more efficient in its water use than wheat-fallow, while calling the fallow period in both systems inefficient.",
         "source": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Fallow and Water Storage. https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
       }
     ],
     "risks": [
       {
-        "text": "Sorghum has to be planted so that it flowers outside the hottest, driest part of summer.",
-        "source": "K-State Grain Sorghum Production Handbook (C687). https://bookstore.ksre.ksu.edu/pubs/C687.pdf"
+        "text": "K-State advises timing sorghum planting so that flowering avoids the hottest, driest period of summer.",
+        "source": "K-State Grain Sorghum Production Handbook (C687, revised May 1998). https://bookstore.ksre.ksu.edu/pubs/C687.pdf"
       }
     ]
   },
@@ -68,13 +68,13 @@
     "needsNoTill": false,
     "benefits": [
       {
-        "text": "K-State describes wheat-summer crop-fallow as more efficient in its water use than wheat-fallow.",
+        "text": "K-State describes wheat-summer crop-fallow as more efficient in its water use than wheat-fallow, while calling the fallow period in both systems inefficient.",
         "source": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Fallow and Water Storage. https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
       }
     ],
     "risks": [
       {
-        "text": "Hot, dry weather at flowering can leave corn poorly pollinated. K-State puts the loss at up to 8 percent of yield for one day of moisture stress in the week after silking.",
+        "text": "Under hot, dry conditions corn can be poorly or incompletely pollinated. K-State also puts the loss from one day of moisture stress in the week after silking at up to 8 percent of yield.",
         "source": "K-State Corn Production Handbook (C560, September 2007). https://bookstore.ksre.ksu.edu/pubs/C560.pdf"
       }
     ]
@@ -95,7 +95,7 @@
     ],
     "risks": [
       {
-        "text": "Hot, dry weather at flowering can leave corn poorly pollinated. K-State puts the loss at up to 8 percent of yield for one day of moisture stress in the week after silking.",
+        "text": "Under hot, dry conditions corn can be poorly or incompletely pollinated. K-State also puts the loss from one day of moisture stress in the week after silking at up to 8 percent of yield.",
         "source": "K-State Corn Production Handbook (C560, September 2007). https://bookstore.ksre.ksu.edu/pubs/C560.pdf"
       }
     ]
@@ -120,7 +120,7 @@
     "risks": [
       {
         "text": "Soybean is a low-residue crop, so the ground has less cover after it.",
-        "source": "K-State, The Value of Crop Residue (MF2604, October 2003). https://bookstore.ksre.ksu.edu/download/value-of-crop-residue_MF2604"
+        "source": "K-State, The Value of Crop Residue (MF2604, October 2003), which calls soybean a low residue crop. https://bookstore.ksre.ksu.edu/download/value-of-crop-residue_MF2604 ; USDA NRCS, Nebraska Conservation Planning Sheet No. 4, Crop Residue Management (revised December 2006): residue from low residue crops provides less cover. https://www.mssoy.org/sites/default/files/documents/residue-mgmt-nrcs-2006.pdf"
       }
     ]
   }

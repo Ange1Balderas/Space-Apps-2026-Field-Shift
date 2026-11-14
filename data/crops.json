@@ -6,12 +6,12 @@
     "kc": {
       "value": { "ini": 0.4, "mid": 1.15, "end": 0.25 },
       "source": "FAO Irrigation and Drainage Paper 56 (Allen, Pereira, Raes and Smith, 1998), Chapter 6, Table 12, Winter Wheat. https://www.fao.org/4/X0490E/x0490e0b.htm",
-      "assumption": "Table 12 prints an initial value of 0.4 with frozen soils and 0.7 with non-frozen soils, and an end value of 0.25 to 0.4 where the higher value is for hand-harvested crops. The tool uses 0.4 and 0.25."
+      "assumption": "Table 12 prints an initial value of 0.4 with frozen soils and 0.7 with non-frozen soils, and an end value of 0.25 to 0.4 where the higher value is for hand-harvested crops. The tool uses the frozen-soil value, 0.4, and the lower end value, 0.25. Both are the tool's own choices."
     },
     "stageDays": {
       "value": { "ini": 160, "dev": 75, "mid": 75, "late": 25 },
       "source": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11, Winter Wheat planted in October, Idaho, USA (335 days). https://www.fao.org/4/X0490E/x0490e0b.htm",
-      "assumption": "Table 11 has three winter wheat rows. The tool uses the one from a United States region with a cold winter, and stretches or shrinks the four stages in proportion so that they fill the usual Kansas season in calendar.json. FAO-56 calls these lengths a general guide."
+      "assumption": "Table 11 has three winter wheat rows: California, the Mediterranean and Idaho. The tool uses the Idaho row, the one planted in October, and stretches or shrinks the four stages in proportion so that they fill the usual Kansas season in calendar.json. The choice of row is the tool's own. FAO-56 calls these lengths a general guide."
     },
     "heatSensitiveMonths": {
       "value": [6],
@@ -49,8 +49,8 @@
     },
     "heatSensitiveMonths": {
       "value": [7],
-      "source": "K-State Corn Production Handbook (C560, September 2007): under hot, dry stressful conditions pollination can be poor or incomplete. https://bookstore.ksre.ksu.edu/pubs/C560.pdf ; USDA NASS Kansas Crop Progress, weeks ending 12 and 19 July 2026: the five-year average of corn silking was 45 and then 60 percent. https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0720.pdf",
-      "assumption": "K-State names the stage, not a month. The tool takes the month in which USDA's five-year average for silking passes half of the crop, which is July."
+      "source": "K-State Corn Production Handbook (C560, September 2007): under hot, dry stressful conditions pollination can be poor or incomplete. https://bookstore.ksre.ksu.edu/pubs/C560.pdf ; USDA NASS Kansas Crop Progress, weeks ending 12 and 19 July 2026: the statewide five-year average of corn silking was 45 and then 60 percent. https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0713.pdf and https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0720.pdf",
+      "assumption": "K-State names the stage, not a month. The tool takes the month in which USDA's statewide five-year average for silking passes half of the crop, which is July."
     },
     "nFixing": {
       "value": false,
@@ -83,8 +83,8 @@
     },
     "heatSensitiveMonths": {
       "value": [8],
-      "source": "K-State Grain Sorghum Production Handbook (C687): \"Planting should be timed so flowering avoids the hottest, driest period of summer.\" https://bookstore.ksre.ksu.edu/pubs/C687.pdf ; USDA NASS Kansas Crop Progress, weeks ending 2 and 9 August 2026: the five-year average of sorghum headed was 38 and then 55 percent. https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0810.pdf",
-      "assumption": "K-State names the stage, not a month. The tool takes the month in which USDA's five-year average for heading passes half of the crop, which is August."
+      "source": "K-State Grain Sorghum Production Handbook (C687, revised May 1998): \"Planting should be timed so flowering avoids the hottest, driest period of summer.\" https://bookstore.ksre.ksu.edu/pubs/C687.pdf ; USDA NASS Kansas Crop Progress, weeks ending 2 and 9 August 2026: the statewide five-year average of sorghum headed was 38 and then 55 percent. https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0803.pdf and https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0810.pdf",
+      "assumption": "K-State names the stage, not a month. The tool takes the month in which USDA's statewide five-year average for heading passes half of the crop, which is August."
     },
     "nFixing": {
       "value": false,
@@ -118,8 +118,8 @@
     },
     "heatSensitiveMonths": {
       "value": [8],
-      "source": "K-State, 2022 Kansas Performance Tests with Soybean Varieties (SRP1173, January 2023): \"The pod setting marks the beginning of the most critical period of the crop\". https://bookstore.ksre.ksu.edu/pubs/2022-kansas-performance-tests-with-soybean-varieties_SRP1173.pdf ; USDA NASS Kansas Crop Progress, weeks ending 2 and 9 August 2026: the five-year average of soybeans setting pods was 37 and then 52 percent. https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0810.pdf",
-      "assumption": "K-State names the stage, not a month. The tool takes the month in which USDA's five-year average for setting pods passes half of the crop, which is August."
+      "source": "K-State, 2022 Kansas Performance Tests with Soybean Varieties (SRP1173, January 2023): \"The pod setting marks the beginning of the most critical period of the crop\". https://bookstore.ksre.ksu.edu/pubs/2022-kansas-performance-tests-with-soybean-varieties_SRP1173.pdf ; USDA NASS Kansas Crop Progress, weeks ending 2 and 9 August 2026: the statewide five-year average of soybeans setting pods was 37 and then 52 percent. https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0803.pdf and https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0810.pdf",
+      "assumption": "K-State names the stage, not a month. The tool takes the month in which USDA's statewide five-year average for setting pods passes half of the crop, which is August."
     },
     "nFixing": {
       "value": true,

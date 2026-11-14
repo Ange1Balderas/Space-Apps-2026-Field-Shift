@@ -1,19 +1,19 @@
 {
   "winter_wheat": {
     "value": { "plantStart": "09-15", "plantEnd": "10-20", "harvestStart": "06-20", "harvestEnd": "07-05" },
-    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas, winter wheat, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
+    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas table (page 39), winter wheat, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
   },
   "corn": {
     "value": { "plantStart": "04-15", "plantEnd": "05-15", "harvestStart": "09-10", "harvestEnd": "10-25" },
-    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas, corn for grain, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
+    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas table (page 39), corn for grain, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
   },
   "grain_sorghum": {
     "value": { "plantStart": "05-15", "plantEnd": "06-20", "harvestStart": "09-25", "harvestEnd": "11-10" },
-    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas, sorghum for grain, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
+    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas table (page 39), sorghum for grain, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
   },
   "soybean": {
     "value": { "plantStart": "05-15", "plantEnd": "06-20", "harvestStart": "10-01", "harvestEnd": "11-01" },
-    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas, soybeans, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
+    "source": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010), Kansas table (page 39), soybeans, most active dates. https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
   },
   "alfalfa": null,
   "cover_crop": null
