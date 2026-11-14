@@ -192,6 +192,6 @@ Two more problems turned up after the review, while taking screenshots, and were
 ## Open items for Angel
 
 - Confirm `CropId` (Deviation 2).
-- The SPEC item "Confirm with Stragents teammates that reusing the frontend files is fine" is still unchecked. Stragents is a private repo and this repo is public, so pushing publishes the ported files.
+- Stragents reuse: resolved. Angel confirmed on 2026-11-14 that the Stragents teammates are fine with the frontend files being reused here. The matching checkbox in SPEC.md ("Still open") is Angel's to tick.
 - The project name is still open. The page and README use "Field Shift Kansas" as a working title.
 - Deploy: push, import into Vercel, open the public URL in a private window, then file the FortiGuard request.
