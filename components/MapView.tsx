@@ -58,21 +58,28 @@ export function MapView() {
 			{/* Sample fields load from cached files, so they stay usable above the loading
 			    placeholder and above the error notice (both z-10). They come first in the page
 			    order so the keyboard reaches them before the map, matching where they sit. */}
-			<div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-4.5rem)] flex-wrap gap-2">
-				{SAMPLE_FIELDS.map((sample) => (
-					<Button
-						key={sample.id}
-						type="button"
-						variant="outline"
-						size="sm"
-						aria-current={selection?.sampleId === sample.id ? "true" : undefined}
-						onClick={() => selectSample(sample.id)}
-					>
-						<MapPinIcon aria-hidden="true" />
-						Sample field: {sample.name}
-					</Button>
-				))}
-			</div>
+			<fieldset className="absolute top-3 left-3 z-20 m-0 max-w-[calc(100%-4.5rem)] border-0 p-0">
+				<legend className="mb-1 flex w-fit items-center gap-1 rounded-md border bg-card px-2 py-0.5 text-xs font-medium">
+					<MapPinIcon aria-hidden="true" className="size-3" />
+					Sample fields
+				</legend>
+				<div className="flex flex-wrap gap-2">
+					{SAMPLE_FIELDS.map((sample) => (
+						<Button
+							key={sample.id}
+							type="button"
+							variant="outline"
+							size="sm"
+							aria-current={
+								selection?.sampleId === sample.id ? "true" : undefined
+							}
+							onClick={() => selectSample(sample.id)}
+						>
+							{sample.name}
+						</Button>
+					))}
+				</div>
+			</fieldset>
 
 			{/* MapLibre clips the browser's default focus outline, so the canvas gets an inset one.
 			    While the error notice covers the map, the map is taken out of the tab order. */}

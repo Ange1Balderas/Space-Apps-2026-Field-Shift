@@ -4,9 +4,13 @@ import { ExternalLinkIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // SPEC.md, "UI rules": every number carries a small source badge that opens its About the
-// Data entry. That tab arrives in Phase 5. Until then the badge opens the provider's own site.
+// Data entry. That tab arrives in Phase 5. Until then the badge opens the provider's own page.
 const SOURCE_LINKS = {
 	"NASA POWER": "https://power.larc.nasa.gov/",
+	"USDA NASS CDL":
+		"https://www.nass.usda.gov/research-and-science/cropland/sars1a",
+	"USDA NRCS SSURGO":
+		"https://www.nrcs.usda.gov/resources/data-and-reports/soil-survey-geographic-database-ssurgo",
 } as const;
 
 export type SourceName = keyof typeof SOURCE_LINKS;

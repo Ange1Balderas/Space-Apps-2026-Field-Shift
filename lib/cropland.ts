@@ -6,10 +6,16 @@
 // returnCatalogItems=true it answers with the class value of every CDL year at that point.
 // https://pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer
 //
+// Whose service it is: USDA's own CDL viewer, CroplandCROS (https://croplandcros.scinet.usda.gov/,
+// "An official website of the United States government"), draws this layer. Its web map lists
+// the service by this URL (checked 2026-11-14):
+// https://pdi.scinet.usda.gov/portal/sharing/rest/content/items/8181d2325d0745249854214af4b0ed6f/data?f=json
+//
 // SPEC.md names CropScape's GetCDLValue for this (one request per year, in Albers
-// coordinates). On 2026-11-14 CropScape took 27 s for one request, then hung on 2025, then
-// stopped answering, while this service answered in about 0.5 s with all years. At the one
-// point compared (38.0498, -100.74) the two gave the same class for 2018 to 2024. See
+// coordinates). On 2026-11-14 CropScape took 27 s for one request, answered seven of nine
+// parallel requests, hung on 2025, and then stopped answering, which may have been throttling
+// after that burst. This service answered in about 0.5 s with all years. At the one point
+// compared (38.0498, -100.74) the two gave the same class for 2018 to 2024. See
 // spec/2026-11-14-phase-2-field-facts/implementation.md, deviation 1.
 
 import { cdlClassName, isObservedCdlClass } from "@/lib/cdl";

@@ -3,15 +3,22 @@
 "use client";
 
 import { create } from "zustand";
-import {
-	type ClimateOrigin,
-	loadPointClimate,
-	loadSampleClimate,
-} from "@/lib/climate-client";
 import { notify } from "@/lib/feedback";
+import {
+	type DataOrigin,
+	type Loaded,
+	loadClimate,
+	loadHistory,
+	loadSampleField,
+	loadSoil,
+} from "@/lib/field-client";
 import { isInKansasBounds } from "@/lib/kansas";
 import { findSampleField } from "@/lib/samples";
-import type { ClimateResponse } from "@/lib/types";
+import type {
+	ClimateResponse,
+	HistoryResponse,
+	SoilResponse,
+} from "@/lib/types";
 
 /** The place the panel is about: a clicked point or a sample field. */
 export type FieldSelection = {
@@ -23,18 +30,30 @@ export type FieldSelection = {
 	sampleId: string | null;
 };
 
-/** Everything the Field panel can show. Exactly one of these at a time. */
+/** One fact about the field. Each loads, fails and retries on its own. */
+export type Loadable<T> =
+	| { status: "loading" }
+	| { status: "ready"; data: T; origin: DataOrigin }
+	| { status: "error"; message: string };
+
+export type FieldPart = "climate" | "history" | "soil";
+
+/** Everything the panel can show. Exactly one of these at a time. */
 export type FieldPanelState =
 	| { kind: "empty" }
 	| { kind: "outside" }
-	| { kind: "loading"; selection: FieldSelection }
 	| {
-			kind: "ready";
+			kind: "field";
 			selection: FieldSelection;
-			climate: ClimateResponse;
-			origin: ClimateOrigin;
-	  }
-	| { kind: "error"; selection: FieldSelection; message: string };
+			climate: Loadable<ClimateResponse>;
+			history: Loadable<HistoryResponse>;
+			soil: Loadable<SoilResponse>;
+			/**
+			 * The farmer's own corrections to the detected crops: year to CDL class code.
+			 * A year that is not here shows what the Cropland Data Layer says.
+			 */
+			cropEdits: Readonly<Record<number, number>>;
+	  };
 
 type FieldStore = {
 	panel: FieldPanelState;
@@ -42,46 +61,123 @@ type FieldStore = {
 	selectPoint: (lat: number, lon: number) => void;
 	/** One of the sample fields in lib/samples.ts. */
 	selectSample: (id: string) => void;
-	/** Loads the current selection again after an error. */
-	retry: () => void;
+	/** Loads one fact of the current field again after an error. */
+	retry: (part: FieldPart) => void;
+	/** Replaces the crop shown for one year with the farmer's own choice. */
+	editCrop: (year: number, cdlCode: number) => void;
+	/** Drops every correction and shows the detected crops again. */
+	resetCrops: () => void;
 };
 
-// Only the newest request may update the panel. An older one is cancelled, and its late
-// answer is ignored, so a slow first click can never overwrite a faster second one.
+// Only the newest selection may update the panel. An older one is cancelled, and a late
+// answer from it is ignored, so a slow first click can never overwrite a faster second one.
 let activeRequest: AbortController | null = null;
 
+const LOADING = { status: "loading" } as const;
+const FIELD_PARTS = ["climate", "history", "soil"] as const;
+
+function failed(error: unknown): Loadable<never> {
+	return {
+		status: "error",
+		message:
+			error instanceof Error && error.message
+				? error.message
+				: "Something unexpected happened.",
+	};
+}
+
 export const useFieldStore = create<FieldStore>()((set, get) => {
-	async function load(selection: FieldSelection): Promise<void> {
+	/** Sets one fact, unless the panel has moved on to another selection. */
+	function setPart<T>(
+		request: AbortController,
+		part: FieldPart,
+		value: Loadable<T>,
+	): void {
+		if (request.signal.aborted || request !== activeRequest) return;
+		set((state) =>
+			state.panel.kind === "field"
+				? { panel: { ...state.panel, [part]: value } }
+				: state,
+		);
+	}
+
+	/** Loads one fact through its route. Tells the farmer once if the copy is a cached one. */
+	function loadPart<T>(
+		request: AbortController,
+		part: FieldPart,
+		load: () => Promise<Loaded<T>>,
+	): void {
+		setPart(request, part, LOADING);
+		load().then(
+			(loaded) => {
+				setPart(request, part, { status: "ready", ...loaded });
+				if (loaded.origin === "sample-fallback" && !request.signal.aborted) {
+					notify.info("Live data unavailable, showing cached data", {
+						id: "cached-data",
+					});
+				}
+			},
+			(error) => setPart(request, part, failed(error)),
+		);
+	}
+
+	/** Starts the request for one fact of a clicked point. */
+	function loadOne(
+		request: AbortController,
+		selection: FieldSelection,
+		part: FieldPart,
+	): void {
+		const { lat, lon } = selection;
+		const { signal } = request;
+		if (part === "climate") {
+			loadPart(request, part, () => loadClimate(lat, lon, signal));
+		} else if (part === "history") {
+			loadPart(request, part, () => loadHistory(lat, lon, signal));
+		} else {
+			loadPart(request, part, () => loadSoil(lat, lon, signal));
+		}
+	}
+
+	function loadAll(selection: FieldSelection): void {
 		activeRequest?.abort();
 		const request = new AbortController();
 		activeRequest = request;
-		set({ panel: { kind: "loading", selection } });
+		set({
+			panel: {
+				kind: "field",
+				selection,
+				climate: LOADING,
+				history: LOADING,
+				soil: LOADING,
+				cropEdits: {},
+			},
+		});
 
 		const sample = selection.sampleId
 			? findSampleField(selection.sampleId)
 			: undefined;
-		try {
-			const loaded = sample
-				? await loadSampleClimate(sample, request.signal)
-				: await loadPointClimate(selection.lat, selection.lon, request.signal);
-			if (request.signal.aborted) return;
-			set({ panel: { kind: "ready", selection, ...loaded } });
-			if (loaded.origin === "sample-fallback") {
-				notify.info("Live data unavailable, showing cached data");
-			}
-		} catch (error) {
-			if (request.signal.aborted) return;
-			set({
-				panel: {
-					kind: "error",
-					selection,
-					message:
-						error instanceof Error && error.message
-							? error.message
-							: "Something unexpected happened.",
+		if (sample) {
+			// One cached file holds all three facts, so they arrive, or fail, together.
+			loadSampleField(sample, request.signal).then(
+				(data) => {
+					for (const part of FIELD_PARTS) {
+						setPart(request, part, {
+							status: "ready",
+							data: data[part],
+							origin: "sample",
+						});
+					}
 				},
-			});
+				(error) => {
+					for (const part of FIELD_PARTS) {
+						setPart(request, part, failed(error));
+					}
+				},
+			);
+			return;
 		}
+
+		for (const part of FIELD_PARTS) loadOne(request, selection, part);
 	}
 
 	return {
@@ -90,16 +186,17 @@ export const useFieldStore = create<FieldStore>()((set, get) => {
 		selectPoint(lat, lon) {
 			if (!isInKansasBounds(lat, lon)) {
 				activeRequest?.abort();
+				activeRequest = null;
 				set({ panel: { kind: "outside" } });
 				return;
 			}
-			void load({ lat, lon, name: "Selected point", sampleId: null });
+			loadAll({ lat, lon, name: "Selected point", sampleId: null });
 		},
 
 		selectSample(id) {
 			const sample = findSampleField(id);
 			if (!sample) return;
-			void load({
+			loadAll({
 				lat: sample.lat,
 				lon: sample.lon,
 				name: `${sample.name} sample`,
@@ -107,14 +204,44 @@ export const useFieldStore = create<FieldStore>()((set, get) => {
 			});
 		},
 
-		retry() {
+		retry(part) {
 			const { panel } = get();
-			if (panel.kind === "error") void load(panel.selection);
+			if (panel.kind !== "field" || !activeRequest) return;
+			if (panel.selection.sampleId) {
+				// A sample's facts come from one file, so one retry reloads all of them.
+				loadAll(panel.selection);
+				return;
+			}
+			loadOne(activeRequest, panel.selection, part);
+		},
+
+		editCrop(year, cdlCode) {
+			set((state) => {
+				if (state.panel.kind !== "field") return state;
+				const { history, cropEdits } = state.panel;
+				const detected =
+					history.status === "ready"
+						? history.data.years.find((row) => row.year === year)?.cdlCode
+						: undefined;
+				const next = { ...cropEdits };
+				// Choosing the detected crop again is not a correction.
+				if (detected === cdlCode) delete next[year];
+				else next[year] = cdlCode;
+				return { panel: { ...state.panel, cropEdits: next } };
+			});
+		},
+
+		resetCrops() {
+			set((state) =>
+				state.panel.kind === "field"
+					? { panel: { ...state.panel, cropEdits: {} } }
+					: state,
+			);
 		},
 	};
 });
 
 /** The selected place, if the panel has one. */
 export function selectionOf(panel: FieldPanelState): FieldSelection | null {
-	return "selection" in panel ? panel.selection : null;
+	return panel.kind === "field" ? panel.selection : null;
 }
