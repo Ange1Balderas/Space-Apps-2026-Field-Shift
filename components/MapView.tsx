@@ -3,7 +3,7 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import MapGL, { NavigationControl } from "react-map-gl/maplibre";
 import { ErrorState } from "@/components/states";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +20,9 @@ const KANSAS_BOUNDS: [[number, number], [number, number]] = [
 	[-94.588387, 40.003166],
 ];
 
+// Space kept between Kansas and the edge of the map, in pixels.
+const FIT_OPTIONS = { padding: 24 };
+
 type MapStatus = "loading" | "ready" | "error";
 
 // Read out by screen readers. The error state announces itself through the
@@ -32,6 +35,8 @@ const STATUS_MESSAGE: Record<MapStatus, string> = {
 
 export function MapView() {
 	const [status, setStatus] = useState<MapStatus>("loading");
+	// True once a person has panned or zoomed. Until then the view belongs to the tool.
+	const movedByUser = useRef(false);
 
 	return (
 		<section aria-label="Map of Kansas" className="relative h-full w-full">
@@ -49,11 +54,25 @@ export function MapView() {
 				<MapGL
 					initialViewState={{
 						bounds: KANSAS_BOUNDS,
-						fitBoundsOptions: { padding: 24 },
+						fitBoundsOptions: FIT_OPTIONS,
 					}}
 					mapStyle={BASEMAP_STYLE_URL}
 					style={{ width: "100%", height: "100%" }}
 					onLoad={() => setStatus("ready")}
+					onMoveStart={(event) => {
+						// MapLibre attaches the browser event only when a person moved the map.
+						if (event.originalEvent) movedByUser.current = true;
+					}}
+					onResize={(event) => {
+						// The first fit uses the size the map had when it was created. If the panel
+						// changes size before anyone has moved the map, fit Kansas again.
+						if (!movedByUser.current) {
+							event.target.fitBounds(KANSAS_BOUNDS, {
+								...FIT_OPTIONS,
+								animate: false,
+							});
+						}
+					}}
 					onError={(event) => {
 						// One failed tile also arrives here. That is not a failed map.
 						if ("tile" in event) return;
@@ -65,12 +84,13 @@ export function MapView() {
 				</MapGL>
 			</div>
 
-			{/* z-10 keeps both overlays above MapLibre's own controls, which sit at z-index 2. */}
+			{/* z-10 keeps both overlays above MapLibre's own controls, which sit at z-index 2.
+			    The placeholder pulses between solid and half transparent, so it sits on a solid
+			    backing that hides the half-drawn map and its controls. */}
 			{status === "loading" ? (
-				<Skeleton
-					aria-hidden="true"
-					className="absolute inset-0 z-10 rounded-none"
-				/>
+				<div aria-hidden="true" className="absolute inset-0 z-10 bg-background">
+					<Skeleton className="h-full w-full rounded-none" />
+				</div>
 			) : null}
 
 			{status === "error" ? (

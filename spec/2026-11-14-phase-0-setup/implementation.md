@@ -61,7 +61,7 @@ Every ported file starts with a header naming its source. A script compared each
 
 ## Verification
 
-All four commands were run on Windows with Node 26.13.0 and npm 11.20.0. They passed at 10:40 on 2026-11-14 on the tree committed as `d081b3d`, and again at 10:58 after the UI review fixes. Each exited 0 both times. The output below is from the 10:58 run, verbatim, except that the local folder path is removed from the Vitest `RUN` line.
+All four commands were run on Windows with Node 26.13.0 and npm 11.20.0. They passed at 10:40 on 2026-11-14 on the tree committed as `d081b3d`, at 10:58 after the UI review fixes, and at 11:12 after the map fit fix. Each exited 0 every time. The output below is from the 11:12 run, verbatim, except that the local folder path is removed from the Vitest `RUN` line.
 
 `npm run typecheck`
 
@@ -94,8 +94,8 @@ ESLint printed nothing after its banner, which means no findings.
 
  Test Files  1 passed (1)
       Tests  2 passed (2)
-   Start at  10:58:30
-   Duration  187ms (import 43%, transform 24%, tests 19%, worker 13%)
+   Start at  11:12:00
+   Duration  186ms (import 44%, transform 24%, tests 17%, worker 15%)
 ```
 
 `npm run build`
@@ -105,17 +105,17 @@ ESLint printed nothing after its banner, which means no findings.
 > next build
 
 ▲ Next.js 16.4.6 (Turbopack)
-✓ Running next.config.ts took 36ms
+✓ Running next.config.ts took 31ms
 - Cache Components enabled
 - Partial Prefetching enabled
 
   Creating an optimized production build ...
-✓ Compiled successfully in 553ms
+✓ Compiled successfully in 590ms
   Running TypeScript ...
   Finished TypeScript in 2.4s ...
   Collecting page data using 4 workers ...
   Generating static pages using 4 workers (0/3) ...
-✓ Generating static pages using 4 workers (3/3) in 490ms
+✓ Generating static pages using 4 workers (3/3) in 534ms
   Finalizing page optimization ...
 
 Route (app)
@@ -136,6 +136,7 @@ Checks beyond the four commands:
 | Fonts | `getComputedStyle(document.body).fontFamily` and `document.fonts` | Body font is "Geist Sans"; weights 400, 500 and 600 loaded |
 | Error state | Forced in dev mode by pointing the style URL at a style that does not exist, then reverted | The notice covers the whole map area, including MapLibre's own controls; the hidden map is out of the tab order; the first Tab stop is "Try again" |
 | Loading state | Phone-width screenshot taken while the map was loading | The placeholder is a visibly darker block: page `lab(90.7)`, placeholder `lab(80.8)` |
+| Kansas stays in view when the panel changes size | Loaded at desktop width, resized to 390 x 844 without reloading, then zoomed with the + button and resized again | Kansas was fitted again after the first resize; after the manual zoom the view was left alone |
 | Keyboard focus on the map | Pressed Tab on the loaded page | Focus lands on the map canvas with a 2 px inset outline |
 | Screen reader status | Read the live region before and after load | "Loading the map of Kansas", then "Map of Kansas loaded" |
 | `lib/types.ts` equals the SPEC | Script: SPEC code block compared with the file after removing `export` | Identical, 72 lines |
@@ -166,6 +167,11 @@ CLAUDE.md asks for the `ui-reviewer` subagent after a UI change. That subagent w
 | 9 | A stalled style request would leave the placeholder up with no message | Polish | Not changed. A timeout belongs with the Phase 1 data loading |
 
 The draft also listed what it checked and found fine: colour tokens, computed contrast, landmarks, layout, reduced motion, the disclaimer, no images, `"use client"` coverage and the compiled classes.
+
+Two more problems turned up after the review, while taking screenshots, and were fixed in `components/MapView.tsx`:
+
+- The loading placeholder pulses between solid and half transparent, so the half-drawn map controls showed through it. It now sits on a solid backing.
+- Kansas was fitted once, using the size the map had when it was created. If the panel was resized afterwards, or was created before it had a size, Kansas no longer filled the view. The map now fits Kansas again whenever its panel changes size, until a person pans or zooms.
 
 ## Deviations for Angel to review
 
