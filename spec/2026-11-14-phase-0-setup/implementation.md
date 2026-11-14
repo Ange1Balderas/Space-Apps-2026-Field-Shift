@@ -61,7 +61,7 @@ Every ported file starts with a header naming its source. A script compared each
 
 ## Verification
 
-All four commands were run on Windows with Node 26.13.0 and npm 11.20.0. They passed at 10:40 on 2026-11-14 on the tree committed as `d081b3d`, at 10:58 after the UI review fixes, and at 11:12 after the map fit fix. Each exited 0 every time. The output below is from the 11:12 run, verbatim, except that the local folder path is removed from the Vitest `RUN` line.
+All four commands were run on Windows with Node 26.13.0 and npm 11.20.0. They passed at 10:40 on 2026-11-14 on the tree of the first app commit ("Phase 0: scaffold Next.js app, ..."), at 10:58 after the UI review fixes, and at 11:12 after the map fit fix. Each exited 0 every time. The output below is from the 11:12 run, verbatim, except that the local folder path is removed from the Vitest `RUN` line.
 
 `npm run typecheck`
 
@@ -152,7 +152,7 @@ Not verified: the Vercel deployment, any real phone, and automated accessibility
 
 ## UI review
 
-CLAUDE.md asks for the `ui-reviewer` subagent after a UI change. That subagent was not registered in the session that built this phase, so a general-purpose agent was given `.claude/agents/ui-reviewer.md` as its checklist. It ran after commit `d081b3d`. A usage limit stopped it before its own final check, so its report is a draft. Findings 1 to 5 were confirmed in the browser or in MapLibre's stylesheet before anything was changed.
+CLAUDE.md asks for the `ui-reviewer` subagent after a UI change. That subagent was not registered in the session that built this phase, so a general-purpose agent was given `.claude/agents/ui-reviewer.md` as its checklist. It ran after the first app commit ("Phase 0: scaffold Next.js app, ..."). A usage limit stopped it before its own final check, so its report is a draft. Findings 1 to 5 were confirmed in the browser or in MapLibre's stylesheet before anything was changed.
 
 | # | Finding | Level | What was done |
 | --- | --- | --- | --- |
