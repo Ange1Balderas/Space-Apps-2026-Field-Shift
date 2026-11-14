@@ -61,10 +61,13 @@ export const HOT_DAY_F = 95;
 // the interface does not show this indicator in Phase 1; it only travels in the API response.
 export const GROWING_SEASON: Season = { firstMonth: 4, lastMonth: 9 };
 
-// Freeze threshold. SPEC.md, "Thresholds": "Freeze day: daily min at or below 32°F". The
-// National Weather Service glossary defines a freeze the same way: "when the surface air
-// temperature is expected to be 32°F or below" (opened 2026-11-14).
+// Freeze threshold. SPEC.md, "Thresholds": "Freeze day: daily min at or below 32°F".
+// The 32°F figure is the threshold in the National Weather Service's definition of a freeze:
+// "when the surface air temperature is expected to be 32°F or below over a widespread area
+// for a climatologically significant period of time" (glossary, opened 2026-11-14).
 // https://forecast.weather.gov/glossary.php?word=freeze
+// This tool's rule is simpler than that definition: one day whose minimum, in NASA POWER's
+// grid cell, is at or below 32°F counts as a freeze day.
 export const FREEZE_F = 32;
 
 // SPEC.md, "Thresholds": the last spring freeze is the last freeze day from January to June,

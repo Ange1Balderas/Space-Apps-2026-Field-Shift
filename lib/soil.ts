@@ -14,9 +14,13 @@
 //   component.wei           "Wind Erodibility Index"                tons/acre/yr
 //   component.hydgrp        "Hydrologic Soil Group"
 //   chtexturegrp.texdesc    "Surface Texture"
-// muaggatt.slopegradwta is not in that table. It was checked against it instead: for map unit
-// 1152346 the components' "Representative Slope" values (percent) are 1, 0 and 0 with shares
-// of 94, 4 and 2 percent, and slopegradwta is 0.9, their share-weighted average.
+// The same table's description of the K factor begins: "Erosion factor K indicates the
+// susceptibility of a soil to sheet and rill erosion by water." That is why the panel calls
+// it erodibility by water.
+// muaggatt.slopegradwta is not in that table, so its meaning is inferred from a check
+// against it: for map unit 1152346 the components' "Representative Slope" values (percent)
+// are 1, 0 and 0 with shares of 94, 4 and 2 percent. Their share-weighted average is 0.94,
+// and slopegradwta is 0.9, which is that average to one decimal place.
 
 import type { SoilResponse } from "@/lib/types";
 import { cmToIn, roundTo } from "@/lib/units";

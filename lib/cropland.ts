@@ -6,10 +6,13 @@
 // returnCatalogItems=true it answers with the class value of every CDL year at that point.
 // https://pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer
 //
-// Whose service it is: USDA's own CDL viewer, CroplandCROS (https://croplandcros.scinet.usda.gov/,
-// "An official website of the United States government"), draws this layer. Its web map lists
-// the service by this URL (checked 2026-11-14):
+// Whose service it is: USDA's own CDL viewer, CroplandCROS (https://croplandcros.scinet.usda.gov/),
+// draws this layer. Its web map lists the service by this URL (checked 2026-11-14):
 // https://pdi.scinet.usda.gov/portal/sharing/rest/content/items/8181d2325d0745249854214af4b0ed6f/data?f=json
+// The viewer's page carries the banner "An official website of the United States government".
+// That banner was read in a browser; the page is drawn by script, so a plain fetch does not show it.
+//
+// The CropScape figures below are measurements made on that day and were not repeated.
 //
 // SPEC.md names CropScape's GetCDLValue for this (one request per year, in Albers
 // coordinates). On 2026-11-14 CropScape took 27 s for one request, answered seven of nine
