@@ -55,10 +55,11 @@ export type Season = { firstMonth: number; lastMonth: number };
 // it moves to config/scoring.json (ScoringConfig.hotDayF) when Phase 3 creates that file.
 export const HOT_DAY_F = 95;
 
-// TOOL ASSUMPTION, not a published fact. SPEC.md asks for "growing season rain" but does not
-// say which months that covers, and no public source for a Kansas definition is stored yet.
-// April through September is the default until Angel confirms it. Because it is unconfirmed,
-// the interface does not show this indicator in Phase 1; it only travels in the API response.
+// TOOL ASSUMPTION, not a published fact. SPEC.md asks for "growing season rain", and no public
+// source defines the months for Kansas. Angel chose April through September on 2026-11-14
+// (SPEC.md, "Decisions made on 2026-11-14"). It moves to config/scoring.json
+// (ScoringConfig.growingSeasonMonths) when Phase 3 creates that file, so that it is listed on
+// the About the Data tab. Its chart arrives in Phase 4.
 export const GROWING_SEASON: Season = { firstMonth: 4, lastMonth: 9 };
 
 // Freeze threshold. SPEC.md, "Thresholds": "Freeze day: daily min at or below 32°F".

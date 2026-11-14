@@ -40,6 +40,17 @@ Nine of ten decisions have a default so Fable can start building at kickoff; onl
 | Demo format | 7-slide deck built from app screenshots | Lower risk than a 30-second video when solo | Default |
 | Project and team name | Team: ANGEL. Project name not chosen yet | Project name is needed for the submission page | Open |
 
+### Decisions made on 2026-11-14, after Phase 2
+
+Angel made these with Claude before Phase 3. Where they change text elsewhere in this document, that text has been edited and says so.
+
+1. **Crop history source.** The tool reads the Cropland Data Layer from USDA's CDL image service, not CropScape. CropScape took 27 seconds for one request and then stopped answering on the day the route was built. Mentions of CropScape, parallel year requests and EPSG:5070 in the architecture, repo structure, Phase 2 checklist and risks sections describe the earlier plan.
+2. **Sample fields.** The three points are confirmed (see "Sample fields").
+3. **`CropId`.** The six ids are confirmed (see "Data contracts"). Double-crop soybean is decided when its rotation is added.
+4. **Crop values.** Order of work in Phase 3: the `data-verifier` re-opens the source of each researched value before it is loaded; a value the research marked as an inference is not loaded as a fact (it becomes a tool assumption or stays "not sourced yet"); Angel then reviews the data files.
+5. **The field's own rotation from CDL classes.** By class code: 1 Corn is `corn`, 4 Sorghum is `grain_sorghum`, 5 Soybeans is `soybean`, 24 Winter Wheat is `winter_wheat`, 36 Alfalfa is `alfalfa`, and 61 Fallow/Idle Cropland is a fallow year. Three double-crop classes are winter wheat plus a second crop in the same year: 26 (winter wheat then soybeans), 225 (winter wheat then corn) and 236 (winter wheat then sorghum). Every other class has no `CropId`. That includes the other double-crop classes, such as 238 (winter wheat then cotton) and 241 (corn then soybeans). A year whose class has no `CropId` is named on the existing rotation card and left out of its score, and the card says how many of the 8 years were scored.
+6. **Growing season.** April through September, as a tool assumption in `config/scoring.json` (`growingSeasonMonths`), listed on the About the Data tab. No public source defines it.
+
 ## User flow
 
 In the first 30 seconds the farmer clicks a field and sees their detected rotation, their soil, and ranked rotation cards; everything after that is depth for those who want it.
@@ -153,7 +164,7 @@ Three sources run live through server-side API routes (POWER, CropScape, soil su
 | Source | Used for | Access | Mode | Endpoint or product |
 | --- | --- | --- | --- | --- |
 | [NASA POWER](https://power.larc.nasa.gov/docs/services/api/) | Rain, heat days, frost dates, climatology for the field calendar | No login | Live, cached for sample fields | `power.larc.nasa.gov/api/temporal/daily/point`, community `AG`, parameters `T2M_MAX, T2M_MIN, PRECTOTCORR, ALLSKY_SFC_SW_DWN`, T2MDEW, RH2M, WS2M |
-| [Cropland Data Layer (CropScape)](https://nassgeodata.gmu.edu/CropScape/devhelp/getexamples.html) | Existing rotation | No key | Live via API route | `GetCDLValue?year=YYYY&x=&y=`; x and y are in Albers (EPSG:5070), so convert lat/lon with proj4 first |
+| [Cropland Data Layer](https://www.nass.usda.gov/research-and-science/cropland/sars1a), through USDA's CDL image service (the layer behind [CroplandCROS](https://croplandcros.scinet.usda.gov/)) | Existing rotation | No key | Live via API route | `pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer/identify` with `returnCatalogItems=true`: one request returns every year at a lat/lon point. Changed on 2026-11-14 by Angel's decision. The plan was CropScape `GetCDLValue`, which was timing out |
 | [SSURGO via Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/documents/AdvancedQueries.html) | Texture, available water capacity, organic matter, erodibility, slope | No key | Live via API route | POST SQL to `sdmdataaccess.sc.egov.usda.gov/tabular/post.rest`; point to map unit with `SDA_Get_Mukey_from_intersection_with_WktWgs84('point(lon lat)')` |
 | [SMAP SPL3SMP\_E v006 via AppEEARS](https://www.earthdata.nasa.gov/data/alerts-outages/appeears-version-3-58-released-adding-new-versions-smap-products) | Soil moisture anomaly | Earthdata Login | Preprocessed | AppEEARS point sample at 105 county centroids, 2015 to now, CSV out |
 | MODIS vegetation index via NASA GIBS | Vegetation layer on the map | No login | Live map tiles | WMTS tiles from gibs.earthdata.nasa.gov; layer name and Web Mercator support confirmed in Phase 2 |
@@ -356,6 +367,10 @@ type SoilResponse = {
 // A published value always travels with its source.
 type Sourced<T> = { value: T; source: string } | null;
 
+// Confirmed by Angel on 2026-11-14. Fallow has no id: a year with no planting is fallow.
+// Double-crop soybean gets its own decision when its rotation is added.
+type CropId = "winter_wheat" | "corn" | "grain_sorghum" | "soybean" | "alfalfa" | "cover_crop";
+
 // data/crops.json
 type Crop = {
   id: CropId; name: string; kind: "summer" | "winter" | "perennial" | "cover";
@@ -388,6 +403,7 @@ type Rotation = {
 // config/scoring.json: tool assumptions, all shown on the About the Data tab
 type ScoringConfig = {
   hotDayF: number; regionRainBandsIn: [number, number];
+  growingSeasonMonths: [number, number]; // first and last month of "growing season rain"; tool assumption, April to September
   effectiveRainFraction: Sourced<number>; fallowEfficiency: Sourced<number>;
   irrigationNeedCapIn: number; hotDaysCap: number; risingTrendPenalty: number;
 };
@@ -396,6 +412,8 @@ type ScoringConfig = {
 ### Sample fields
 
 In Phase 2, Fable picks one point each in Finney, Thomas and Brown counties where the Cropland Data Layer shows cropland in all 8 years, records the coordinates in `public/data/samples/`, and Angel confirms them on the map.
+
+Confirmed by Angel on 2026-11-14: Finney at 37.96548, -100.72299 (corn in all 8 years), Thomas at 39.43677, -101.1914 (winter wheat and fallow in turn), Brown at 39.84979, -95.47566 (corn and soybeans in turn).
 
 ## SI layer: trends, anomalies and uncertainty
 

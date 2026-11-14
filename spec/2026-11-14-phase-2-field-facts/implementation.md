@@ -20,7 +20,7 @@ The build was interrupted once by a usage limit and finished after it reset. An 
 
 ## The three sample fields
 
-They are proposals. Please confirm them on the map. The rule they were chosen by is in `lib/samples.ts`.
+They were proposals when the phase ended. Angel confirmed all three on 2026-11-14 (see "Decisions after the review"). The rule they were chosen by is in `lib/samples.ts`.
 
 | | Finney County | Thomas County | Brown County |
 | --- | --- | --- | --- |
@@ -272,11 +272,37 @@ What it flagged, and what was done:
 
 Not checked by it: the Thomas and Brown soil blocks, which came through the same route as the verified Finney one; the CropScape timings and the sample selection, which are one day's measurements; and the README.
 
+## Decisions after the review
+
+On 2026-11-14, after Phase 2 was deployed, Angel answered six questions that Phase 3 depends on, and took the recommended option each time. SPEC.md records them under "Decisions made on 2026-11-14, after Phase 2". The sections above describe the phase as it ended and were left as they were, apart from one line about the sample fields.
+
+| | Question | Angel's decision | What changed |
+| --- | --- | --- | --- |
+| 1 | Crop history source (deviation 1) | Keep USDA's CDL image service | SPEC.md's data-sources row names it, with the date. Other mentions of CropScape in SPEC.md describe the earlier plan |
+| 2 | The three sample points | Confirmed as they are | A line in SPEC.md "Sample fields"; the comment in `lib/samples.ts` |
+| 3 | `CropId` | The six ids are confirmed. Double-crop soybean is decided when its rotation is added | SPEC.md's data contracts now define `CropId`; the comment in `lib/types.ts` |
+| 4 | The 311 researched crop values | Verify, load, then review | No data file yet. Order of work in Phase 3: the `data-verifier` opens the source of each value again before it is loaded; a value the research marked as an inference is not loaded as a fact; Angel then reviews the data files |
+| 5 | Turning a field's own years into `CropId`s | Score what can be scored | The mapping is in SPEC.md by class code. A year with an unmapped class is named on the existing rotation card and left out of its score, and the card says how many of the 8 years were scored |
+| 6 | Growing-season months | April to September, as a tool assumption | `ScoringConfig` gained `growingSeasonMonths` in SPEC.md and `lib/types.ts`; the comment in `lib/indicators.ts` |
+
+**One contract changed.** `ScoringConfig` has a new required field, `growingSeasonMonths: [number, number]`. Nothing reads `ScoringConfig` yet, because `config/scoring.json` arrives in Phase 3, so no code changed with it. `CropId` is the same six ids as before. The other code edits are comments.
+
+Files edited for these decisions: `SPEC.md`, `README.md`, `lib/types.ts`, `lib/indicators.ts`, `lib/samples.ts`, this file, and one line in Phase 1's `implementation.md`.
+
+Checked after the edits, at 16:37 CST: `npm run typecheck` exit 0; `npm run lint` exit 0; `npm run test` 17 files and 218 tests passed. The build was not run again: nothing but comments and one type changed. No data file, config file or text in the app changed, so the `data-verifier` and the `ui-reviewer` were not run.
+
+Two points in decision 5 are Claude's reading of it. Angel, please correct them if they are wrong:
+
+- The question spoke of "the three wheat double-crop classes". The Cropland Data Layer has four classes that start with winter wheat. The three meant are the ones whose second crop has a `CropId`: 26 (soybeans), 225 (corn) and 236 (sorghum). Class 238 (winter wheat then cotton) is not mapped. Class 241 (corn then soybeans) was not in the question and is not mapped either, although both of its crops have an id.
+- For class 26 the second crop is the ordinary `soybean` id, because double-crop soybean has no id of its own yet (decision 3). If that is still so when Phase 3 loads the crop values, such a year is scored with full-season soybean values, and the card should say so.
+
 ## Open items for Angel
 
-1. Confirm the three sample points on the map, and whether a continuous-corn field is the Finney sample you want (deviation 11 and "The three sample fields").
-2. Decide whether the CDL image service may stay as the crop history source (deviation 1).
-3. Colour for the rotation chips, or not (deviation 3).
-4. `CropId` in `lib/types.ts` still needs your confirmation before Phase 3, as do the growing-season months and the source for the 95°F threshold from Phase 1. A changed year is stored as a Cropland Data Layer code; Phase 3 will need a mapping from those codes to `CropId`.
+Items 1 and 2 and most of item 4 were settled on 2026-11-14 (see "Decisions after the review").
+
+1. Settled: the three sample points are confirmed, with continuous corn as the Finney sample.
+2. Settled: the CDL image service stays as the crop history source.
+3. Still open: colour for the rotation chips, or not (deviation 3).
+4. Settled: `CropId`, the growing-season months, and the mapping from Cropland Data Layer codes to `CropId`. Still open: the 95°F threshold has no public source link (Phase 1, open item 2). Unless a source is stored first, it goes into `config/scoring.json` as a tool setting when Phase 3 creates that file.
 5. A finding worth a look for the deck: at all three sample fields the first fall freeze is likely arriving later, by 3 to 4 days per decade since 1981, while hot days show no clear trend at two of the three.
-6. The open items from Phase 1 are unchanged (see that phase's `implementation.md`). Item 14 there (NASA POWER's highs sitting just under 95°F) still applies to the hot-day numbers above.
+6. The other open items from Phase 1 are unchanged (see that phase's `implementation.md`); its item 1, the growing-season months, is settled. Item 14 there (NASA POWER's highs sitting just under 95°F) still applies to the hot-day numbers above.

@@ -29,8 +29,8 @@ export type SampleFieldFile = {
 	soil: SoilResponse;
 };
 
-// One point in each county SPEC.md names ("Sample fields"). They are proposals for Angel to
-// confirm on the map. How they were chosen, on 2026-11-14:
+// One point in each county SPEC.md names ("Sample fields"). Angel confirmed all three on
+// 2026-11-14. How they were chosen, on the same day:
 //   1. A 6 by 6 grid of points inside each county's bounding box (Census TIGERweb) was sent
 //      to the Cropland Data Layer service the app uses (lib/cropland.ts).
 //   2. A point qualified when each of its newest 8 years (2018 to 2025) was a crop from

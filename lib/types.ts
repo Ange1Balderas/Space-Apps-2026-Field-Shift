@@ -2,10 +2,11 @@
 //
 // Data contracts, transcribed from SPEC.md ("Contracts and formulas" > "Data contracts").
 // The shapes are fixed there: change SPEC.md first, then this file, and never inside a
-// parallel fan-out. Everything below the CropId block is the SPEC text with `export` added.
+// parallel fan-out. Apart from the layout of CropId, this is the SPEC text with `export` added.
 
-// CropId is used by the SPEC contracts but is not defined there. This union covers the crops
-// named in the SPEC rotation library. It is a proposal for Angel to confirm, not a SPEC value.
+// Confirmed by Angel on 2026-11-14, and defined in SPEC.md since then. Fallow has no id: a
+// year with no planting is fallow. Double-crop soybean gets its own decision when its
+// rotation is added.
 export type CropId =
   | "winter_wheat"
   | "corn"
@@ -83,6 +84,7 @@ export type Rotation = {
 // config/scoring.json: tool assumptions, all shown on the About the Data tab
 export type ScoringConfig = {
   hotDayF: number; regionRainBandsIn: [number, number];
+  growingSeasonMonths: [number, number]; // first and last month of "growing season rain"; tool assumption, April to September
   effectiveRainFraction: Sourced<number>; fallowEfficiency: Sourced<number>;
   irrigationNeedCapIn: number; hotDaysCap: number; risingTrendPenalty: number;
 };
