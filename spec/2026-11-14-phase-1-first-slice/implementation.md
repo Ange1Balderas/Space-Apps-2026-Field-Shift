@@ -59,7 +59,7 @@ Source: U.S. EPA, "Guidance for Data Quality Assessment: Practical Methods for D
 | Box 4-10 (11 values with ties): S = 22, V(S) = 155.33 | Printed in the box. The tests assert both |
 | Box 4-10: Z = 1.685 | **Not the printed value.** The box prints "22 - 1 = 20" and so reports Z = 1.605 and "H0 is not rejected". 22 - 1 is 21, and 21 / 12.463 = 1.685, which is above the box's own 1.645 critical value. The test uses the box's formula and says so in a comment |
 | Box 4-8 (5 values): S = 6 | Printed in the box |
-| Normal percentiles 0.524 to 2.576 | Printed in Table A-1, last row |
+| Normal percentiles 0.524 to 2.576 | Printed in Table A-1, last row. The formula behind the p-values (Abramowitz and Stegun 26.2.17) is cited from the handbook, which was not opened for this project. It is checked two ways instead: against these percentiles, and against direct numerical integration of the normal curve, where the largest difference measured was 7.5e-8 |
 | At least 10 values for a trend | Printed in Box 4-9 |
 | Sen's slope = 1.125 for the Box 4-8 data | **Worked by hand** from the definition in section 4.3.3.1. The document gives no worked Sen's slope example ("directions are not given in this document"), so this is not a published value |
 | Least-squares slopes | Worked by hand |
@@ -88,7 +88,7 @@ Two published sources could not be used: the newer EPA QA/G-9S is too large for 
 | `components/FieldPanel.tsx`, `components/ConditionsCharts.tsx`, `components/SourceBadge.tsx` | Panel, chart, source badge |
 | `components/MapView.tsx`, `app/page.tsx` | Changed: click, Enter, pin, sample button; panel wired in |
 | `public/data/samples/finney.json` | Cached route answer (data, produced by the route) |
-| `lib/*.test.ts`, `app/api/climate/route.test.ts`, `lib/test-fixtures.ts` | 126 unit tests and their made-up weather |
+| `lib/*.test.ts`, `app/api/climate/route.test.ts`, `lib/test-fixtures.ts` | 138 unit tests in 12 files, and their made-up weather |
 | `README.md`, `spec/2026-11-14-phase-1-first-slice/*.md` | Docs |
 
 ### Ported file changed
@@ -99,9 +99,22 @@ Two published sources could not be used: the newer EPA QA/G-9S is too large for 
 
 `FieldPanel.tsx`, `SourceBadge.tsx` and the `lib/` helpers other than `indicators`, `trends` and `units`. They keep components small and the maths testable.
 
+## Additions beyond SPEC.md
+
+Each is small and serves a rule in CLAUDE.md, but none is named in SPEC.md, so Angel should confirm or cut them.
+
+| Addition | Why |
+| --- | --- |
+| Enter on the focused map chooses the point at its center, with a crosshair and a hint shown only on keyboard focus | Rule 6, keyboard accessible: a map click had no keyboard equivalent |
+| "Show the numbers as a table" under the chart | Rule 6: the chart's values in a form a screen reader and a keyboard can read |
+| "Mock data: cached samples only" badge in the header under `npm run dev:mock` | Rule 2: mock data must not pass for live data |
+| "Load the Finney County sample" button inside the empty state and the outside-Kansas notice | The same action as the map's sample button, within reach of the panel, which sits below the map on a phone |
+| "Fewest" and "Most" line under the chart | A text summary of the chart for readers who cannot use it |
+| The route rejects points outside the Kansas box, and the browser checks before asking | SPEC.md feature 1 ("a click outside Kansas shows a friendly message") is not listed under Phase 1, but point select without it would chart other states |
+
 ## Verification
 
-Run on Windows with Node 26.13.0 and npm 11.20.0, at 12:54 on 2026-11-14, on the tree of the commit "Phase 1: accessibility and wording fixes from the UI and data reviews". Each exited 0. Output is verbatim, except that the local folder path is removed from the Vitest `RUN` line.
+Run on Windows with Node 26.13.0 and npm 11.20.0, at 13:02 on 2026-11-14, on the tree of the commit "Phase 1: make the data loader work on older browsers, and test it", which is the last commit that changes code. Each exited 0. Output is verbatim, except that the local folder path is removed from the Vitest `RUN` line. The four commands also passed at 12:54, before that commit, with 126 tests.
 
 `npm run typecheck`
 
@@ -132,10 +145,10 @@ ESLint printed nothing after its banner, which means no findings.
  RUN  v5.1.0
 
 
- Test Files  11 passed (11)
-      Tests  126 passed (126)
-   Start at  12:54:22
-   Duration  429ms (import 41%, transform 25%, tests 24%, worker 10%)
+ Test Files  12 passed (12)
+      Tests  138 passed (138)
+   Start at  13:02:21
+   Duration  424ms (import 41%, tests 25%, transform 24%, worker 9%)
 ```
 
 `npm run build`
@@ -145,20 +158,20 @@ ESLint printed nothing after its banner, which means no findings.
 > next build
 
 ▲ Next.js 16.4.6 (Turbopack)
-✓ Running next.config.ts took 30ms
+✓ Running next.config.ts took 39ms
 - Cache Components enabled
 - Partial Prefetching enabled
 
   Creating an optimized production build ...
-✓ Compiled successfully in 354ms
+✓ Compiled successfully in 1565ms
   Running TypeScript ...
-  Finished TypeScript in 2.5s ...
+  Finished TypeScript in 3.2s ...
   Collecting page data using 5 workers ...
   Generating static pages using 5 workers (0/4) ...
   Generating static pages using 5 workers (1/4) 
   Generating static pages using 5 workers (2/4) 
   Generating static pages using 5 workers (3/4) 
-✓ Generating static pages using 5 workers (4/4) in 580ms
+✓ Generating static pages using 5 workers (4/4) in 598ms
   Finalizing page optimization ...
 
 Route (app)
@@ -172,6 +185,8 @@ Route (app)
 ```
 
 Checks beyond the four commands. Unless a row says otherwise, they were done in a browser against a production run (`npm run build`, then `next start`).
+
+Which build each check ran on: the production build was remade several times after the UI was first complete. On the build that includes the loader change (the last change to code that runs), these were repeated: the sample button, a live map click, the click outside Kansas and the 390 px measurements. On the build after the review fixes: focus after a panel button, headings and landmarks, and the chart's name. The remaining rows (POWER unreachable, the cached-data notice, hover, Tab and Enter on the map, mock mode, and the screenshots) ran on the build before the review fixes and were not repeated. The commit after the loader change altered one comment and added a test only.
 
 | Check | How | Result |
 | --- | --- | --- |
@@ -227,7 +242,13 @@ The `ui-reviewer` subagent reviewed the UI commit from the code (no browser). No
 
 ## Data check
 
-The `data-verifier` subagent opened each source. Verified: the NIST conversion factors; every EPA value in the table above, including the slip and the page labels; the hand-worked Sen's slope; the Finney County point and the Kansas box against TIGERweb; POWER's units, fill value and grid-cell elevation note; the 15-second message; and that no user-facing text shows growing-season rain. It marked nothing as a mismatch or a broken link. The POWER timing is a dated measurement, not a sourced fact. Its notes are Open items 2, 4, 5 and 9.
+The `data-verifier` subagent opened each source it was given. Verified: the NIST conversion factors; every EPA value in the table above, including the slip and the page labels; the hand-worked Sen's slope; the Finney County point and the Kansas box against TIGERweb; POWER's units, fill value and grid-cell elevation note; the 15-second message; and that no user-facing text shows growing-season rain. It marked nothing as a mismatch or a broken link. The POWER timing is a dated measurement, not a sourced fact. Its notes are Open items 2, 4, 5 and 9.
+
+Outside what it checked: the Abramowitz and Stegun formula (see "The published worked example"), and the README, which was edited after the check. The README repeats claims that were verified in the code (the 95°F threshold, the EPA and NIST references, "roughly 30 miles"), but its text was not itself reviewed.
+
+## Found in the final review
+
+`lib/climate-client.ts` combined its timeout with the caller's cancel through `AbortSignal.any`, which browsers older than early 2024 do not have (Safari before 17.4). On such a phone the sample button would have shown "could not be reached". The timeout is now built by hand, and the loader has 11 tests of its own. This was found by reading the code, not on a device, so it has not been tried on an old phone.
 
 ## Open items for Angel
 
@@ -244,3 +265,4 @@ The `data-verifier` subagent opened each source. Verified: the NIST conversion f
 11. **Trend wording** uses one decimal ("about 1.4 more hot days per decade"). SPEC.md's example is a whole number ("about 2").
 12. **The EPA slip**, in case the worked example is quoted in the deck or README.
 13. **Known limit of the trend test:** it treats years as independent. Some year-to-year persistence would make a trend look slightly more certain than it is. Worth one line on the About the Data tab.
+14. **POWER's highs can sit just under the threshold.** At the test click in central Kansas (38.33, -97.32) the chart says "Fewest: 0 in 2019". That is what POWER holds: its highest daily maximum there in 2019 is 34.92°C (94.9°F), on 20 August, with 18 days at or above 90°F. A grid-cell value is smoother than a station reading, so a farmer may remember 95°F days that the chart does not count. This is a credibility risk for the chart. Options: say so in the chart note, or compare with Kansas Mesonet stations (a stretch goal in SPEC.md).
