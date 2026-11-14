@@ -8,8 +8,10 @@ import {
 	climatePoint,
 	isClimateResponse,
 } from "@/lib/climate";
+import { dailyEt0Mm } from "@/lib/et";
 import type { DailyWeather } from "@/lib/indicators";
 import { makeRisingYears, makeYear } from "@/lib/test-fixtures";
+import { mmToIn, roundTo } from "@/lib/units";
 
 const FETCHED_AT = "2026-11-14T18:00:00.000Z";
 
@@ -40,10 +42,76 @@ describe("buildClimateResponse", () => {
 		]);
 	});
 
-	it("leaves the monthly arrays empty until reference ET exists, without estimates", () => {
+	it("has no monthly rows for days without the reference ET inputs, and estimates none", () => {
+		// The made-up years carry temperature and rain only, like NASA POWER before 1984.
 		const climate = build(makeRisingYears(1981, 12));
+		expect(climate.years).toHaveLength(12);
 		expect(climate.monthlyByYear).toEqual([]);
 		expect(climate.monthlyNormals).toEqual([]);
+	});
+
+	it("fills twelve months a year, in inches and °F, once the reference ET inputs exist", () => {
+		const weather = {
+			tmaxC: 30,
+			tminC: 10,
+			rainMm: 2,
+			solarMj: 20,
+			dewC: 8,
+			rhPct: 50,
+			windMs: 2,
+		};
+		const days = [
+			// 1983 has no sunlight value, so it has yearly indicators but no months.
+			...makeYear(1983, { ...weather, solarMj: null }),
+			...makeYear(1984, weather),
+			...makeYear(1985, weather),
+		];
+		const climate = build(days);
+		expect(climate.years.map((row) => row.year)).toEqual([1983, 1984, 1985]);
+		expect(climate.monthlyByYear).toHaveLength(24);
+		expect(climate.monthlyByYear[0]).toMatchObject({
+			year: 1984,
+			month: 1,
+			// 31 days at 2 mm is 62 mm, or 2.44 in.
+			rainIn: 2.44,
+			hotDays: 0,
+		});
+		// The month's reference ET is the sum of its days, converted to inches.
+		const site = { latitudeDeg: 38.05, elevationM: 858.35 };
+		const january = days
+			.filter((day) => day.date.startsWith("198401"))
+			.reduce((total, day) => total + (dailyEt0Mm(day, site) ?? Number.NaN), 0);
+		expect(climate.monthlyByYear[0].et0In).toBe(roundTo(mmToIn(january), 2));
+		expect(climate.monthlyByYear[0].et0In).toBeGreaterThan(0);
+
+		expect(climate.monthlyNormals).toHaveLength(12);
+		expect(climate.monthlyNormals[0]).toMatchObject({
+			month: 1,
+			rainIn: 2.44,
+			tmaxF: 86,
+			tminF: 50,
+		});
+		// July needs more water than January under the same weather: the sun is higher.
+		expect(climate.monthlyNormals[6].et0In).toBeGreaterThan(
+			climate.monthlyNormals[0].et0In,
+		);
+		expect(isClimateResponse(JSON.parse(JSON.stringify(climate)))).toBe(true);
+	});
+
+	it("does not let a gap in the reference ET inputs change the yearly series", () => {
+		const base = { tmaxC: 30, tminC: 10, rainMm: 2 };
+		const withInputs = { ...base, solarMj: 20, dewC: 8, rhPct: 50, windMs: 2 };
+		const plain = build(makeYear(2025, base));
+		const full = build(makeYear(2025, withInputs));
+		const gappy = build(
+			makeYear(2025, withInputs, { "20250704": { solarMj: null, windMs: null } }),
+		);
+		expect(full.years).toEqual(plain.years);
+		expect(gappy.years).toEqual(plain.years);
+		// The month with the gap is left out; the other eleven stay.
+		expect(gappy.monthlyByYear.map((row) => row.month)).toEqual([
+			1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12,
+		]);
 	});
 
 	it("fills the freeze dates, and leaves them null in a year with no freeze", () => {

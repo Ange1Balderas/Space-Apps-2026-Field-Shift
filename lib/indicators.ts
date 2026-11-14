@@ -15,6 +15,17 @@ export type DailyWeather = {
 	tminC: number | null;
 	/** Daily precipitation, mm (POWER `PRECTOTCORR`). */
 	rainMm: number | null;
+	// The four inputs below are only used for reference ET (lib/et.ts). They are optional so
+	// that a year's completeness, and with it every yearly series and trend, still depends on
+	// temperature and rain alone.
+	/** Sunlight reaching the surface, MJ per m² per day (POWER `ALLSKY_SFC_SW_DWN`, AG community). */
+	solarMj?: number | null;
+	/** Dew point at 2 m, °C (POWER `T2MDEW`). */
+	dewC?: number | null;
+	/** Relative humidity at 2 m, % (POWER `RH2M`). */
+	rhPct?: number | null;
+	/** Wind speed at 2 m, m/s (POWER `WS2M`). */
+	windMs?: number | null;
 };
 
 /** One calendar year of indicators, metric. */
@@ -37,6 +48,8 @@ export type MonthIndicators = {
 	hotDays: number;
 	meanTmaxC: number;
 	meanTminC: number;
+	/** Reference ET for the month, mm, or null when any of its days has none. */
+	et0Mm: number | null;
 };
 
 /** The long-term average for one calendar month, metric. */
@@ -45,6 +58,8 @@ export type MonthNormal = {
 	rainMm: number;
 	meanTmaxC: number;
 	meanTminC: number;
+	/** Average reference ET over the months that have one, mm, or null when none does. */
+	et0Mm: number | null;
 };
 
 /** A run of whole months inside one calendar year, both ends included. January is 1. */
@@ -204,10 +219,15 @@ export function daysInMonth(year: number, month: number): number {
 /**
  * Rain, hot days and mean daily high and low for each calendar month, in date order.
  * Like a year, a month is used only when every one of its days has all three values.
+ * `et0Mm` gives a day's reference ET (lib/et.ts); a month's total is null unless every one
+ * of its days has one.
  */
 export function summarizeMonths(
 	days: readonly DailyWeather[],
-	options: { hotDayF?: number } = {},
+	options: {
+		hotDayF?: number;
+		et0Mm?: (day: DailyWeather) => number | null;
+	} = {},
 ): MonthIndicators[] {
 	const byMonth = new Map<string, DailyWeather[]>();
 	for (const day of days) {
@@ -228,6 +248,17 @@ export function summarizeMonths(
 		if (complete.length !== daysInMonth(year, month)) continue;
 		const sum = (pick: (day: DailyWeather) => number | null) =>
 			complete.reduce((total, day) => total + (pick(day) ?? 0), 0);
+		let et0Mm: number | null = options.et0Mm ? 0 : null;
+		if (options.et0Mm) {
+			for (const day of complete) {
+				const value = options.et0Mm(day);
+				if (value === null || et0Mm === null) {
+					et0Mm = null;
+					break;
+				}
+				et0Mm += value;
+			}
+		}
 		months.push({
 			year,
 			month,
@@ -235,6 +266,7 @@ export function summarizeMonths(
 			hotDays: countHotDays(complete, options.hotDayF),
 			meanTmaxC: sum((day) => day.tmaxC) / complete.length,
 			meanTminC: sum((day) => day.tminC) / complete.length,
+			et0Mm,
 		});
 	}
 	return months;
@@ -253,11 +285,16 @@ export function monthlyNormals(
 		if (rows.length === 0) continue;
 		const mean = (pick: (row: MonthIndicators) => number) =>
 			rows.reduce((total, row) => total + pick(row), 0) / rows.length;
+		const et0 = rows.flatMap((row) => (row.et0Mm === null ? [] : [row.et0Mm]));
 		normals.push({
 			month,
 			rainMm: mean((row) => row.rainMm),
 			meanTmaxC: mean((row) => row.meanTmaxC),
 			meanTminC: mean((row) => row.meanTminC),
+			et0Mm:
+				et0.length === 0
+					? null
+					: et0.reduce((total, value) => total + value, 0) / et0.length,
 		});
 	}
 	return normals;

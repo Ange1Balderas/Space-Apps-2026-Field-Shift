@@ -7,15 +7,22 @@
 //   years[].hotDays, seasonRainIn, meanTempF     filled (Phase 1)
 //   years[].lastSpringFreezeDoy, firstFallFreezeDoy   filled (Phase 2); null in a year
 //                                                with no freeze in that half of the year
-//   monthlyByYear, monthlyNormals                empty until Phase 3: every row needs
-//                                                reference ET (`et0In`), which is not
-//                                                nullable. The monthly rain and temperature
-//                                                functions exist in lib/indicators.ts.
+//   monthlyByYear, monthlyNormals                filled (Phase 3) for the months that have
+//                                                reference ET. NASA POWER has no sunlight
+//                                                value before 1984, so these start in 1984
+//                                                while the yearly series start in 1981. The
+//                                                normals are averages over those same months.
 //   trends                                       one entry per yearly series with at
 //                                                least 10 values
 // Nothing is estimated to fill a gap.
 
-import { type DailyWeather, summarizeYears } from "@/lib/indicators";
+import { dailyEt0Mm } from "@/lib/et";
+import {
+	type DailyWeather,
+	monthlyNormals,
+	summarizeMonths,
+	summarizeYears,
+} from "@/lib/indicators";
 import { analyzeTrend } from "@/lib/trends";
 import type { ClimateResponse } from "@/lib/types";
 import { cToF, mmToIn, roundTo } from "@/lib/units";
@@ -71,6 +78,14 @@ export function buildClimateResponse(input: {
 		}
 	}
 
+	// Months, with reference ET for each day worked out at this point's latitude and at the
+	// elevation NASA POWER reports for its grid cell. Only months that have reference ET are
+	// kept, because `et0In` is not nullable in the contract.
+	const site = { latitudeDeg: input.lat, elevationM: input.elevationM };
+	const months = summarizeMonths(input.days, {
+		et0Mm: (day) => dailyEt0Mm(day, site),
+	}).filter((row) => row.et0Mm !== null);
+
 	return {
 		lat: input.lat,
 		lon: input.lon,
@@ -83,8 +98,20 @@ export function buildClimateResponse(input: {
 			firstFallFreezeDoy: row.firstFallFreezeDoy,
 			meanTempF: roundTo(row.meanTempF, 2),
 		})),
-		monthlyByYear: [],
-		monthlyNormals: [],
+		monthlyByYear: months.map((row) => ({
+			year: row.year,
+			month: row.month,
+			rainIn: roundTo(mmToIn(row.rainMm), 2),
+			et0In: roundTo(mmToIn(row.et0Mm ?? 0), 2),
+			hotDays: row.hotDays,
+		})),
+		monthlyNormals: monthlyNormals(months).map((row) => ({
+			month: row.month,
+			rainIn: roundTo(mmToIn(row.rainMm), 2),
+			tmaxF: roundTo(cToF(row.meanTmaxC), 1),
+			tminF: roundTo(cToF(row.meanTminC), 1),
+			et0In: roundTo(mmToIn(row.et0Mm ?? 0), 2),
+		})),
 		trends,
 		source: "NASA POWER",
 		fetchedAt: input.fetchedAt,
@@ -130,6 +157,26 @@ export function isClimateResponse(value: unknown): value is ClimateResponse {
 			isNumber(row.seasonRainIn) &&
 			isNumber(row.meanTempF),
 	);
+	const monthsOk =
+		value.monthlyByYear.every(
+			(row) =>
+				isRecord(row) &&
+				isNumber(row.year) &&
+				isNumber(row.month) &&
+				isNumber(row.rainIn) &&
+				isNumber(row.et0In) &&
+				isNumber(row.hotDays),
+		) &&
+		value.monthlyNormals.every(
+			(row) =>
+				isRecord(row) &&
+				isNumber(row.month) &&
+				isNumber(row.rainIn) &&
+				isNumber(row.tmaxF) &&
+				isNumber(row.tminF) &&
+				isNumber(row.et0In),
+		);
+	if (!monthsOk) return false;
 	const trendsOk = Object.values(value.trends).every(
 		(trend) =>
 			isRecord(trend) &&

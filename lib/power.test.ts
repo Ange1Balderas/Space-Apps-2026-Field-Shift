@@ -7,6 +7,9 @@ import { describe, expect, it } from "vitest";
 import { buildPowerUrl, lastFullYear, parsePowerDaily } from "@/lib/power";
 import { UpstreamError } from "@/lib/upstream";
 
+// What a day looks like when the answer has none of the four reference ET inputs.
+const NO_ET = { solarMj: null, dewC: null, rhPct: null, windMs: null };
+
 function powerBody(overrides: Record<string, unknown> = {}): unknown {
 	return {
 		type: "Feature",
@@ -32,13 +35,13 @@ describe("lastFullYear", () => {
 });
 
 describe("buildPowerUrl", () => {
-	it("asks the daily point API for whole years of the three Phase 1 parameters", () => {
+	it("asks the daily point API for whole years of the seven parameters", () => {
 		const url = new URL(buildPowerUrl({ lat: 38.05, lon: -100.74 }, 1981, 2025));
 		expect(`${url.origin}${url.pathname}`).toBe(
 			"https://power.larc.nasa.gov/api/temporal/daily/point",
 		);
 		expect(Object.fromEntries(url.searchParams)).toEqual({
-			parameters: "T2M_MAX,T2M_MIN,PRECTOTCORR",
+			parameters: "T2M_MAX,T2M_MIN,PRECTOTCORR,ALLSKY_SFC_SW_DWN,T2MDEW,RH2M,WS2M",
 			community: "AG",
 			latitude: "38.05",
 			longitude: "-100.74",
@@ -54,9 +57,49 @@ describe("parsePowerDaily", () => {
 		const { elevationM, days } = parsePowerDaily(powerBody());
 		expect(elevationM).toBe(858.35);
 		expect(days).toEqual([
-			{ date: "19810101", tmaxC: 8.44, tminC: -4.1, rainMm: 0 },
-			{ date: "19810102", tmaxC: 14.24, tminC: -2.5, rainMm: 1.25 },
-			{ date: "19810103", tmaxC: null, tminC: -6, rainMm: 0.4 },
+			{ date: "19810101", tmaxC: 8.44, tminC: -4.1, rainMm: 0, ...NO_ET },
+			{ date: "19810102", tmaxC: 14.24, tminC: -2.5, rainMm: 1.25, ...NO_ET },
+			{ date: "19810103", tmaxC: null, tminC: -6, rainMm: 0.4, ...NO_ET },
+		]);
+	});
+
+	it("reads the four reference ET inputs when the answer has them", () => {
+		// Values copied from a real answer for 1 July 1984 and 1 January 1981 at 37.97, -100.72
+		// (2026-11-14). The sunlight series holds the fill value before 1984.
+		const body = powerBody({
+			properties: {
+				parameter: {
+					T2M_MAX: { "19840701": 28.29, "19810101": 8.44 },
+					T2M_MIN: { "19840701": 18.97, "19810101": -1.43 },
+					PRECTOTCORR: { "19840701": 0.5, "19810101": 0 },
+					ALLSKY_SFC_SW_DWN: { "19840701": 21.79, "19810101": -999 },
+					T2MDEW: { "19840701": 12.31, "19810101": -5.43 },
+					RH2M: { "19840701": 50.29, "19810101": 53.91 },
+					WS2M: { "19840701": 4.01, "19810101": 2.57 },
+				},
+			},
+		});
+		expect(parsePowerDaily(body).days).toEqual([
+			{
+				date: "19810101",
+				tmaxC: 8.44,
+				tminC: -1.43,
+				rainMm: 0,
+				solarMj: null,
+				dewC: -5.43,
+				rhPct: 53.91,
+				windMs: 2.57,
+			},
+			{
+				date: "19840701",
+				tmaxC: 28.29,
+				tminC: 18.97,
+				rainMm: 0.5,
+				solarMj: 21.79,
+				dewC: 12.31,
+				rhPct: 50.29,
+				windMs: 4.01,
+			},
 		]);
 	});
 
@@ -79,7 +122,7 @@ describe("parsePowerDaily", () => {
 			},
 		});
 		expect(parsePowerDaily(body).days).toEqual([
-			{ date: "19810101", tmaxC: 8.44, tminC: null, rainMm: 0 },
+			{ date: "19810101", tmaxC: 8.44, tminC: null, rainMm: 0, ...NO_ET },
 		]);
 	});
 

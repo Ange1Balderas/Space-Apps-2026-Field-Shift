@@ -14,9 +14,21 @@ export const POWER_DAILY_ENDPOINT =
 // SPEC.md, "Thresholds": "Analysis window: 1981 to the last full year. POWER record start."
 export const POWER_FIRST_YEAR = 1981;
 
-// Only what Phases 1 and 2 compute from. Phase 3 adds the four reference ET inputs
-// (ALLSKY_SFC_SW_DWN, T2MDEW, RH2M, WS2M) listed in SPEC.md, "Data sources".
-export const POWER_PARAMETERS = ["T2M_MAX", "T2M_MIN", "PRECTOTCORR"] as const;
+// The first three feed the yearly indicators. The last four are the reference ET inputs
+// (SPEC.md, "Data sources" and "Formulas", item 1). Measured on 2026-11-14 at 37.97, -100.72
+// for 1981 to 2025: one request for all seven took 1.3 seconds (1.9 MB). The answer's own
+// header gives the units: °C, mm/day, MJ/m^2/day (community AG), °C, % and m/s. The sunlight
+// series is -999 on every day of 1981 to 1983 and complete from 1984, so reference ET
+// starts in 1984; the other six had no gap.
+export const POWER_PARAMETERS = [
+	"T2M_MAX",
+	"T2M_MIN",
+	"PRECTOTCORR",
+	"ALLSKY_SFC_SW_DWN",
+	"T2MDEW",
+	"RH2M",
+	"WS2M",
+] as const;
 
 const SERVICE = "NASA POWER";
 
@@ -71,8 +83,12 @@ export function parsePowerDaily(body: unknown): PowerDaily {
 
 	const properties = isRecord(body.properties) ? body.properties : {};
 	const parameter = isRecord(properties.parameter) ? properties.parameter : {};
-	const [tmax, tmin, rain] = POWER_PARAMETERS.map((name) => parameter[name]);
+	const [tmax, tmin, rain, solar, dew, humidity, wind] = POWER_PARAMETERS.map(
+		(name) => parameter[name],
+	);
 
+	// Temperature and rain are required. A missing reference ET input is not an error: its
+	// values are null, and the days it covers have no reference ET.
 	if (
 		typeof elevationM !== "number" ||
 		!Number.isFinite(elevationM) ||
@@ -96,11 +112,18 @@ export function parsePowerDaily(body: unknown): PowerDaily {
 		.sort();
 	if (dates.length === 0) throw unexpected();
 
+	const optional = (series: unknown, date: string): number | null =>
+		isRecord(series) ? read(series[date]) : null;
+
 	const days = dates.map((date) => ({
 		date,
 		tmaxC: read(tmax[date]),
 		tminC: read(tmin[date]),
 		rainMm: read(rain[date]),
+		solarMj: optional(solar, date),
+		dewC: optional(dew, date),
+		rhPct: optional(humidity, date),
+		windMs: optional(wind, date),
 	}));
 	return { elevationM, days };
 }
@@ -108,7 +131,8 @@ export function parsePowerDaily(body: unknown): PowerDaily {
 /**
  * Fetches daily weather for a point from 1 January of `startYear` to 31 December of
  * `endYear` in one request. Timed on 2026-11-14 for 1981 to 2025: about 0.8 to 1.0 seconds
- * at four Kansas points, so the request is not split by decade (SPEC.md, Phase 1).
+ * at four Kansas points with three parameters and 1.3 seconds with all seven, so the
+ * request is not split by decade (SPEC.md, Phase 1).
  */
 export async function fetchPowerDaily(
 	point: { lat: number; lon: number },

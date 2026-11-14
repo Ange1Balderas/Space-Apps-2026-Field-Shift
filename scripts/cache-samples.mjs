@@ -59,8 +59,12 @@ function render(sample, climate, history, soil) {
     "years": [
 ${rows(climate.years, "      ")}
     ],
-    "monthlyByYear": ${JSON.stringify(climate.monthlyByYear)},
-    "monthlyNormals": ${JSON.stringify(climate.monthlyNormals)},
+    "monthlyByYear": [
+${rows(climate.monthlyByYear, "      ")}
+    ],
+    "monthlyNormals": [
+${rows(climate.monthlyNormals, "      ")}
+    ],
     "trends": {
 ${trends}
     },

@@ -187,6 +187,7 @@ describe("monthly climatology", () => {
 			hotDays: 0,
 			meanTmaxC: 30,
 			meanTminC: 10,
+			et0Mm: null,
 		});
 		expect(months[1].rainMm).toBe(28);
 		expect(months[6].hotDays).toBe(2);
@@ -218,7 +219,34 @@ describe("monthly climatology", () => {
 			rainMm: 46.5,
 			meanTmaxC: 25,
 			meanTminC: 5,
+			et0Mm: null,
 		});
+	});
+
+	it("totals reference ET for a month only when every day has one", () => {
+		const days = makeYear(2025, { tmaxC: 30, tminC: 10, rainMm: 1 });
+		// 2 mm on every day, except that 15 March has none.
+		const months = summarizeMonths(days, {
+			et0Mm: (day) => (day.date === "20250315" ? null : 2),
+		});
+		expect(months[0].et0Mm).toBe(62);
+		expect(months[1].et0Mm).toBe(56);
+		expect(months[2].et0Mm).toBeNull();
+	});
+
+	it("averages reference ET over the months that have one", () => {
+		// January has 31 mm in 2024, none in 2025 and 93 mm in 2026: the normal is 62 mm.
+		const perDay: Record<string, number | null> = { "2024": 1, "2025": null, "2026": 3 };
+		const months = summarizeMonths(
+			[2024, 2025, 2026].flatMap((year) =>
+				makeYear(year, { tmaxC: 30, tminC: 10, rainMm: 1 }),
+			),
+			{ et0Mm: (day) => perDay[day.date.slice(0, 4)] },
+		);
+		expect(monthlyNormals(months)[0].et0Mm).toBe(62);
+		// With no reference ET at all, the normal has none either.
+		const none = summarizeMonths(makeYear(2025, { tmaxC: 30, tminC: 10, rainMm: 1 }));
+		expect(monthlyNormals(none)[0].et0Mm).toBeNull();
 	});
 
 	it("has no normal for a calendar month that never appears", () => {
