@@ -41,12 +41,13 @@ Date: 2026-11-14.
 
 ### Ported from Stragents by AI
 
-Every ported file starts with a header naming its source. A script compared each ported file with its source: apart from the header and the changes listed here, all 17 are identical.
+Every ported file starts with a header naming its source. A script compared each ported file with its source before the UI review: apart from the header and the changes listed here, all 17 were identical. One further change was made after the review, to `skeleton.tsx`, and is listed in the table.
 
 | File here | Source in Stragents (`fe/src/`) | Change |
 | --- | --- | --- |
 | `app/globals.css` | `styles.css` | Fonts, plugin and `#app` (see Deviations 1 and 7) |
-| `components/ui/button.tsx`, `card.tsx`, `skeleton.tsx`, `badge.tsx` | `components/ui/` | `cn` import |
+| `components/ui/button.tsx`, `card.tsx`, `badge.tsx` | `components/ui/` | `cn` import |
+| `components/ui/skeleton.tsx` | `components/ui/skeleton.tsx` | `cn` import; `bg-accent` changed to `bg-muted` after the UI review (Deviation 13) |
 | `components/ui/slider.tsx`, `tooltip.tsx` | `components/ui/` | `cn` import (already had `"use client"`) |
 | `components/ui/tabs.tsx`, `sheet.tsx`, `switch.tsx` | `components/ui/` | `cn` import, `"use client"` added |
 | `components/ui/sonner.tsx` | `components/ui/sonner.tsx` | `"use client"` added |
@@ -60,7 +61,7 @@ Every ported file starts with a header naming its source. A script compared each
 
 ## Verification
 
-All four commands were run on Windows with Node 26.13.0 and npm 11.20.0 at 10:40 on 2026-11-14, on the tree that was committed as `d081b3d`. Each exited 0. The output below is verbatim, except that the local folder path is removed from the Vitest `RUN` line.
+All four commands were run on Windows with Node 26.13.0 and npm 11.20.0. They passed at 10:40 on 2026-11-14 on the tree committed as `d081b3d`, and again at 10:58 after the UI review fixes. Each exited 0 both times. The output below is from the 10:58 run, verbatim, except that the local folder path is removed from the Vitest `RUN` line.
 
 `npm run typecheck`
 
@@ -93,8 +94,8 @@ ESLint printed nothing after its banner, which means no findings.
 
  Test Files  1 passed (1)
       Tests  2 passed (2)
-   Start at  10:40:49
-   Duration  232ms (transform 43%, import 33%, tests 13%, worker 10%)
+   Start at  10:58:30
+   Duration  187ms (import 43%, transform 24%, tests 19%, worker 13%)
 ```
 
 `npm run build`
@@ -104,17 +105,17 @@ ESLint printed nothing after its banner, which means no findings.
 > next build
 
 ▲ Next.js 16.4.6 (Turbopack)
-✓ Running next.config.ts took 37ms
+✓ Running next.config.ts took 36ms
 - Cache Components enabled
 - Partial Prefetching enabled
 
   Creating an optimized production build ...
-✓ Compiled successfully in 637ms
+✓ Compiled successfully in 553ms
   Running TypeScript ...
-  Finished TypeScript in 3.1s ...
+  Finished TypeScript in 2.4s ...
   Collecting page data using 4 workers ...
   Generating static pages using 4 workers (0/3) ...
-✓ Generating static pages using 4 workers (3/3) in 558ms
+✓ Generating static pages using 4 workers (3/3) in 490ms
   Finalizing page optimization ...
 
 Route (app)
@@ -129,11 +130,14 @@ Checks beyond the four commands:
 
 | Check | How | Result |
 | --- | --- | --- |
-| Map renders in a production run | `npm run build`, `npm start`, opened in a browser | Kansas map drawn; the style request and all six other OpenFreeMap requests returned 200; no console errors |
+| Map renders in a production run | `npm run build`, `npm start`, opened in a browser; repeated after the UI review fixes | Kansas map drawn; the style request and all six other OpenFreeMap requests returned 200; no console errors |
 | Map renders in dev mode | `npm run dev`, opened in a browser | Same result |
 | Phone width | Browser viewport set to 390 x 844 | Panel stacks under the map; page is exactly 390 px wide, no sideways scroll |
 | Fonts | `getComputedStyle(document.body).fontFamily` and `document.fonts` | Body font is "Geist Sans"; weights 400, 500 and 600 loaded |
-| Error state | Seen for real while `maplibre-gl` 6 was installed (Deviation 5) | The error notice with "Try again" rendered instead of a blank map |
+| Error state | Forced in dev mode by pointing the style URL at a style that does not exist, then reverted | The notice covers the whole map area, including MapLibre's own controls; the hidden map is out of the tab order; the first Tab stop is "Try again" |
+| Loading state | Phone-width screenshot taken while the map was loading | The placeholder is a visibly darker block: page `lab(90.7)`, placeholder `lab(80.8)` |
+| Keyboard focus on the map | Pressed Tab on the loaded page | Focus lands on the map canvas with a 2 px inset outline |
+| Screen reader status | Read the live region before and after load | "Loading the map of Kansas", then "Map of Kansas loaded" |
 | `lib/types.ts` equals the SPEC | Script: SPEC code block compared with the file after removing `export` | Identical, 72 lines |
 | Ported files equal their sources | Script, 17 files | Identical apart from the listed changes |
 | No stale imports | Search for `from "cn"` and `"#/` | None |
@@ -143,9 +147,25 @@ Checks beyond the four commands:
 | shadcn CLI accepts the config | `npx shadcn@latest info` | Reads Next.js, RSC, Tailwind v4, alias `@` |
 | `dev:mock` flag works on Windows | `npx cross-env NEXT_PUBLIC_DATA_MODE=mock node -p process.env.NEXT_PUBLIC_DATA_MODE` | Printed `mock` |
 
-UI review: CLAUDE.md asks for the `ui-reviewer` subagent after a UI change. That subagent was not registered in the session that built this phase, so a general-purpose agent was given `.claude/agents/ui-reviewer.md` as its checklist. It was started after commit `d081b3d` and had not reported when this file was last updated, so no findings are recorded here yet.
-
 Not verified: the Vercel deployment, any real phone, and automated accessibility tests (Playwright and axe are not set up).
+
+## UI review
+
+CLAUDE.md asks for the `ui-reviewer` subagent after a UI change. That subagent was not registered in the session that built this phase, so a general-purpose agent was given `.claude/agents/ui-reviewer.md` as its checklist. It ran after commit `d081b3d`. A usage limit stopped it before its own final check, so its report is a draft. Findings 1 to 5 were confirmed in the browser or in MapLibre's stylesheet before anything was changed.
+
+| # | Finding | Level | What was done |
+| --- | --- | --- | --- |
+| 1 | The map's loading placeholder used `bg-accent`, which on this palette is almost the page colour, so loading looked like a blank panel | Must fix | Fixed: `bg-muted` in `components/ui/skeleton.tsx` |
+| 2 | The loading and error overlays had no z-index, so MapLibre's controls (z-index 2) showed through the error notice, and the covered map could still take keyboard focus | Should fix | Fixed: `z-10` on both overlays; the map is `inert` while the error notice is shown |
+| 3 | The map canvas is a tab stop with no visible focus, because MapLibre clips the default outline | Should fix | Fixed: an inset focus outline in the ring colour |
+| 4 | "Loading the map" was in the first render, so screen readers never announced it, and the end of loading was silent | Should fix | Fixed: one status region that is always on the page and changes its text |
+| 5 | One failed tile before the first load could raise the full error notice, and the copy blamed the map service whatever the cause | Should fix | Fixed: tile errors are ignored; the copy now says "Check your connection, then try again." |
+| 6 | The header line and the page description say what the tool does, which the page cannot do yet | Should fix | Not changed. SPEC user flow step 1 asks for one line on what the tool does, and the "Early preview" badge and the empty panel say what is missing. Angel's call |
+| 7 | The disclaimer banner sits outside every landmark | Polish | Not changed |
+| 8 | On a tall, narrow viewport a strip of background could show under the map | Polish | Not changed. Not seen at 390 x 844 |
+| 9 | A stalled style request would leave the placeholder up with no message | Polish | Not changed. A timeout belongs with the Phase 1 data loading |
+
+The draft also listed what it checked and found fine: colour tokens, computed contrast, landmarks, layout, reduced motion, the disclaimer, no images, `"use client"` coverage and the compiled classes.
 
 ## Deviations for Angel to review
 
@@ -161,6 +181,7 @@ Not verified: the Vercel deployment, any real phone, and automated accessibility
 10. **`dev:mock`.** The script exists because CLAUDE.md requires the name. It sets `NEXT_PUBLIC_DATA_MODE=mock` and starts the dev server. Nothing reads the flag yet: mock data is Phase 1 work.
 11. **Phone layout.** SPEC wants the panel as a bottom sheet on phones. The placeholder panel simply stacks under the map; the ported `sheet` component is ready for the real panel.
 12. **Sticky two-column grid.** `agent-detail.tsx` was used as a pattern only, as the SPEC table describes. No file was copied from it.
+13. **Skeleton colour.** The ported `skeleton.tsx` used `bg-accent`. On this palette the accent token is almost the same colour as the page background, so every loading placeholder was invisible. It now uses `bg-muted`. This is the only ported component whose styling differs from Stragents.
 
 ## Open items for Angel
 

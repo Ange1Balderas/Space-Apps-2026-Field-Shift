@@ -22,45 +22,63 @@ const KANSAS_BOUNDS: [[number, number], [number, number]] = [
 
 type MapStatus = "loading" | "ready" | "error";
 
+// Read out by screen readers. The error state announces itself through the
+// notice's role="alert", so it needs no text here.
+const STATUS_MESSAGE: Record<MapStatus, string> = {
+	loading: "Loading the map of Kansas",
+	ready: "Map of Kansas loaded",
+	error: "",
+};
+
 export function MapView() {
 	const [status, setStatus] = useState<MapStatus>("loading");
 
 	return (
 		<section aria-label="Map of Kansas" className="relative h-full w-full">
-			<MapGL
-				initialViewState={{
-					bounds: KANSAS_BOUNDS,
-					fitBoundsOptions: { padding: 24 },
-				}}
-				mapStyle={BASEMAP_STYLE_URL}
-				style={{ width: "100%", height: "100%" }}
-				onLoad={() => setStatus("ready")}
-				// MapLibre also reports single failed tiles here. Only a failure before the
-				// first load means there is no map to show.
-				onError={() =>
-					setStatus((current) => (current === "ready" ? current : "error"))
-				}
-			>
-				<NavigationControl position="top-right" showCompass={false} />
-			</MapGL>
+			{/* Always on the page: a live region only announces changes made after it exists. */}
+			<p role="status" className="sr-only">
+				{STATUS_MESSAGE[status]}
+			</p>
 
+			{/* MapLibre clips the browser's default focus outline, so the canvas gets an inset one.
+			    While the error notice covers the map, the map is taken out of the tab order. */}
+			<div
+				inert={status === "error"}
+				className="h-full w-full [&_canvas]:focus-visible:outline-2 [&_canvas]:focus-visible:-outline-offset-2 [&_canvas]:focus-visible:outline-ring"
+			>
+				<MapGL
+					initialViewState={{
+						bounds: KANSAS_BOUNDS,
+						fitBoundsOptions: { padding: 24 },
+					}}
+					mapStyle={BASEMAP_STYLE_URL}
+					style={{ width: "100%", height: "100%" }}
+					onLoad={() => setStatus("ready")}
+					onError={(event) => {
+						// One failed tile also arrives here. That is not a failed map.
+						if ("tile" in event) return;
+						// Once the map has loaded there is something to show, so keep showing it.
+						setStatus((current) => (current === "ready" ? current : "error"));
+					}}
+				>
+					<NavigationControl position="top-right" showCompass={false} />
+				</MapGL>
+			</div>
+
+			{/* z-10 keeps both overlays above MapLibre's own controls, which sit at z-index 2. */}
 			{status === "loading" ? (
-				<output aria-live="polite" className="absolute inset-0 block">
-					<span className="sr-only">Loading the map of Kansas</span>
-					<Skeleton className="h-full w-full rounded-none" />
-				</output>
+				<Skeleton
+					aria-hidden="true"
+					className="absolute inset-0 z-10 rounded-none"
+				/>
 			) : null}
 
 			{status === "error" ? (
-				<div className="absolute inset-0 flex items-start justify-center bg-background p-4">
+				<div className="absolute inset-0 z-10 flex items-start justify-center bg-background p-4">
 					<div className="w-full max-w-md">
 						<ErrorState
 							title="The map could not be loaded"
-							error={
-								new Error(
-									"The base map service did not respond. Check your connection, then try again.",
-								)
-							}
+							error={new Error("Check your connection, then try again.")}
 							onRetry={() => window.location.reload()}
 						/>
 					</div>
