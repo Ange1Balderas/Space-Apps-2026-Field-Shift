@@ -1,6 +1,6 @@
 # Project page: draft text for each field
 
-**AI-written draft (Claude), for Angel to edit before anything is pasted into the project page.** Written unattended on 2026-11-15. Every statement is taken from the README or from what the app showed in the Phase 8 walk-through (`implementation.md` in this folder). The length limit of each field on the project page is not known here: check it when pasting.
+**AI-written draft (Claude), for Angel to edit before anything is pasted into the project page.** First written unattended on 2026-11-15. Reworded the same afternoon, at Angel's request, into simpler first-person words; the facts are the same. Every statement is taken from the README or from what the app showed in the Phase 8 walk-through (`implementation.md` in this folder). The length limit of each field on the project page is not known here: check it when pasting.
 
 SPEC.md's submission checklist was written before the build. It names four things the app does **not** use: SMAP, GRACE, NASS QuickStats and earthaccess. They are left out below on purpose. Listing them as used would be a false claim.
 
@@ -10,50 +10,50 @@ Field Shift Kansas (the name in the app's header. SPEC.md still lists the projec
 
 ## High-level project summary
 
-Field Shift Kansas is a web app for Kansas farmers and the people who advise them. Pick a point on the map of Kansas, or one of three sample fields, and it shows four things for that place: the crops grown there in each of the last 8 years (USDA Cropland Data Layer), the soil under it (USDA soil survey), how growing conditions there have changed since 1981 (NASA POWER), and the field's own rotation scored beside the rotations usual in that part of Kansas.
+Field Shift Kansas is a web app for Kansas farmers and the people who advise them. You pick a point on the map of Kansas, or one of three sample fields, and it shows four things for that place: the crops grown there in each of the last 8 years (USDA Cropland Data Layer), the soil under it (USDA soil survey), how growing conditions there have changed since 1981 (NASA POWER), and the field's own rotation scored next to the rotations usual in that part of Kansas.
 
-Four sliders set what matters to the farmer: saving water, protecting soil, income and simplicity. The rotation cards re-order as the sliders move. Each card gives seven scores, a field calendar of the months with a crop in the ground and the bare months, and five fields: why the rotation is suggested, the evidence, its benefits, the information gaps and the risks to verify locally, every sentence with its source.
+Four sliders let the farmer say what matters most: saving water, protecting soil, income and simplicity. The rotation cards re-order as the sliders move. Each card shows seven scores, a calendar of the months with a crop in the ground and the bare months, and five short parts: why the rotation is suggested, the evidence, its benefits, the information gaps and the risks to check locally. Every sentence has its source.
 
-It answers the challenge by putting NASA Earth data, local soil data, crop values and the farmer's own priorities into one comparison of at least three rotations, including the one the field already runs, and by saying what it does not know. A score compares rotations with each other. It is not a forecast of yield or price. The tool supports farmer judgment. It does not replace it.
+I built it to answer the challenge this way: it puts NASA Earth data, local soil data, crop values and the farmer's own priorities into one comparison of at least three rotations, including the one the field already runs. It also says what it does not know. A score compares rotations with each other. It is not a forecast of yield or price. The tool supports farmer judgment. It does not replace it.
 
 ## Detailed project description
 
 **What it does**
 
 - Click anywhere on the map of Kansas, use your location, or pick a sample field (Finney, Thomas or Brown County).
-- Crops grown here: the crop at that point in each of the last 8 years. Any year can be changed by hand.
-- Soil: the soil map unit under the point, with its texture, available water, organic matter, slope, erodibility by water and by wind, and hydrologic group.
-- Rotations: the field's own rotation and the library rotations usual in that part of Kansas, each scored from 0 to 100 on seven indicators (water fit, heat and drought exposure, soil protection, soil building, pest and disease break, market fit, simplicity). Four sliders weigh them, and a switch says whether the field can be irrigated.
+- Crops grown here: the crop at that point in each of the last 8 years. You can change any year by hand.
+- Soil: the soil mapped under the point, with its texture, available water, organic matter, slope, how easily water and wind erode it, and its hydrologic group.
+- Rotations: the field's own rotation and the rotations usual in that part of Kansas. Each one gets seven scores from 0 to 100: water fit, heat and drought exposure, soil protection, soil building, pest and disease break, market fit and simplicity. Four sliders weigh them, and a switch says whether the field can be irrigated.
 - Field calendar: for each year of a rotation, the months with a crop in the ground and the bare months, under the months that are usually hot, dry or frosty at that place.
-- Conditions: four charts from 1981 to the last full year (hot days, growing-season rain, last spring freeze, first fall freeze), each with a trend label: likely trend, possible trend or no clear trend.
-- Terms: each science word has a plain-language definition and its source, on hover, keyboard focus or tap.
-- About the data: every source and what the tool takes from it, how fine each source is, a satellite record against a gauge on the farm, two ways to measure a trend side by side, how the scores are worked out with every number the tool chose, and the glossary.
-- Vegetation from space: a switch on the map draws NASA's vegetation index (NDVI) in 16-day pictures going back to March 2000. It is a picture only: no score uses it.
+- Conditions: four charts from 1981 to the last full year (hot days, growing-season rain, last spring freeze, first fall freeze). Each has a trend label: likely trend, possible trend or no clear trend.
+- Terms: each science word has a plain-language definition and its source. You see it on hover, keyboard focus or tap.
+- About the data: every source and what the tool takes from it, how fine each source is, a satellite record compared with a gauge on the farm, two ways to measure a trend side by side, how the scores are worked out with every number the tool chose, and the glossary.
+- Vegetation from space: a switch on the map draws NASA's vegetation index (NDVI) in 16-day pictures going back to March 2000. It is a picture only. No score uses it.
 
 **How it works**
 
-The point chosen on the map goes to three routes of the app's own, one for each fact: NASA POWER for the weather, the USDA Cropland Data Layer for the crop history and the USDA soil survey for the soil. Each route has a 15-second timeout, a cache and a plain-language error, and if one fails the other two still show.
+The point you pick goes to three routes of the app's own, one for each fact: NASA POWER for the weather, the USDA Cropland Data Layer for the crop history and the USDA soil survey for the soil. Each route has a 15-second timeout, a cache and a plain-language error. If one fails, the other two still show.
 
-Crop water demand is reference evapotranspiration (FAO-56 Penman-Monteith, from NASA POWER weather) times the FAO-56 crop coefficient, added up over the crop's usual Kansas season. It is set against the rain in the season plus the rain banked on the bare field before planting, on the average of the last ten years. The other indicators use the hot days in each crop's sensitive month, the bare months of the rotation with the soil survey's erodibility and slope, and published crop traits.
+How much water a well-watered crop would use (its potential demand) is worked out with the FAO-56 method: reference evapotranspiration (Penman-Monteith, from NASA POWER weather) times the FAO-56 crop coefficient, added up over the crop's usual Kansas season. That is set against the rain in the season plus the rain stored on the bare field before planting, on the average of the last ten years. The other scores use the hot days in each crop's sensitive month, the bare months of the rotation with the soil survey's erodibility and slope, and published crop traits.
 
-A Mann-Kendall test decides each trend label, with p below 0.05 as likely, 0.05 to 0.20 as possible and anything higher as no clear trend. The change per decade is Sen's slope.
+A Mann-Kendall test decides each trend label: p below 0.05 is likely, 0.05 to 0.20 is possible, and anything higher is no clear trend. The change per decade is Sen's slope.
 
-**What it showed on the three sample fields**
+**What I saw on the three sample fields**
 
-At all three the first fall freeze comes later than it did in 1981: about 3.3 days later per decade in Finney and Thomas counties and about 4.3 in Brown County, a likely trend each time. Hot days show no clear trend in Finney and Brown counties and a possible trend in Thomas County. The tool says so instead of rounding a weak signal up.
+At all three, the first fall freeze comes later than it did in 1981: about 3.3 days later per decade in Finney and Thomas counties and about 4.3 in Brown County. It is a likely trend each time. Hot days show no clear trend in Finney and Brown counties and a possible trend in Thomas County. The tool shows each of those labels as it is.
 
 **Benefits**
 
-- The public record for one field in one place, in inches and °F, with no GIS skill needed.
-- Every number and sentence can be traced: a source badge opens its entry on the About the data tab.
+- The public record for one field in one place, in inches and °F, from one click on a map.
+- Every sentence on a card has its source, and every number the tool chose is listed on the About the data tab. A source badge opens its entry there.
 - It names its own gaps on every card, and tells the farmer to check with the local K-State extension agent.
 
 **Limits and what is next** (the README's "Limitations" and "What is not built" sections have the full list)
 
-- It works from one point, not a field outline, and its weather is the record of an area roughly 35 miles across, not of the field.
+- It works from one point, not a field outline. Its weather is the record of an area roughly 35 miles across, not of the field.
 - Six of the ten planned rotations are loaded.
 - NASA SMAP soil moisture and GRACE groundwater are planned and not built. The request for SMAP at the 105 Kansas county centroids is written and has not been submitted.
-- Not built: a rainfall and temperature scenario slider, county yields, a printable summary.
+- Not built: a rainfall and temperature scenario slider, a summary written by a language model, county yields, a printable summary.
 
 **Tools and languages**
 
@@ -63,13 +63,13 @@ TypeScript, Next.js 16 (App Router), React, Tailwind CSS 4, shadcn/ui on Radix U
 
 - Live app: https://space-apps-2026-field-shift.vercel.app (shows the last build pushed; push first)
 - Code: https://github.com/Ange1Balderas/Space-Apps-2026-Field-Shift
-- Demo deck: to add
+- Demo deck: to add. The address after the PDF is pushed to the repo will be https://github.com/Ange1Balderas/Space-Apps-2026-Field-Shift/blob/main/docs/Field-Shift-Kansas-demo-deck.pdf (it does not work before that push)
 
 ## Use of AI
 
-Claude (Anthropic), running in Claude Code, researched the data sources, proposed the architecture and the scoring model, and wrote most of the code, the glossary definitions and the About the data text. Angel Balderas chose the challenge and the Kansas focus, decided each design choice, and reviews the code, data and results.
+I used Claude (Anthropic), running in Claude Code. Claude researched the data sources, proposed the architecture and the scoring model, and wrote most of the code, the glossary definitions, the About the data text and the first draft of the text on this page. I chose the challenge and the Kansas focus, decided each design choice, and review the code, data and results at the end of each build phase. When this draft was written, I had not yet reviewed the work Claude did unattended on the night of 2026-11-15, or the glossary and About the data text.
 
-Files written mostly by AI start with an "AI-assisted" comment, and the README's "AI use" section says what AI wrote and what Angel decided. The About the data tab says in the app that its explanations are AI-generated. No text is written by AI while the app runs: every sentence on a rotation card is fixed wording or a template filled with computed numbers.
+Files written mostly by AI start with an "AI-assisted" comment, and the README's "AI use" section says what AI wrote and what I decided. The About the data tab says in the app that its explanations are AI-generated. No text is written by AI while the app runs: every sentence on a rotation card is fixed wording or a template filled with computed numbers.
 
 The published crop values were checked against their sources by a second AI pass before they were loaded. The glossary, the source list and the About the data text were checked against their sources by further AI passes, and what those found was corrected.
 
