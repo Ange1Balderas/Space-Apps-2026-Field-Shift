@@ -10,7 +10,7 @@
 
 import { motion } from "framer-motion";
 import { MapPinIcon } from "lucide-react";
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { ConditionsCharts } from "@/components/ConditionsCharts";
 import { FieldSummary } from "@/components/FieldSummary";
 import { Section } from "@/components/layout/page";
@@ -94,6 +94,20 @@ export function FieldPanel() {
 
 	const selection = selectionOf(panel);
 
+	// On a phone the panel sits under the map. Choosing a field brings the panel into view;
+	// the link at its top leads back to the map. (SPEC.md asks for a bottom sheet on phones;
+	// this is the plainer stand-in.)
+	const chosen = selection ? `${selection.lat},${selection.lon}` : "";
+	useEffect(() => {
+		if (!chosen) return;
+		if (!window.matchMedia("(max-width: 1023px)").matches) return;
+		const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		panelRef.current?.scrollIntoView({
+			behavior: still ? "auto" : "smooth",
+			block: "start",
+		});
+	}, [chosen]);
+
 	// Facts on screen that are a saved copy because their live source failed just now.
 	const savedCopies: string[] = [];
 	if (panel.kind === "field") {
@@ -138,12 +152,20 @@ export function FieldPanel() {
 		<div
 			ref={panelRef}
 			tabIndex={-1}
-			className="rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+			className="scroll-mt-2 rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
 		>
 			{/* Always on the page: a live region only announces changes made after it exists. */}
 			<p role="status" className="sr-only">
 				{statusMessage(panel)}
 			</p>
+
+			{selection ? (
+				<p className="mb-3 lg:hidden">
+					<Button asChild variant="outline" size="sm" className="h-10">
+						<a href="#map">Back to the map</a>
+					</Button>
+				</p>
+			) : null}
 
 			{/* The key restarts the short fade whenever the state or the place changes. */}
 			<motion.div

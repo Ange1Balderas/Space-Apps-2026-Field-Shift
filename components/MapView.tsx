@@ -3,7 +3,7 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MapPinIcon, PlusIcon } from "lucide-react";
+import { LocateFixedIcon, MapPinIcon, PlusIcon } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import MapGL, {
 	type MapRef,
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { selectionOf, useFieldStore } from "@/lib/field-store";
 import { KANSAS_BOUNDS } from "@/lib/kansas";
+import { locationProblem, locationResult } from "@/lib/location";
 import { SAMPLE_FIELDS } from "@/lib/samples";
 
 // OpenFreeMap Positron: the muted basemap SPEC.md names under "UI rules". No API key.
@@ -44,8 +45,52 @@ export function MapView() {
 	const selectPoint = useFieldStore((state) => state.selectPoint);
 	const selectSample = useFieldStore((state) => state.selectSample);
 
+	// "Use my location": idle, asking the browser, or a sentence saying why no point was chosen.
+	const [locating, setLocating] = useState(false);
+	const [locationNote, setLocationNote] = useState("");
+	const findMyLocation = () => {
+		if (typeof navigator === "undefined" || !navigator.geolocation) {
+			setLocationNote(locationProblem(null));
+			return;
+		}
+		setLocating(true);
+		setLocationNote("");
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				setLocating(false);
+				const result = locationResult(
+					position.coords.latitude,
+					position.coords.longitude,
+				);
+				if (result.kind === "problem") {
+					setLocationNote(result.message);
+					return;
+				}
+				// Bring the point into view without animation, then choose it like a click.
+				const map = mapRef.current;
+				if (map) {
+					map.jumpTo({
+						center: [result.lon, result.lat],
+						zoom: Math.max(map.getZoom(), 9),
+					});
+				}
+				selectPoint(result.lat, result.lon);
+			},
+			(error) => {
+				setLocating(false);
+				setLocationNote(locationProblem(error.code));
+			},
+			// A field is large: the quick, coarse fix is enough, and an hour-old one will do.
+			{ enableHighAccuracy: false, timeout: 15_000, maximumAge: 3_600_000 },
+		);
+	};
+
 	return (
-		<section aria-label="Map of Kansas" className="relative h-full w-full">
+		<section
+			id="map"
+			aria-label="Map of Kansas"
+			className="relative h-full w-full scroll-mt-2"
+		>
 			{/* Always on the page: a live region only announces changes made after it exists. */}
 			<p role="status" className="sr-only">
 				{STATUS_MESSAGE[status]}
@@ -58,7 +103,8 @@ export function MapView() {
 			{/* Sample fields load from cached files, so they stay usable above the loading
 			    placeholder and above the error notice (both z-10). They come first in the page
 			    order so the keyboard reaches them before the map, matching where they sit. */}
-			<fieldset className="pointer-events-none absolute top-3 left-3 z-20 m-0 max-w-[calc(100%-4.5rem)] border-0 p-0">
+			<div className="pointer-events-none absolute top-3 left-3 z-20 max-w-[calc(100%-4.5rem)]">
+			<fieldset className="m-0 border-0 p-0">
 				{/* Only the legend and the buttons take clicks. The gaps around them stay part of the map. */}
 				<legend className="pointer-events-auto mb-1 flex w-fit items-center gap-1 rounded-md border bg-card px-2 py-0.5 text-xs font-medium">
 					<MapPinIcon aria-hidden="true" className="size-3" />
@@ -83,6 +129,32 @@ export function MapView() {
 					))}
 				</div>
 			</fieldset>
+				{/* Not a sample: it asks the browser where this device is, once. */}
+				<div className="mt-2 flex flex-col items-start gap-1.5">
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						className="pointer-events-auto max-sm:h-10"
+						disabled={locating}
+						onClick={findMyLocation}
+					>
+						<LocateFixedIcon aria-hidden="true" />
+						{locating ? "Finding your location" : "Use my location"}
+					</Button>
+					{/* Always on the page, so a screen reader hears the sentence when it appears. */}
+					<p
+						role="status"
+						className={
+							locationNote
+								? "pointer-events-auto max-w-xs rounded-md border bg-card px-2.5 py-1.5 text-xs"
+								: "sr-only"
+						}
+					>
+						{locationNote}
+					</p>
+				</div>
+			</div>
 
 			{/* MapLibre clips the browser's default focus outline, so the canvas gets an inset one.
 			    While the error notice covers the map, the map is taken out of the tab order. */}
