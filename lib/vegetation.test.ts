@@ -10,6 +10,7 @@ import {
 	datesOfYear,
 	formatVegetationDay,
 	isIsoDay,
+	isVegetationTileError,
 	LATEST_VEGETATION_DATE,
 	legendGradient,
 	nearestInYear,
@@ -19,6 +20,7 @@ import {
 	vegetationDates,
 	vegetationProbeUrl,
 	vegetationProblems,
+	vegetationResolutionText,
 	vegetationTileUrl,
 	vegetationYears,
 } from "@/lib/vegetation";
@@ -154,6 +156,21 @@ describe("tile addresses", () => {
 		// The middle of that tile is inside the Kansas rectangle.
 		expect(isInKansasBounds(38.5, -98.3)).toBe(true);
 		expect(tileAt(38.5, -98.3, 5)).toEqual({ x: 7, y: 12, z: 5 });
+	});
+});
+
+describe("the size of a reading and a failed tile", () => {
+	it("gives NASA's 250 m in feet first, as about", () => {
+		expect(VEGETATION.resolution).toBe("250m");
+		expect(vegetationResolutionText()).toBe("about 820 ft (250 m)");
+		expect(vegetationResolutionText({ resolution: "1 km" })).toBe("1 km");
+	});
+
+	it("knows a failed tile of this layer from any other error", () => {
+		expect(isVegetationTileError({ tile: {}, sourceId: "nasa-vegetation" })).toBe(true);
+		expect(isVegetationTileError({ tile: {}, sourceId: "openmaptiles" })).toBe(false);
+		expect(isVegetationTileError({ sourceId: "nasa-vegetation" })).toBe(false);
+		expect(isVegetationTileError(null)).toBe(false);
 	});
 });
 

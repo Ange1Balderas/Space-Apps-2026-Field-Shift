@@ -18,6 +18,11 @@ export function cmToIn(cm: number): number {
 	return (cm * 10) / MM_PER_INCH;
 }
 
+/** Metres to feet. A foot is 12 inches, so this rests on the same inch as the rest. */
+export function mToFt(metres: number): number {
+	return (metres * 1000) / MM_PER_INCH / 12;
+}
+
 export function cToF(celsius: number): number {
 	return (celsius * 9) / 5 + 32;
 }

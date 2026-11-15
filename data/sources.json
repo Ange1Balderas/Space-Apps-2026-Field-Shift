@@ -397,8 +397,8 @@
         "url": "https://science.nasa.gov/earth/earth-observatory/measuring-vegetation-ndvi-evi/"
       }
     ],
-    "purpose": "The vegetation layer that can be switched on over the map: the vegetation index (NDVI) from the MODIS instrument on NASA's Terra satellite, one picture for each 16 days since March 2000 (NASA's product MOD13Q1). The browser loads the pictures straight from NASA. It is a picture only: no score uses it.",
-    "resolution": "250 m",
+    "purpose": "The vegetation layer that can be switched on over the map: the vegetation index (NDVI) from the MODIS instrument on NASA's Terra satellite, about one picture every 16 days since March 2000, on a schedule that starts again each 1 January (NASA's product MOD13Q1). The browser loads the pictures straight from NASA. It is a picture only: no score uses it.",
+    "resolution": "About 820 ft (250 m) at its sharpest, straight below the satellite",
     "confidence": null
   },
   {

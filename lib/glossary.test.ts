@@ -79,10 +79,10 @@ describe("the glossary file as committed", () => {
 
 	it("describes the vegetation layer with NASA's own period and resolution", () => {
 		const here = glossaryEntry("ndvi").here ?? "";
-		expect(here).toContain("each 16-day period");
-		expect(here).toContain("at 250 m");
+		expect(here).toContain("in 16-day pictures");
+		expect(here).toContain("about 820 ft (250 m) to a reading at its sharpest");
 		expect(GLOSSARY_VALUES.vegetationPeriod).toBe("16-day");
-		expect(GLOSSARY_VALUES.vegetationResolution).toBe("250 m");
+		expect(GLOSSARY_VALUES.vegetationResolution).toBe("about 820 ft (250 m)");
 	});
 
 	it("has a term for every indicator, in the group of the seven scores", () => {

@@ -100,7 +100,7 @@ describe("the source list as committed", () => {
 		for (const id of Object.values(SOURCE_BADGE_ENTRIES)) {
 			expect(["live", "map"], id).toContain(source(id).kind);
 		}
-		expect(source(SOURCE_BADGE_ENTRIES["NASA GIBS MODIS"]).resolution).toBe("250 m");
+		expect(source(SOURCE_BADGE_ENTRIES["NASA GIBS MODIS"]).resolution).toContain("820 ft (250 m)");
 	});
 
 	it("puts every entry in a known group", () => {

@@ -13,11 +13,12 @@
 
 import layerJson from "@/data/vegetation-layer.json";
 import { KANSAS_BOUNDS } from "@/lib/kansas";
+import { mToFt } from "@/lib/units";
 
 export type VegetationPeriod = {
-	/** First day of the first picture in the period, YYYY-MM-DD. */
+	/** The date NASA GIBS lists for the first picture of the period, YYYY-MM-DD. */
 	start: string;
-	/** First day of the last picture in the period. */
+	/** The date it lists for the last picture of the period. */
 	end: string;
 	/** Days from one picture to the next. */
 	stepDays: number;
@@ -33,7 +34,7 @@ export type VegetationLayer = {
 	measurement: string;
 	/** How long one picture covers, in NASA's words, for example "16-Day". */
 	period: string;
-	/** The size of one reading, in NASA's words, for example "250m". */
+	/** The size of one reading at its sharpest, in NASA's words ("resolutionAtNadir"), for example "250m". */
 	resolution: string;
 	product: { shortName: string; title: string } | null;
 	/** Tile address with {date}, {z}, {y} and {x} to fill in. */
@@ -152,6 +153,28 @@ export const VEGETATION: VegetationLayer = load(layerJson);
 
 /** The id of the map source and of the map layer that draw the pictures. */
 export const VEGETATION_SOURCE_ID = "nasa-vegetation";
+
+/**
+ * The size of one reading, feet first (CLAUDE.md rule 5): "about 820 ft (250 m)" for NASA's
+ * "250m". NASA gives the figure for straight below the satellite, where it is sharpest, so
+ * it is "about". Text NASA writes any other way is shown as NASA wrote it.
+ */
+export function vegetationResolutionText(layer: Pick<VegetationLayer, "resolution"> = VEGETATION): string {
+	const metres = /^(\d+)\s*m$/.exec(layer.resolution.trim());
+	if (!metres) return layer.resolution;
+	const feet = Math.round(mToFt(Number(metres[1])) / 10) * 10;
+	return `about ${feet} ft (${metres[1]} m)`;
+}
+
+/**
+ * True for the map's report that one tile of the vegetation layer could not be loaded. The
+ * map reports every failed tile; only this layer's leave a gap in its picture.
+ */
+export function isVegetationTileError(event: unknown): boolean {
+	return (
+		isRecord(event) && "tile" in event && event.sourceId === VEGETATION_SOURCE_ID
+	);
+}
 
 /** Every day the layer has a picture for, oldest first. Only these are offered. */
 export function vegetationDates(periods: readonly VegetationPeriod[]): string[] {

@@ -21,6 +21,7 @@ import { KANSAS_BOUNDS } from "@/lib/kansas";
 import { locationProblem, locationResult } from "@/lib/location";
 import { SAMPLE_FIELDS } from "@/lib/samples";
 import {
+	isVegetationTileError,
 	LATEST_VEGETATION_DATE,
 	VEGETATION,
 	VEGETATION_SOURCE_ID,
@@ -71,8 +72,12 @@ export function MapView() {
 		attempt: number;
 		ok: boolean;
 	} | null>(null);
-	// The basemap's first label layer: the pictures go under the place names.
-	const [firstLabelLayer, setFirstLabelLayer] = useState<string | undefined>(undefined);
+	// The basemap layer the pictures go under: its first line layer, so rivers, roads, county
+	// lines and place names stay on top of the picture and only the plain ground is covered.
+	const [layerAbovePictures, setLayerAbovePictures] = useState<string | undefined>(undefined);
+	// The question (day and try) for which the map reported a tile it could not load.
+	const [vegetationGaps, setVegetationGaps] = useState<string | null>(null);
+	const vegetationAsk = `${vegetationDay}:${vegetationTry}`;
 
 	useEffect(() => {
 		if (!vegetationOn) return;
@@ -82,7 +87,11 @@ export function MapView() {
 		const controller = new AbortController();
 		const timer = window.setTimeout(() => controller.abort(), VEGETATION_TIMEOUT_MS);
 		fetch(vegetationProbeUrl(vegetationDay), { signal: controller.signal })
-			.then((response) => response.ok)
+			.then((response) => {
+				// Only the answer is wanted. The map asks for its own copy of the tile.
+				void response.body?.cancel();
+				return response.ok;
+			})
 			// A network failure, or the timer's abort: NASA did not serve the tile in time.
 			.catch(() => false)
 			.then((ok) => {
@@ -169,7 +178,13 @@ export function MapView() {
 			{/* Sample fields load from cached files, so they stay usable above the loading
 			    placeholder and above the error notice (both z-10). They come first in the page
 			    order so the keyboard reaches them before the map, matching where they sit. */}
-			<div className="pointer-events-none absolute top-3 left-3 z-20 max-w-[calc(100%-4.5rem)]">
+			{/* Both groups of controls share one column over the map: the samples and the
+			    location button at the top, the vegetation layer at the bottom. When the map is
+			    short the lower group gives way and scrolls inside itself, so it never covers
+			    the upper one. The column stops above MapLibre's credits, which take two lines
+			    on a phone and one on a wider screen. */}
+			<div className="pointer-events-none absolute inset-x-3 top-3 bottom-14 z-20 flex flex-col justify-between gap-2 sm:bottom-9">
+			<div className="max-w-[calc(100%-3rem)] shrink-0">
 			<fieldset className="m-0 border-0 p-0">
 				{/* Only the legend and the buttons take clicks. The gaps around them stay part of the map. */}
 				<legend className="pointer-events-auto mb-1 flex w-fit items-center gap-1 rounded-md border bg-card px-2 py-0.5 text-xs font-medium">
@@ -226,17 +241,24 @@ export function MapView() {
 			{/* The vegetation layer's switch, date and legend. It needs the map, so it waits for it.
 			    It comes before the map in the page so the keyboard reaches it first. */}
 			{status === "ready" ? (
-				<div className="pointer-events-none absolute bottom-3 left-3 z-20 flex max-w-[calc(100%-4.5rem)]">
+				<div className="flex min-h-0 max-w-full flex-col items-start justify-end">
 					<VegetationControl
 						on={vegetationOn}
-						onToggle={setVegetationOn}
+						onToggle={(next) => {
+							setVegetationOn(next);
+							// An answer from before the layer was switched off says nothing about now.
+							setVegetationAnswer(null);
+							setVegetationGaps(null);
+						}}
 						day={vegetationDay}
 						onDay={setVegetationDay}
 						status={vegetationStatus}
+						gaps={vegetationGaps === vegetationAsk}
 						onRetry={() => setVegetationTry((count) => count + 1)}
 					/>
 				</div>
 			) : null}
+			</div>
 
 			{/* MapLibre clips the browser's default focus outline, so the canvas gets an inset one.
 			    While the error notice covers the map, the map is taken out of the tab order. */}
@@ -265,8 +287,12 @@ export function MapView() {
 						event.target
 							.getCanvas()
 							.setAttribute("aria-describedby", keyboardHintId);
-						setFirstLabelLayer(
-							event.target.getStyle().layers.find((layer) => layer.type === "symbol")?.id,
+						const layers = event.target.getStyle().layers;
+						setLayerAbovePictures(
+							(
+								layers.find((layer) => layer.type === "line") ??
+								layers.find((layer) => layer.type === "symbol")
+							)?.id,
 						);
 						setStatus("ready");
 					}}
@@ -289,17 +315,22 @@ export function MapView() {
 						}
 					}}
 					onError={(event) => {
-						// One failed tile also arrives here. That is not a failed map.
-						if ("tile" in event) return;
+						// One failed tile also arrives here. That is not a failed map. A failed tile of
+						// the vegetation layer leaves a gap in its picture, and its control says so.
+						if ("tile" in event) {
+							if (isVegetationTileError(event)) setVegetationGaps(vegetationAsk);
+							return;
+						}
 						// Once the map has loaded there is something to show, so keep showing it.
 						setStatus((current) => (current === "ready" ? current : "error"));
 					}}
 				>
 					<NavigationControl position="top-right" showCompass={false} />
-					{/* A new day is a new source: the key makes the map drop the old pictures. */}
+					{/* A new day, or another try, is a new source: the key makes the map drop the old
+					    pictures and ask for them again. */}
 					{vegetationStatus === "ready" ? (
 						<Source
-							key={vegetationDay}
+							key={vegetationAsk}
 							id={VEGETATION_SOURCE_ID}
 							type="raster"
 							tiles={[vegetationTileUrl(vegetationDay)]}
@@ -310,9 +341,9 @@ export function MapView() {
 							<Layer
 								id={VEGETATION_SOURCE_ID}
 								type="raster"
-								beforeId={firstLabelLayer}
-								// See-through enough for the roads and county lines under it to show.
-								paint={{ "raster-opacity": 0.75 }}
+								beforeId={layerAbovePictures}
+								// Not see-through: the colours on the map have to be the legend's colours.
+								paint={{ "raster-opacity": 1 }}
 							/>
 						</Source>
 					) : null}

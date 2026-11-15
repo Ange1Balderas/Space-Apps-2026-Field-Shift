@@ -18,7 +18,7 @@ import { SCORING } from "@/lib/library";
 import { RECENT_YEARS } from "@/lib/scoring";
 import { monthName } from "@/lib/trend-text";
 import { LIKELY_BELOW_P, POSSIBLE_UP_TO_P } from "@/lib/trends";
-import { VEGETATION } from "@/lib/vegetation";
+import { VEGETATION, vegetationResolutionText } from "@/lib/vegetation";
 import type { IndicatorId } from "@/lib/types";
 
 /** Every term the app can show. A component names a term by one of these, so a typo fails the typecheck. */
@@ -126,7 +126,7 @@ export const GLOSSARY_VALUES: Readonly<Record<string, string>> = {
 	growingSeason: `${monthName(GROWING_SEASON.firstMonth)} to ${monthName(GROWING_SEASON.lastMonth)}`,
 	// NASA writes "16-Day" and "250m" (data/vegetation-layer.json).
 	vegetationPeriod: VEGETATION.period.toLowerCase(),
-	vegetationResolution: VEGETATION.resolution.replace(/^(\d+)\s*m$/, "$1 m"),
+	vegetationResolution: vegetationResolutionText(),
 };
 
 const PLACEHOLDER = /\{(\w+)\}/g;

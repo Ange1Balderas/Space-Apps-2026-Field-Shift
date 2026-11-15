@@ -1,7 +1,7 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
 import { describe, expect, it } from "vitest";
-import { cmToIn, cToF, fToC, mmToIn, roundTo } from "@/lib/units";
+import { cmToIn, cToF, fToC, mmToIn, mToFt, roundTo } from "@/lib/units";
 
 describe("unit conversions", () => {
 	it("converts millimetres to inches (25.4 mm is one inch)", () => {
@@ -14,6 +14,12 @@ describe("unit conversions", () => {
 		expect(cmToIn(2.54)).toBe(1);
 		expect(cmToIn(25.4)).toBe(10);
 		expect(cmToIn(0)).toBe(0);
+	});
+
+	it("converts metres to feet (0.3048 m is one foot)", () => {
+		expect(mToFt(0.3048)).toBeCloseTo(1, 12);
+		expect(mToFt(250)).toBeCloseTo(820.21, 2);
+		expect(mToFt(0)).toBe(0);
 	});
 
 	it("converts °C to °F", () => {
