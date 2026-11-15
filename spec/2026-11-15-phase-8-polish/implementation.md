@@ -117,7 +117,13 @@ Angel answered "Push and check". Before pushing, the 26 commits were searched fo
 - **375 px wide.** The three samples with every disclosure open, and the About the data tab: no sideways scroll, the banner on each. The vegetation card is 82, 150 and 208 px tall (off, on, pickers open), with nothing to scroll inside it.
 - **Console:** no messages.
 
-Not checked on the public URL: the failure paths (checked on the local build only, by making the page's requests fail), "Use my location", and a real phone.
+Not checked on the public URL:
+
+- The priority sliders, the irrigation switch, changing a crop year by hand, the card disclosures one by one and the term tooltips. They run in the browser only, and their code is the same as in the build walked locally.
+- The failure paths. They were checked on the local build only, by making the page's requests fail.
+- "Use my location", which was not checked anywhere: it needs a browser that can give a position.
+- A real phone. Phone width was a 375 px window, not a phone.
+- A literal private window. What stands in for it is the request with no cookies and the app's browser pane, which holds no login for the site.
 
 How it was done: the app's browser pane was hidden for part of this, and a hidden pane does not draw, so the map did not finish loading there. The checks that need the map were run after the pane was shown.
 

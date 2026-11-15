@@ -6,7 +6,7 @@ Date: 2026-11-15, between about 00:20 and 00:55 CST, unattended (Angel's message
 
 **One stretch feature is built: NASA's vegetation layer on the map (feature 13).** The scenario slider, the LLM summary and the county yields were not started, each for a reason given below. The printable summary (feature 18) is not built yet either.
 
-Commits: `4b7e715` (the layer) and the one this file is part of (what the source check and the UI review asked for).
+Commits: `4b7e715` (the layer), `e1de5a0` (what the source check and the first UI review asked for), `996bea7` (the date fold closed at first) and `05c1e00` (two faults in the gaps note, from the second UI review).
 
 ## What was built
 
@@ -102,7 +102,7 @@ The results below are from before the second UI review, except where a later sec
 - **The badge** opened "NASA GIBS, Vegetation Index (16-Day, MODIS, Terra)" on the About the data tab with focus on the entry; "Back to where you were" returned to the Field tab with focus on the badge.
 - **Keyboard order** on the map: the three samples, "Use my location", the switch, NDVI, the badge, the fold, the two pickers, the map, zoom in, zoom out, the credits.
 - **Console**: no messages.
-- **Seen on screen twice, briefly.** The browser pane would not draw for most of the night, so most checks are by script. At about 00:50 CST it drew at phone width: the green picture over Kansas and its neighbours, with state lines, roads and town names above it, and the card with the legend. The colours of the picture and the legend agreed by eye. During the Phase 8 walk-through, at about 01:02 CST, it was seen once more at 1280 px wide, with the Finney County marker drawn above the picture. It has **not** been seen on a real phone or on the public URL.
+- **Seen on screen twice, briefly.** The browser pane would not draw for most of the night, so most checks are by script. At about 00:50 CST it drew at phone width: the green picture over Kansas and its neighbours, with state lines, roads and town names above it, and the card with the legend. The colours of the picture and the legend agreed by eye. During the Phase 8 walk-through, at about 01:02 CST, it was seen once more at 1280 px wide, with the Finney County marker drawn above the picture. After Angel's push it was seen on the public URL at about 09:50 CST, at 1280 px wide, with 17 tiles from NASA all answered 200. It has **not** been seen on a real phone.
 
 ## Not built, and why
 
