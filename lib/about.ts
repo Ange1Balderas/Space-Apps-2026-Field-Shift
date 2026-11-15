@@ -136,6 +136,7 @@ export const SOURCE_BADGE_ENTRIES = {
 	"NASA POWER": "nasa-power",
 	"USDA NASS CDL": "usda-cdl",
 	"USDA NRCS SSURGO": "usda-ssurgo",
+	"NASA GIBS MODIS": "nasa-gibs-ndvi",
 } as const;
 
 /** The id of the element that shows a source on the About tab. */

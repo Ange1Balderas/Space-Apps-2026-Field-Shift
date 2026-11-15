@@ -376,6 +376,32 @@
     "confidence": null
   },
   {
+    "id": "nasa-gibs-ndvi",
+    "kind": "map",
+    "name": "NASA GIBS, Vegetation Index (16-Day, MODIS, Terra)",
+    "links": [
+      {
+        "label": "NASA GIBS",
+        "url": "https://nasa-gibs.github.io/gibs-api-docs/"
+      },
+      {
+        "label": "The layer, as NASA describes it",
+        "url": "https://gibs.earthdata.nasa.gov/layer-metadata/v1.0/MODIS_Terra_L3_NDVI_16Day.json"
+      },
+      {
+        "label": "Its colour scale",
+        "url": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_L3_NDVI.xml"
+      },
+      {
+        "label": "NASA Earth Observatory, Measuring Vegetation",
+        "url": "https://science.nasa.gov/earth/earth-observatory/measuring-vegetation-ndvi-evi/"
+      }
+    ],
+    "purpose": "The vegetation layer that can be switched on over the map: the vegetation index (NDVI) from the MODIS instrument on NASA's Terra satellite, one picture for each 16 days since March 2000 (NASA's product MOD13Q1). The browser loads the pictures straight from NASA. It is a picture only: no score uses it.",
+    "resolution": "250 m",
+    "confidence": null
+  },
+  {
     "id": "openfreemap",
     "kind": "map",
     "name": "OpenFreeMap, Positron style",

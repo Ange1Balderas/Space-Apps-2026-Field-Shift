@@ -14,6 +14,7 @@
 | `config/scoring.json` | `ScoringConfig` | Constants the tool chose: caps, points, penalties and which indicators each slider weighs |
 | `data/glossary.json` | `GlossaryEntry[]`, in `lib/glossary.ts` | The glossary: each term with a plain-language definition and its source, or marked as the tool's own |
 | `data/sources.json` | `SourceEntry[]`, in `lib/about.ts` | Every source the About the data tab lists, with its links and, where it is not worked out from the values that cite it, its purpose |
+| `data/vegetation-layer.json` | `VegetationLayer`, in `lib/vegetation.ts` | NASA's vegetation layer as NASA GIBS describes it: the periods it has pictures for, its colour scale, its product, period and resolution. Written by `scripts/gibs-vegetation-layer.mjs`, with the time it was read |
 | `data/kansas-county-centroids.csv` | `fips`, `county`, `latitude`, `longitude` | The 105 Kansas counties with their centroids, from the U.S. Census Bureau's TIGERweb service. Written by `scripts/kansas_county_centroids.py`. The app does not read it yet |
 | `data/appeears-smap-request.json` | An AppEEARS point request | The request for NASA SMAP soil moisture at those 105 centroids, 2015 to now. **Never submitted**: it needs an Earthdata Login. Written by the same script |
 
@@ -76,7 +77,7 @@ Added in Phase 5, on 2026-11-14, and written with AI like the rest.
 - Seven soil definitions come from the USDA soil survey's own descriptions of its attributes. They have no page of their own: they are rows of the table `sdvattribute` in Soil Data Access. To read them again, paste this into the [query page](https://sdmdataaccess.sc.egov.usda.gov/Query.aspx): `SELECT attributename, attributedescription FROM sdvattribute WHERE attributename IN ('Surface Texture', 'Organic Matter', 'Representative Slope', 'Available Water Supply, 0 to 100 cm', 'K Factor, Whole Soil', 'Wind Erodibility Index', 'Hydrologic Soil Group')`.
 - The slope the app shows is the survey's value for the whole map unit (column `slopegradwta`). No description of that column was found, so the glossary cites the survey's definition of slope gradient and says only that the figure is for the map unit.
 - `data/sources.json` holds every link that a value, a sentence or a definition cites. A test fails when one is missing. For a publication behind crop values, what it is used for is not written by hand: `lib/about.ts` works it out from the values that cite it.
-- Two terms that SPEC.md lists are not in the glossary: soil moisture anomaly and NDVI. Nothing on screen uses them yet.
+- One term that SPEC.md lists is not in the glossary: soil moisture anomaly. Nothing on screen uses it yet. NDVI was added on 2026-11-15 with the vegetation layer, from NASA Earth Observatory's article on measuring vegetation.
 
 ## Not loaded yet
 

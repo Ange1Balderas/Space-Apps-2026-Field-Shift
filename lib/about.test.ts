@@ -96,9 +96,11 @@ describe("the source list as committed", () => {
 	});
 
 	it("has the entry that each source badge opens", () => {
+		// The three sources read for a field, and the NASA layer on the map.
 		for (const id of Object.values(SOURCE_BADGE_ENTRIES)) {
-			expect(source(id).kind, id).toBe("live");
+			expect(["live", "map"], id).toContain(source(id).kind);
 		}
+		expect(source(SOURCE_BADGE_ENTRIES["NASA GIBS MODIS"]).resolution).toBe("250 m");
 	});
 
 	it("puts every entry in a known group", () => {

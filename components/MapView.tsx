@@ -4,25 +4,38 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import { LocateFixedIcon, MapPinIcon, PlusIcon } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import MapGL, {
+	Layer,
 	type MapRef,
 	Marker,
 	NavigationControl,
+	Source,
 } from "react-map-gl/maplibre";
 import { ErrorState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { VegetationControl, type VegetationStatus } from "@/components/VegetationControl";
 import { selectionOf, useFieldStore } from "@/lib/field-store";
 import { KANSAS_BOUNDS } from "@/lib/kansas";
 import { locationProblem, locationResult } from "@/lib/location";
 import { SAMPLE_FIELDS } from "@/lib/samples";
+import {
+	LATEST_VEGETATION_DATE,
+	VEGETATION,
+	VEGETATION_SOURCE_ID,
+	vegetationProbeUrl,
+	vegetationTileUrl,
+} from "@/lib/vegetation";
 
 // OpenFreeMap Positron: the muted basemap SPEC.md names under "UI rules". No API key.
 const BASEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
 // Space kept between Kansas and the edge of the map, in pixels.
 const FIT_OPTIONS = { padding: 24 };
+
+// How long NASA is given to answer for the first vegetation tile (CLAUDE.md rule 4).
+const VEGETATION_TIMEOUT_MS = 15_000;
 
 type MapStatus = "loading" | "ready" | "error";
 
@@ -44,6 +57,56 @@ export function MapView() {
 	const selection = useFieldStore((state) => selectionOf(state.panel));
 	const selectPoint = useFieldStore((state) => state.selectPoint);
 	const selectSample = useFieldStore((state) => state.selectSample);
+
+	// NASA's vegetation layer (SPEC.md, feature 13). It is off until asked for. Before it is
+	// drawn, one tile over the middle of Kansas is asked for: if NASA cannot serve it, the
+	// control says so and the map stays as it was.
+	const [vegetationOn, setVegetationOn] = useState(false);
+	const [vegetationDay, setVegetationDay] = useState(LATEST_VEGETATION_DATE);
+	// Counts the tries, so "Try again" asks NASA once more for the same day.
+	const [vegetationTry, setVegetationTry] = useState(0);
+	// The answer to the last question asked, with the question it answers.
+	const [vegetationAnswer, setVegetationAnswer] = useState<{
+		day: string;
+		attempt: number;
+		ok: boolean;
+	} | null>(null);
+	// The basemap's first label layer: the pictures go under the place names.
+	const [firstLabelLayer, setFirstLabelLayer] = useState<string | undefined>(undefined);
+
+	useEffect(() => {
+		if (!vegetationOn) return;
+		// True once the day has changed or the layer is off: an answer that arrives after that
+		// belongs to a question nobody is asking any more.
+		let superseded = false;
+		const controller = new AbortController();
+		const timer = window.setTimeout(() => controller.abort(), VEGETATION_TIMEOUT_MS);
+		fetch(vegetationProbeUrl(vegetationDay), { signal: controller.signal })
+			.then((response) => response.ok)
+			// A network failure, or the timer's abort: NASA did not serve the tile in time.
+			.catch(() => false)
+			.then((ok) => {
+				window.clearTimeout(timer);
+				if (!superseded) {
+					setVegetationAnswer({ day: vegetationDay, attempt: vegetationTry, ok });
+				}
+			});
+		return () => {
+			superseded = true;
+			window.clearTimeout(timer);
+			controller.abort();
+		};
+	}, [vegetationOn, vegetationDay, vegetationTry]);
+
+	const vegetationStatus: VegetationStatus = !vegetationOn
+		? "off"
+		: vegetationAnswer &&
+				vegetationAnswer.day === vegetationDay &&
+				vegetationAnswer.attempt === vegetationTry
+			? vegetationAnswer.ok
+				? "ready"
+				: "failed"
+			: "checking";
 
 	// "Use my location": idle, asking the browser, or a sentence saying why no point was chosen.
 	const [locating, setLocating] = useState(false);
@@ -160,6 +223,21 @@ export function MapView() {
 				</div>
 			</div>
 
+			{/* The vegetation layer's switch, date and legend. It needs the map, so it waits for it.
+			    It comes before the map in the page so the keyboard reaches it first. */}
+			{status === "ready" ? (
+				<div className="pointer-events-none absolute bottom-3 left-3 z-20 flex max-w-[calc(100%-4.5rem)]">
+					<VegetationControl
+						on={vegetationOn}
+						onToggle={setVegetationOn}
+						day={vegetationDay}
+						onDay={setVegetationDay}
+						status={vegetationStatus}
+						onRetry={() => setVegetationTry((count) => count + 1)}
+					/>
+				</div>
+			) : null}
+
 			{/* MapLibre clips the browser's default focus outline, so the canvas gets an inset one.
 			    While the error notice covers the map, the map is taken out of the tab order. */}
 			<div
@@ -187,6 +265,9 @@ export function MapView() {
 						event.target
 							.getCanvas()
 							.setAttribute("aria-describedby", keyboardHintId);
+						setFirstLabelLayer(
+							event.target.getStyle().layers.find((layer) => layer.type === "symbol")?.id,
+						);
 						setStatus("ready");
 					}}
 					onClick={(event) => {
@@ -215,6 +296,26 @@ export function MapView() {
 					}}
 				>
 					<NavigationControl position="top-right" showCompass={false} />
+					{/* A new day is a new source: the key makes the map drop the old pictures. */}
+					{vegetationStatus === "ready" ? (
+						<Source
+							key={vegetationDay}
+							id={VEGETATION_SOURCE_ID}
+							type="raster"
+							tiles={[vegetationTileUrl(vegetationDay)]}
+							tileSize={256}
+							maxzoom={VEGETATION.maxZoom}
+							attribution="NASA GIBS"
+						>
+							<Layer
+								id={VEGETATION_SOURCE_ID}
+								type="raster"
+								beforeId={firstLabelLayer}
+								// See-through enough for the roads and county lines under it to show.
+								paint={{ "raster-opacity": 0.75 }}
+							/>
+						</Source>
+					) : null}
 					{selection ? (
 						<Marker
 							longitude={selection.lon}

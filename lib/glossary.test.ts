@@ -77,6 +77,14 @@ describe("the glossary file as committed", () => {
 		expect(glossaryEntry("trend-confidence").definition).toContain("from 0.05 to 0.20");
 	});
 
+	it("describes the vegetation layer with NASA's own period and resolution", () => {
+		const here = glossaryEntry("ndvi").here ?? "";
+		expect(here).toContain("each 16-day period");
+		expect(here).toContain("at 250 m");
+		expect(GLOSSARY_VALUES.vegetationPeriod).toBe("16-day");
+		expect(GLOSSARY_VALUES.vegetationResolution).toBe("250 m");
+	});
+
 	it("has a term for every indicator, in the group of the seven scores", () => {
 		for (const id of INDICATOR_IDS) {
 			expect(glossaryEntry(INDICATOR_TERMS[id]).group, id).toBe("scores");
@@ -124,9 +132,9 @@ describe("glossaryProblems", () => {
 		expect(glossaryProblems(missing)).toContain("glossary: slope has 0 entries, expected one");
 
 		const unknown = loose();
-		unknown[0].id = "ndvi";
+		unknown[0].id = "made-up-term";
 		expect(glossaryProblems(unknown).join("\n")).toContain(
-			"glossary[ndvi].id: not one of the term ids",
+			"glossary[made-up-term].id: not one of the term ids",
 		);
 	});
 

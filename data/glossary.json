@@ -312,6 +312,18 @@
     "source": "U.S. EPA, Guidance for Data Quality Assessment: Practical Methods for Data Analysis (EPA QA/G-9, QA00 update, July 2000), section 4.3.2.1: \"Regression is very sensitive to extreme values (outliers)\", and it \"relies on two key assumptions: normally distributed errors, and constant variance\". https://www.epa.gov/sites/default/files/2015-06/documents/g9-final.pdf"
   },
   {
+    "id": "ndvi",
+    "group": "vegetation",
+    "term": "NDVI (vegetation index)",
+    "match": ["NDVI"],
+    "definition": "A measure, made from space, of how densely green a patch of land is: the near-infrared light it reflects minus the visible light, divided by the two added together. It runs from -1 to +1. No green leaves gives a value close to zero, and a value close to +1 (0.8 to 0.9) means the highest possible density of green leaves.",
+    "here": "The map layer shows it for each {vegetationPeriod} period, from the MODIS instrument on NASA's Terra satellite, at {vegetationResolution}. Readings of zero or below are left clear. It is a picture only: no score uses it.",
+    "note": null,
+    "own": false,
+    "sourceName": "NASA Earth Observatory",
+    "source": "NASA Earth Observatory, Measuring Vegetation (NDVI & EVI), 30 August 2000: \"near-infrared radiation minus visible radiation divided by near-infrared radiation plus visible radiation. The result of this formula is called the Normalized Difference Vegetation Index (NDVI).\" and \"Calculations of NDVI for a given pixel always result in a number that ranges from minus one (-1) to plus one (+1); however, no green leaves gives a value close to zero. A zero means no vegetation and close to +1 (0.8 - 0.9) indicates the highest possible density of green leaves.\" https://science.nasa.gov/earth/earth-observatory/measuring-vegetation-ndvi-evi/"
+  },
+  {
     "id": "water-fit",
     "group": "scores",
     "term": "Water fit",

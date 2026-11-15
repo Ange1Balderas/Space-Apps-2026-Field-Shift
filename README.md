@@ -4,7 +4,7 @@ NASA Space Apps Challenge 2026, Kansas City local event, team ANGEL. Challenge: 
 
 A decision support tool that uses NASA Earth data, USDA soil and crop data, and farmer priorities to compare crop rotations for Kansas fields. The tool supports farmer judgment. It does not replace it.
 
-> **Status: Phases 1 to 5 are built.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. Science terms have tooltips, and an About the data tab lists every source, every number the tool chose and the glossary. The live app below is whatever was last pushed to `main`: if its panel has no About the data tab, it is an older build than this README describes. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
+> **Status: Phases 1 to 5 are built, with one stretch feature, NASA's vegetation layer on the map.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. Science terms have tooltips, and an About the data tab lists every source, every number the tool chose and the glossary. The live app below is whatever was last pushed to `main`: if its panel has no About the data tab, it is an older build than this README describes. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
 
 Live app: https://space-apps-2026-field-shift.vercel.app
 
@@ -18,6 +18,7 @@ Live app: https://space-apps-2026-field-shift.vercel.app
 - **Conditions:** four charts from 1981 to the last full year: hot days (daily high at or above 95°F), growing-season rain, and the dates of the last spring freeze and the first fall freeze. Each has its long-term average, a table of the same numbers, and a trend label: likely trend, possible trend or no clear trend.
 - **Terms:** each science word in the panel (evapotranspiration, K factor, Mann-Kendall trend test, the seven indicators and others) is underlined with dots. Pointing at it, reaching it with the keyboard or tapping it shows its definition and where the definition comes from.
 - **About the data:** the panel's second tab. Every source with its link and what the tool takes from it; how fine each source is and how far to trust it for one field; a satellite record against a gauge on the farm; Sen's slope beside a linear regression slope for the selected field; how the seven scores are worked out, with every number and rule the tool chose; and the glossary, with a source for each published definition. A source badge in the panel opens its entry there, and one press leads back.
+- **Vegetation from space:** a switch on the map draws NASA's vegetation index (NDVI), from the MODIS instrument on the Terra satellite, for any 16-day period since March 2000. The date picker offers only the dates NASA has, and the legend is NASA's own colour scale. If NASA cannot serve the pictures, the control says so and the map stays as it was. It is a picture only: no score uses it.
 - The three facts come from three services and load on their own. If one fails, the other two still show, and the failed one says so and offers a retry. If the crop history fails, the 8 years can be filled in by hand.
 - Three sample fields (Finney, Thomas and Brown counties) load saved copies of all three facts, so the demo works without a live connection to NASA or USDA.
 
@@ -29,8 +30,8 @@ How the trend is worked out: a Mann-Kendall test (with the correction for tied v
 
 - Switches for no-till equipment and market access. The no-till switch is built and appears once a loaded rotation needs no-till; the market switch is not defined yet.
 - The four remaining rotations: corn-wheat, corn-soybean-wheat with double-crop soybean, wheat-cover crop-sorghum, and alfalfa then corn or wheat.
-- A NASA vegetation layer on the map (MODIS through NASA GIBS), and the trend of each crop's water demand.
-- Glossary entries for soil moisture anomaly and NDVI. Nothing on screen uses either term yet; each arrives with the feature that does (NASA SMAP soil moisture, and the vegetation layer).
+- The trend of each crop's water demand.
+- A glossary entry for soil moisture anomaly. Nothing on screen uses the term yet; it arrives with NASA SMAP soil moisture.
 
 ## Run it locally
 
@@ -50,6 +51,7 @@ npm run dev
 | `npm run test` | Vitest unit tests |
 | `npm run build` | Production build |
 | `node scripts/cache-samples.mjs http://localhost:3000` | With the app running, saves the live answers of the three routes for each sample field into `public/data/samples/` |
+| `node scripts/gibs-vegetation-layer.mjs` | Reads the vegetation layer's dates, colour scale and description from NASA GIBS into `data/vegetation-layer.json`. Needs no login |
 | `python scripts/kansas_county_centroids.py` | Writes the 105 Kansas county centroids and the NASA AppEEARS request built from them into `data/`. Needs Python 3.9 or newer, no package and no login. It sends nothing to NASA |
 
 ## Stack
@@ -63,6 +65,7 @@ In use now:
 - [NASA POWER](https://power.larc.nasa.gov/docs/services/api/): daily maximum and minimum temperature and precipitation from 1981 to the last full year, for the hot-day counts, the last spring and first fall freeze dates, and their trends; and sunlight, dew point, humidity and wind, for reference evapotranspiration. In the answers received so far POWER's sunlight value is missing before 1984, so the monthly rain and evapotranspiration figures start in 1984. Route: `/api/climate`. POWER gives its weather values on a grid of 1/2 degree latitude by 5/8 degree longitude ([methodology](https://power.larc.nasa.gov/docs/methodology/)), about 35 miles on a side in Kansas, so it is the area's climate, not a reading from one field.
 - [USDA NASS Cropland Data Layer](https://www.nass.usda.gov/research-and-science/cropland/sars1a): the crop class at the point in each of the last 8 years. Route: `/api/history`. It is read from [USDA's CDL image service](https://pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer), the layer behind USDA's own [CroplandCROS](https://croplandcros.scinet.usda.gov/) viewer, in one request. The first plan was CropScape; it was too slow and then stopped answering on the day the route was built, and Angel decided on 2026-11-14 to keep the image service.
 - [USDA NRCS SSURGO through Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/documents/AdvancedQueries.html): the soil map unit under the point and its properties. Route: `/api/soil`.
+- [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/): the layer `MODIS_Terra_L3_NDVI_16Day`, NASA's vegetation index (NDVI) from MODIS on the Terra satellite (product MOD13Q1, 250 m, one picture for each 16 days since March 2000), drawn over the map when it is switched on. `data/vegetation-layer.json` holds its dates, colour scale and description, written from GIBS by `scripts/gibs-vegetation-layer.mjs`. No score uses the layer.
 - [OpenFreeMap](https://openfreemap.org/) Positron basemap (OpenMapTiles schema, OpenStreetMap data).
 - [U.S. Census Bureau TIGERweb](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer): the Kansas bounding box, and the county boxes inside which the three sample fields were chosen.
 
@@ -71,12 +74,11 @@ In use now:
 - K-State Research and Extension publications, USDA NASS Kansas Crop Progress reports, a USDA NRCS residue sheet and a USDA-ARS fallow study: crop traits, heat-sensitive months, and the benefits and risks of each rotation. [data/README.md](data/README.md) lists them value by value.
 - The glossary definitions in `data/glossary.json`: K-State MF3066, [FAO-56 Chapter 1](https://www.fao.org/4/X0490E/x0490e04.htm), the USDA soil survey's own descriptions of its attributes (through [Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/Query.aspx)), EPA QA/G-9 and the National Weather Service glossary. `data/sources.json` is the full list the About the data tab shows.
 
-The browser never calls these services. It calls the app's own three routes, each with a 15-second timeout, a cache and a plain-language error.
+The browser never calls the three data services (NASA POWER, the crop history service, the soil survey). It calls the app's own three routes, each with a 15-second timeout, a cache and a plain-language error. Map pictures are the exception, as SPEC.md's architecture says: the map loads the basemap tiles and NASA's vegetation tiles itself.
 
 Planned, with the phase that adds each one (details in [SPEC.md](SPEC.md), "Data sources"):
 
 - NASA SMAP soil moisture through AppEEARS and GRACE/GRACE-FO water storage (Phase 6). Not built: both need an Earthdata Login. The 105 county centroids and the AppEEARS request are ready to submit; the steps are in `spec/2026-11-15-phase-6-county-data/implementation.md`.
-- MODIS vegetation through NASA GIBS, as a map layer (stretch). The layer `MODIS_Terra_L3_NDVI_16Day` was confirmed to load in Web Mercator in Phase 2.
 
 ## AI use
 

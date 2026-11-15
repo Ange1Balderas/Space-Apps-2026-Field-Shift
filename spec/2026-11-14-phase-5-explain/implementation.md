@@ -242,3 +242,7 @@ Claude's reading, which Angel has not confirmed:
 - It does not cover pushing. CLAUDE.md says "Do not push; Angel pushes to deploy", and nothing in the message asks for a push. Every commit is kept safe to push, because Angel may push on waking.
 - It does not cover changing SPEC.md, swapping a data source, or anything that needs an account, a key or a login. Where a phase needs one of those, the phase is recorded as blocked, with the steps left for Angel.
 - "Wait till limit resets and keep going": a session cannot restart itself after a cut. One check-in an hour is scheduled inside this session only, to pick the work up from the hand-over note if a limit stops it. It is deleted when the list is done, and it ends with the session.
+
+## Since this phase: NDVI
+
+On 2026-11-15 the vegetation layer was built (`spec/2026-11-15-phase-7-stretch/`), and NDVI joined the glossary with it, sourced from NASA Earth Observatory. So eight of the nine terms SPEC.md names are in, and the glossary holds 34 terms. Soil moisture anomaly is still out. Where this file says two terms are left out, or counts 33 terms, it describes the evening of 2026-11-14.
