@@ -1,0 +1,662 @@
+{
+  "task_type": "point",
+  "task_name": "field-shift-kansas-smap",
+  "params": {
+    "dates": [
+      {
+        "startDate": "03-31-2015",
+        "endDate": "11-15-2026"
+      }
+    ],
+    "layers": [
+      {
+        "product": "SPL3SMP_E.006",
+        "layer": "Soil_Moisture_Retrieval_Data_AM_soil_moisture"
+      },
+      {
+        "product": "SPL3SMP_E.006",
+        "layer": "Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag"
+      },
+      {
+        "product": "SPL3SMP_E.006",
+        "layer": "Soil_Moisture_Retrieval_Data_PM_soil_moisture_pm"
+      },
+      {
+        "product": "SPL3SMP_E.006",
+        "layer": "Soil_Moisture_Retrieval_Data_PM_retrieval_qual_flag_pm"
+      }
+    ],
+    "coordinates": [
+      {
+        "id": "20001",
+        "category": "Allen County",
+        "latitude": 37.8857003,
+        "longitude": -95.3013952
+      },
+      {
+        "id": "20003",
+        "category": "Anderson County",
+        "latitude": 38.2141355,
+        "longitude": -95.2933406
+      },
+      {
+        "id": "20005",
+        "category": "Atchison County",
+        "latitude": 39.5317701,
+        "longitude": -95.3134139
+      },
+      {
+        "id": "20007",
+        "category": "Barber County",
+        "latitude": 37.2287519,
+        "longitude": -98.6847361
+      },
+      {
+        "id": "20009",
+        "category": "Barton County",
+        "latitude": 38.4788581,
+        "longitude": -98.7564639
+      },
+      {
+        "id": "20011",
+        "category": "Bourbon County",
+        "latitude": 37.8551569,
+        "longitude": -94.8493031
+      },
+      {
+        "id": "20013",
+        "category": "Brown County",
+        "latitude": 39.8264282,
+        "longitude": -95.5642196
+      },
+      {
+        "id": "20015",
+        "category": "Butler County",
+        "latitude": 37.7809997,
+        "longitude": -96.8390678
+      },
+      {
+        "id": "20017",
+        "category": "Chase County",
+        "latitude": 38.3019143,
+        "longitude": -96.5939455
+      },
+      {
+        "id": "20019",
+        "category": "Chautauqua County",
+        "latitude": 37.1500698,
+        "longitude": -96.2453767
+      },
+      {
+        "id": "20021",
+        "category": "Cherokee County",
+        "latitude": 37.1692544,
+        "longitude": -94.8462667
+      },
+      {
+        "id": "20023",
+        "category": "Cheyenne County",
+        "latitude": 39.7857931,
+        "longitude": -101.7311042
+      },
+      {
+        "id": "20025",
+        "category": "Clark County",
+        "latitude": 37.2353918,
+        "longitude": -99.8202856
+      },
+      {
+        "id": "20027",
+        "category": "Clay County",
+        "latitude": 39.3495546,
+        "longitude": -97.1651751
+      },
+      {
+        "id": "20029",
+        "category": "Cloud County",
+        "latitude": 39.480269,
+        "longitude": -97.6492812
+      },
+      {
+        "id": "20031",
+        "category": "Coffey County",
+        "latitude": 38.2367327,
+        "longitude": -95.7341234
+      },
+      {
+        "id": "20033",
+        "category": "Comanche County",
+        "latitude": 37.1912255,
+        "longitude": -99.2718712
+      },
+      {
+        "id": "20035",
+        "category": "Cowley County",
+        "latitude": 37.2376446,
+        "longitude": -96.837488
+      },
+      {
+        "id": "20037",
+        "category": "Crawford County",
+        "latitude": 37.5072712,
+        "longitude": -94.8518062
+      },
+      {
+        "id": "20039",
+        "category": "Decatur County",
+        "latitude": 39.7846461,
+        "longitude": -100.4599008
+      },
+      {
+        "id": "20041",
+        "category": "Dickinson County",
+        "latitude": 38.8662639,
+        "longitude": -97.1526771
+      },
+      {
+        "id": "20043",
+        "category": "Doniphan County",
+        "latitude": 39.7880558,
+        "longitude": -95.1467448
+      },
+      {
+        "id": "20045",
+        "category": "Douglas County",
+        "latitude": 38.8846239,
+        "longitude": -95.2925545
+      },
+      {
+        "id": "20047",
+        "category": "Edwards County",
+        "latitude": 37.8876439,
+        "longitude": -99.3120811
+      },
+      {
+        "id": "20049",
+        "category": "Elk County",
+        "latitude": 37.4536986,
+        "longitude": -96.2440835
+      },
+      {
+        "id": "20051",
+        "category": "Ellis County",
+        "latitude": 38.9146432,
+        "longitude": -99.3172377
+      },
+      {
+        "id": "20053",
+        "category": "Ellsworth County",
+        "latitude": 38.6965993,
+        "longitude": -98.2047255
+      },
+      {
+        "id": "20055",
+        "category": "Finney County",
+        "latitude": 38.0442685,
+        "longitude": -100.737324
+      },
+      {
+        "id": "20057",
+        "category": "Ford County",
+        "latitude": 37.6916408,
+        "longitude": -99.8879223
+      },
+      {
+        "id": "20059",
+        "category": "Franklin County",
+        "latitude": 38.5644498,
+        "longitude": -95.2859523
+      },
+      {
+        "id": "20061",
+        "category": "Geary County",
+        "latitude": 39.0023683,
+        "longitude": -96.7523769
+      },
+      {
+        "id": "20063",
+        "category": "Gove County",
+        "latitude": 38.9160376,
+        "longitude": -100.4829088
+      },
+      {
+        "id": "20065",
+        "category": "Graham County",
+        "latitude": 39.3496073,
+        "longitude": -99.8832572
+      },
+      {
+        "id": "20067",
+        "category": "Grant County",
+        "latitude": 37.562128,
+        "longitude": -101.3080202
+      },
+      {
+        "id": "20069",
+        "category": "Gray County",
+        "latitude": 37.7379609,
+        "longitude": -100.4378444
+      },
+      {
+        "id": "20071",
+        "category": "Greeley County",
+        "latitude": 38.4804041,
+        "longitude": -101.8059697
+      },
+      {
+        "id": "20073",
+        "category": "Greenwood County",
+        "latitude": 37.8775643,
+        "longitude": -96.2326996
+      },
+      {
+        "id": "20075",
+        "category": "Hamilton County",
+        "latitude": 37.9989354,
+        "longitude": -101.7912468
+      },
+      {
+        "id": "20077",
+        "category": "Harper County",
+        "latitude": 37.1915486,
+        "longitude": -98.0754957
+      },
+      {
+        "id": "20079",
+        "category": "Harvey County",
+        "latitude": 38.0432491,
+        "longitude": -97.4272721
+      },
+      {
+        "id": "20081",
+        "category": "Haskell County",
+        "latitude": 37.5621854,
+        "longitude": -100.8711915
+      },
+      {
+        "id": "20083",
+        "category": "Hodgeman County",
+        "latitude": 38.0875014,
+        "longitude": -99.8979355
+      },
+      {
+        "id": "20085",
+        "category": "Jackson County",
+        "latitude": 39.4167026,
+        "longitude": -95.7937525
+      },
+      {
+        "id": "20087",
+        "category": "Jefferson County",
+        "latitude": 39.2356661,
+        "longitude": -95.3834404
+      },
+      {
+        "id": "20089",
+        "category": "Jewell County",
+        "latitude": 39.7846252,
+        "longitude": -98.2183405
+      },
+      {
+        "id": "20091",
+        "category": "Johnson County",
+        "latitude": 38.883737,
+        "longitude": -94.8222972
+      },
+      {
+        "id": "20093",
+        "category": "Kearny County",
+        "latitude": 37.9999557,
+        "longitude": -101.3198475
+      },
+      {
+        "id": "20095",
+        "category": "Kingman County",
+        "latitude": 37.5589046,
+        "longitude": -98.1363352
+      },
+      {
+        "id": "20097",
+        "category": "Kiowa County",
+        "latitude": 37.5582336,
+        "longitude": -99.2860459
+      },
+      {
+        "id": "20099",
+        "category": "Labette County",
+        "latitude": 37.1912378,
+        "longitude": -95.2975773
+      },
+      {
+        "id": "20101",
+        "category": "Lane County",
+        "latitude": 38.4811582,
+        "longitude": -100.4663926
+      },
+      {
+        "id": "20103",
+        "category": "Leavenworth County",
+        "latitude": 39.1991553,
+        "longitude": -95.0379335
+      },
+      {
+        "id": "20105",
+        "category": "Lincoln County",
+        "latitude": 39.045298,
+        "longitude": -98.2076941
+      },
+      {
+        "id": "20107",
+        "category": "Linn County",
+        "latitude": 38.2122089,
+        "longitude": -94.8429383
+      },
+      {
+        "id": "20109",
+        "category": "Logan County",
+        "latitude": 38.9172788,
+        "longitude": -101.1483943
+      },
+      {
+        "id": "20111",
+        "category": "Lyon County",
+        "latitude": 38.4558831,
+        "longitude": -96.1526474
+      },
+      {
+        "id": "20113",
+        "category": "McPherson County",
+        "latitude": 38.3915618,
+        "longitude": -97.6480783
+      },
+      {
+        "id": "20115",
+        "category": "Marion County",
+        "latitude": 38.3587036,
+        "longitude": -97.0967857
+      },
+      {
+        "id": "20117",
+        "category": "Marshall County",
+        "latitude": 39.7835165,
+        "longitude": -96.5229369
+      },
+      {
+        "id": "20119",
+        "category": "Meade County",
+        "latitude": 37.2380586,
+        "longitude": -100.3661645
+      },
+      {
+        "id": "20121",
+        "category": "Miami County",
+        "latitude": 38.5635182,
+        "longitude": -94.8380605
+      },
+      {
+        "id": "20123",
+        "category": "Mitchell County",
+        "latitude": 39.3932369,
+        "longitude": -98.2093662
+      },
+      {
+        "id": "20125",
+        "category": "Montgomery County",
+        "latitude": 37.1924327,
+        "longitude": -95.7428785
+      },
+      {
+        "id": "20127",
+        "category": "Morris County",
+        "latitude": 38.6874094,
+        "longitude": -96.6498189
+      },
+      {
+        "id": "20129",
+        "category": "Morton County",
+        "latitude": 37.1913112,
+        "longitude": -101.7992526
+      },
+      {
+        "id": "20131",
+        "category": "Nemaha County",
+        "latitude": 39.7832969,
+        "longitude": -96.0141019
+      },
+      {
+        "id": "20133",
+        "category": "Neosho County",
+        "latitude": 37.5584201,
+        "longitude": -95.3067925
+      },
+      {
+        "id": "20135",
+        "category": "Ness County",
+        "latitude": 38.4793605,
+        "longitude": -99.9161757
+      },
+      {
+        "id": "20137",
+        "category": "Norton County",
+        "latitude": 39.7842711,
+        "longitude": -99.9034796
+      },
+      {
+        "id": "20139",
+        "category": "Osage County",
+        "latitude": 38.6521828,
+        "longitude": -95.7269535
+      },
+      {
+        "id": "20141",
+        "category": "Osborne County",
+        "latitude": 39.3502248,
+        "longitude": -98.7679931
+      },
+      {
+        "id": "20143",
+        "category": "Ottawa County",
+        "latitude": 39.1325085,
+        "longitude": -97.6502149
+      },
+      {
+        "id": "20145",
+        "category": "Pawnee County",
+        "latitude": 38.1813498,
+        "longitude": -99.2365961
+      },
+      {
+        "id": "20147",
+        "category": "Phillips County",
+        "latitude": 39.7844725,
+        "longitude": -99.3470235
+      },
+      {
+        "id": "20149",
+        "category": "Pottawatomie County",
+        "latitude": 39.3789744,
+        "longitude": -96.3423165
+      },
+      {
+        "id": "20151",
+        "category": "Pratt County",
+        "latitude": 37.6477044,
+        "longitude": -98.7395951
+      },
+      {
+        "id": "20153",
+        "category": "Rawlins County",
+        "latitude": 39.7851787,
+        "longitude": -101.0757066
+      },
+      {
+        "id": "20155",
+        "category": "Reno County",
+        "latitude": 37.9529495,
+        "longitude": -98.0860052
+      },
+      {
+        "id": "20157",
+        "category": "Republic County",
+        "latitude": 39.8277664,
+        "longitude": -97.6506225
+      },
+      {
+        "id": "20159",
+        "category": "Rice County",
+        "latitude": 38.3471134,
+        "longitude": -98.2010254
+      },
+      {
+        "id": "20161",
+        "category": "Riley County",
+        "latitude": 39.2963421,
+        "longitude": -96.7348522
+      },
+      {
+        "id": "20163",
+        "category": "Rooks County",
+        "latitude": 39.3501195,
+        "longitude": -99.3250631
+      },
+      {
+        "id": "20165",
+        "category": "Rush County",
+        "latitude": 38.5231337,
+        "longitude": -99.3092403
+      },
+      {
+        "id": "20167",
+        "category": "Russell County",
+        "latitude": 38.9146698,
+        "longitude": -98.7623539
+      },
+      {
+        "id": "20169",
+        "category": "Saline County",
+        "latitude": 38.7837771,
+        "longitude": -97.6499264
+      },
+      {
+        "id": "20171",
+        "category": "Scott County",
+        "latitude": 38.482025,
+        "longitude": -100.9068558
+      },
+      {
+        "id": "20173",
+        "category": "Sedgwick County",
+        "latitude": 37.6846943,
+        "longitude": -97.4610429
+      },
+      {
+        "id": "20175",
+        "category": "Seward County",
+        "latitude": 37.1932056,
+        "longitude": -100.851287
+      },
+      {
+        "id": "20177",
+        "category": "Shawnee County",
+        "latitude": 39.041446,
+        "longitude": -95.756433
+      },
+      {
+        "id": "20179",
+        "category": "Sheridan County",
+        "latitude": 39.3502491,
+        "longitude": -100.4418333
+      },
+      {
+        "id": "20181",
+        "category": "Sherman County",
+        "latitude": 39.3513684,
+        "longitude": -101.7199824
+      },
+      {
+        "id": "20183",
+        "category": "Smith County",
+        "latitude": 39.7850462,
+        "longitude": -98.7854724
+      },
+      {
+        "id": "20185",
+        "category": "Stafford County",
+        "latitude": 38.030874,
+        "longitude": -98.7175241
+      },
+      {
+        "id": "20187",
+        "category": "Stanton County",
+        "latitude": 37.5630224,
+        "longitude": -101.7841809
+      },
+      {
+        "id": "20189",
+        "category": "Stevens County",
+        "latitude": 37.1922367,
+        "longitude": -101.3120469
+      },
+      {
+        "id": "20191",
+        "category": "Sumner County",
+        "latitude": 37.2371799,
+        "longitude": -97.476547
+      },
+      {
+        "id": "20193",
+        "category": "Thomas County",
+        "latitude": 39.3509093,
+        "longitude": -101.0555311
+      },
+      {
+        "id": "20195",
+        "category": "Trego County",
+        "latitude": 38.9142174,
+        "longitude": -99.872742
+      },
+      {
+        "id": "20197",
+        "category": "Wabaunsee County",
+        "latitude": 38.95318,
+        "longitude": -96.2049915
+      },
+      {
+        "id": "20199",
+        "category": "Wallace County",
+        "latitude": 38.9165576,
+        "longitude": -101.7635788
+      },
+      {
+        "id": "20201",
+        "category": "Washington County",
+        "latitude": 39.784091,
+        "longitude": -97.0875432
+      },
+      {
+        "id": "20203",
+        "category": "Wichita County",
+        "latitude": 38.4819375,
+        "longitude": -101.347356
+      },
+      {
+        "id": "20205",
+        "category": "Wilson County",
+        "latitude": 37.559176,
+        "longitude": -95.7433873
+      },
+      {
+        "id": "20207",
+        "category": "Woodson County",
+        "latitude": 37.8866352,
+        "longitude": -95.7401693
+      },
+      {
+        "id": "20209",
+        "category": "Wyandotte County",
+        "latitude": 39.1146526,
+        "longitude": -94.7644677
+      }
+    ]
+  }
+}

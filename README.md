@@ -50,6 +50,7 @@ npm run dev
 | `npm run test` | Vitest unit tests |
 | `npm run build` | Production build |
 | `node scripts/cache-samples.mjs http://localhost:3000` | With the app running, saves the live answers of the three routes for each sample field into `public/data/samples/` |
+| `python scripts/kansas_county_centroids.py` | Writes the 105 Kansas county centroids and the NASA AppEEARS request built from them into `data/`. Needs Python 3.9 or newer, no package and no login. It sends nothing to NASA |
 
 ## Stack
 
@@ -74,7 +75,7 @@ The browser never calls these services. It calls the app's own three routes, eac
 
 Planned, with the phase that adds each one (details in [SPEC.md](SPEC.md), "Data sources"):
 
-- NASA SMAP soil moisture through AppEEARS and GRACE/GRACE-FO water storage (Phase 6).
+- NASA SMAP soil moisture through AppEEARS and GRACE/GRACE-FO water storage (Phase 6). Not built: both need an Earthdata Login. The 105 county centroids and the AppEEARS request are ready to submit; the steps are in `spec/2026-11-15-phase-6-county-data/implementation.md`.
 - MODIS vegetation through NASA GIBS, as a map layer (stretch). The layer `MODIS_Terra_L3_NDVI_16Day` was confirmed to load in Web Mercator in Phase 2.
 
 ## AI use

@@ -14,6 +14,8 @@
 | `config/scoring.json` | `ScoringConfig` | Constants the tool chose: caps, points, penalties and which indicators each slider weighs |
 | `data/glossary.json` | `GlossaryEntry[]`, in `lib/glossary.ts` | The glossary: each term with a plain-language definition and its source, or marked as the tool's own |
 | `data/sources.json` | `SourceEntry[]`, in `lib/about.ts` | Every source the About the data tab lists, with its links and, where it is not worked out from the values that cite it, its purpose |
+| `data/kansas-county-centroids.csv` | `fips`, `county`, `latitude`, `longitude` | The 105 Kansas counties with their centroids, from the U.S. Census Bureau's TIGERweb service. Written by `scripts/kansas_county_centroids.py`. The app does not read it yet |
+| `data/appeears-smap-request.json` | An AppEEARS point request | The request for NASA SMAP soil moisture at those 105 centroids, 2015 to now. **Never submitted**: it needs an Earthdata Login. Written by the same script |
 
 `lib/library.ts` reads the first four files and checks their shape when the app is built and when the tests run. `lib/glossary.ts` and `lib/about.ts` do the same for the glossary and the source list.
 
