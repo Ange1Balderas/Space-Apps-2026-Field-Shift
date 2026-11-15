@@ -2,7 +2,8 @@
 
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 //
-// The panel beside the map. With nothing selected it invites a click or a sample field.
+// The Field tab of the panel beside the map (components/SidePanel.tsx holds the tabs). With
+// nothing selected it invites a click or a sample field.
 // With a field selected it has three sections (SPEC.md, "Reuse from Stragents"): Field, with
 // the crops grown and the soil; Rotations, with the ranked list and the priority sliders; and
 // Conditions, with the climate chart. Crop history, soil and climate each load, fail and
@@ -27,6 +28,7 @@ import {
 import { useFadeUp } from "@/lib/motion";
 import { SAMPLE_FIELDS } from "@/lib/samples";
 import { formatLatLon } from "@/lib/trend-text";
+import { useViewStore } from "@/lib/view-store";
 
 // Read out by screen readers when the panel changes. Errors and the outside-Kansas
 // message announce themselves through the notice's role="alert".
@@ -91,6 +93,10 @@ export function FieldPanel() {
 	const resetCrops = useFieldStore((state) => state.resetCrops);
 	const fadeUp = useFadeUp();
 	const panelRef = useRef<HTMLDivElement>(null);
+	const view = useViewStore((state) => state.view);
+	const showView = useViewStore((state) => state.showView);
+	// The field the panel was last brought into view for.
+	const shownFor = useRef("");
 
 	const selection = selectionOf(panel);
 
@@ -98,8 +104,20 @@ export function FieldPanel() {
 	// the link at its top leads back to the map. (SPEC.md asks for a bottom sheet on phones;
 	// this is the plainer stand-in.)
 	const chosen = selection ? `${selection.lat},${selection.lon}` : "";
+	// A field chosen while the About tab is open brings the Field tab forward.
 	useEffect(() => {
-		if (!chosen) return;
+		if (chosen) showView("field");
+	}, [chosen, showView]);
+	useEffect(() => {
+		// Waits until the Field tab is the one on screen: a hidden panel cannot be scrolled to.
+		// Coming back from About to the same field does not move the page again.
+		if (!chosen) {
+			// Nothing is selected any more: the same field, chosen again, is a new choice.
+			shownFor.current = "";
+			return;
+		}
+		if (view !== "field" || shownFor.current === chosen) return;
+		shownFor.current = chosen;
 		if (!window.matchMedia("(max-width: 1023px)").matches) return;
 		const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		panelRef.current?.scrollIntoView({
@@ -108,7 +126,7 @@ export function FieldPanel() {
 		});
 		// Keyboard focus follows the view, so the next Tab lands in the panel, not in the map.
 		panelRef.current?.focus({ preventScroll: true });
-	}, [chosen]);
+	}, [chosen, view]);
 
 	// Facts on screen that are a saved copy because their live source failed just now.
 	const savedCopies: string[] = [];

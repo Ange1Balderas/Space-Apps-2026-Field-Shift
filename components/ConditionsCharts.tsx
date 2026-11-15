@@ -26,6 +26,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { Term } from "@/components/Glossary";
 import { SourceBadge } from "@/components/SourceBadge";
 import { EmptyState } from "@/components/states";
 import { type Tone, ToneBadge } from "@/components/tone-badge";
@@ -46,6 +47,7 @@ import {
 } from "@/lib/trend-text";
 import { MIN_TREND_POINTS, type TrendSummary } from "@/lib/trends";
 import type { ClimateResponse } from "@/lib/types";
+import { useViewStore } from "@/lib/view-store";
 
 type YearRow = ClimateResponse["years"][number];
 type Point = { year: number; value: number | null };
@@ -197,13 +199,21 @@ function TrendBox({
 					className="size-4 shrink-0 text-muted-foreground"
 				/>
 				<ToneBadge tone={series.tone[direction]}>
-					{TREND_LABEL_TEXT[trend.label]}
+					{/* The badge clips what sticks out of it, a focus ring included, so keyboard
+					    focus is shown by inverting the label's colours instead. */}
+					<Term
+						id="trend-confidence"
+						className="focus-visible:bg-foreground focus-visible:text-background focus-visible:ring-0"
+					>
+						{TREND_LABEL_TEXT[trend.label]}
+					</Term>
 				</ToneBadge>
 			</div>
 			<p className="mt-1.5 text-sm">{describeTrend(trend, series.words)}</p>
 			<p className="mt-1 text-xs text-muted-foreground">
-				Mann-Kendall trend test, {formatPValue(trend.pValue)}. The change per
-				decade is Sen&apos;s slope.
+				<Term id="mann-kendall">Mann-Kendall trend test</Term>,{" "}
+				<Term id="p-value">{formatPValue(trend.pValue)}</Term>. The change per decade
+				is <Term id="sens-slope">Sen&apos;s slope</Term>.
 			</p>
 		</div>
 	);
@@ -238,6 +248,9 @@ function SeriesChart({
 	trend: TrendSummary | undefined;
 }) {
 	const headingId = useId();
+	// The Field tab stays in the page while the About tab is open, only hidden. A chart
+	// cannot measure a hidden box, so it is drawn only while its tab is the one on screen.
+	const onScreen = useViewStore((state) => state.view === "field");
 	const firstYear = years[0].year;
 	const lastYear = years[years.length - 1].year;
 	const points: Point[] = years.map((row) => ({ year: row.year, value: row[series.id] }));
@@ -316,57 +329,59 @@ function SeriesChart({
 				{/* Recharts makes the plot a keyboard stop: the arrow keys step through the years.
 				    It gets a name, and the same focus outline as the map. */}
 				<div className="h-56 w-full [&_.recharts-surface]:focus-visible:outline-2 [&_.recharts-surface]:focus-visible:outline-offset-2 [&_.recharts-surface]:focus-visible:outline-ring">
-					<ResponsiveContainer width="100%" height="100%">
-						{series.kind === "bars" ? (
-							<BarChart data={points} margin={margin} barCategoryGap={2} aria-label={label}>
-								{commonAxis}
-								<YAxis
-									width={series.axisWidth}
-									allowDecimals={false}
-									tickLine={false}
-									axisLine={false}
-									tick={AXIS_TICK}
-								/>
-								<Bar
-									dataKey="value"
-									fill="var(--chart-2)"
-									radius={[2, 2, 0, 0]}
-									maxBarSize={24}
-									isAnimationActive={false}
-								/>
-								{averageLine}
-							</BarChart>
-						) : (
-							<LineChart data={points} margin={margin} aria-label={label}>
-								{commonAxis}
-								<YAxis
-									width={series.axisWidth}
-									// A date axis does not start at zero: it spans the dates on record.
-									domain={[
-										(dataMin: number) => Math.floor(dataMin / 10) * 10,
-										(dataMax: number) => Math.ceil(dataMax / 10) * 10,
-									]}
-									allowDecimals={false}
-									tickFormatter={series.tick}
-									tickLine={false}
-									axisLine={false}
-									tick={AXIS_TICK}
-								/>
-								{averageLine}
-								<Line
-									dataKey="value"
-									stroke="var(--chart-2)"
-									// 45 points sit a few pixels apart on a phone: small dots and a thin line
-									// keep each year readable.
-									strokeWidth={1.5}
-									dot={{ r: 2, fill: "var(--chart-2)", strokeWidth: 0 }}
-									activeDot={{ r: 4 }}
-									connectNulls={false}
-									isAnimationActive={false}
-								/>
-							</LineChart>
-						)}
-					</ResponsiveContainer>
+					{onScreen ? (
+						<ResponsiveContainer width="100%" height="100%">
+							{series.kind === "bars" ? (
+								<BarChart data={points} margin={margin} barCategoryGap={2} aria-label={label}>
+									{commonAxis}
+									<YAxis
+										width={series.axisWidth}
+										allowDecimals={false}
+										tickLine={false}
+										axisLine={false}
+										tick={AXIS_TICK}
+									/>
+									<Bar
+										dataKey="value"
+										fill="var(--chart-2)"
+										radius={[2, 2, 0, 0]}
+										maxBarSize={24}
+										isAnimationActive={false}
+									/>
+									{averageLine}
+								</BarChart>
+							) : (
+								<LineChart data={points} margin={margin} aria-label={label}>
+									{commonAxis}
+									<YAxis
+										width={series.axisWidth}
+										// A date axis does not start at zero: it spans the dates on record.
+										domain={[
+											(dataMin: number) => Math.floor(dataMin / 10) * 10,
+											(dataMax: number) => Math.ceil(dataMax / 10) * 10,
+										]}
+										allowDecimals={false}
+										tickFormatter={series.tick}
+										tickLine={false}
+										axisLine={false}
+										tick={AXIS_TICK}
+									/>
+									{averageLine}
+									<Line
+										dataKey="value"
+										stroke="var(--chart-2)"
+										// 45 points sit a few pixels apart on a phone: small dots and a thin line
+										// keep each year readable.
+										strokeWidth={1.5}
+										dot={{ r: 2, fill: "var(--chart-2)", strokeWidth: 0 }}
+										activeDot={{ r: 4 }}
+										connectNulls={false}
+										isAnimationActive={false}
+									/>
+								</LineChart>
+							)}
+						</ResponsiveContainer>
+					) : null}
 				</div>
 				<figcaption className="mt-2 space-y-1 text-xs text-muted-foreground">
 					<p className="flex items-center gap-2">
@@ -429,11 +444,13 @@ function SeriesChart({
 				</section>
 			</details>
 
-			{/* Grid size: the NASA POWER answer itself says "Average for 0.5 x 0.625 degree
-			    lat/lon region", and SPEC.md, "Uncertainty on every number", gives it as "about
-			    50 km grid", which is about 30 miles. */}
+			{/* Grid size: NASA POWER's methodology page gives its weather values on a grid of
+			    1/2 degree latitude by 5/8 degree longitude
+			    (https://power.larc.nasa.gov/docs/methodology/). In Kansas that is about 55 km
+			    on a side, roughly 35 miles. SPEC.md, "Uncertainty on every number", rounds it
+			    to "about 50 km grid". */}
 			<p className="text-xs text-muted-foreground">
-				{series.note}NASA POWER describes the climate of a grid cell roughly 30
+				{series.note}NASA POWER describes the climate of a grid cell roughly 35
 				miles across. It is the area&apos;s record, not a reading from this field.
 			</p>
 		</article>

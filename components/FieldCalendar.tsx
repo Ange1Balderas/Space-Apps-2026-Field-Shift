@@ -8,6 +8,7 @@
 // It is a real table, so a screen reader can read it by row and by month. Colour carries
 // nothing by itself: a crop month holds the crop's letter and a bare month is empty.
 
+import { Term } from "@/components/Glossary";
 import type { RotationCalendar } from "@/lib/calendar";
 import type { ClimateWindows } from "@/lib/climate-windows";
 import { LIBRARY } from "@/lib/library";
@@ -30,9 +31,9 @@ const CROP_CODES: Record<CropId, string> = {
 
 // `marked` is what a screen reader hears in a month that is in the window.
 const WINDOWS = [
-	{ key: "hot", label: "Hot", marked: "usually hot" },
-	{ key: "dry", label: "Dry", marked: "usually dry" },
-	{ key: "frost", label: "Frost", marked: "frost possible" },
+	{ key: "hot", label: "Hot", marked: "usually hot", term: "hot-window" },
+	{ key: "dry", label: "Dry", marked: "usually dry", term: "dry-window" },
+	{ key: "frost", label: "Frost", marked: "frost possible", term: "frost-window" },
 ] as const;
 
 const cropName = (id: CropId) =>
@@ -92,10 +93,12 @@ export function FieldCalendar({
 				</thead>
 				<tbody>
 					{hasWindows
-						? WINDOWS.map(({ key, label, marked: markedText }) => (
+						? WINDOWS.map(({ key, label, marked: markedText, term }) => (
 								<tr key={key}>
 									<th scope="row" className="text-left font-normal text-muted-foreground">
-										{label}
+										<Term id={term} className="min-h-6">
+											{label}
+										</Term>
 									</th>
 									{MONTH_NAMES.map((name, index) => {
 										const marked = windows[key].includes(index + 1);

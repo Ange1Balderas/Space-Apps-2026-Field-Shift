@@ -7,11 +7,13 @@
 
 import { ChevronDownIcon } from "lucide-react";
 import { useId } from "react";
+import { Term } from "@/components/Glossary";
 import { SourceBadge } from "@/components/SourceBadge";
 import { ErrorState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Loadable } from "@/lib/field-store";
+import type { TermId } from "@/lib/glossary";
 import {
 	cropChoices,
 	cropLabel,
@@ -194,29 +196,44 @@ function Soil({
 				<>
 					<p className="text-sm break-words">{soil.data.mapUnitName}</p>
 					<dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-						{[
-							["Texture", soil.data.texture ?? NOT_AVAILABLE],
+						{(
 							[
-								"Available water, top 39 in",
-								withUnit(soil.data.availableWaterIn, " in"),
-							],
-							["Organic matter", withUnit(soil.data.organicMatterPct, "%")],
-							["Slope", withUnit(soil.data.slopePct, "%")],
-							[
-								"Erodibility by water (K factor)",
-								withUnit(soil.data.kFactor, ""),
-							],
-							[
-								"Wind erodibility index",
-								withUnit(soil.data.windErodibilityIndex, " tons/acre/yr"),
-							],
-							[
-								"Hydrologic group",
-								soil.data.hydrologicGroup ?? NOT_AVAILABLE,
-							],
-						].map(([label, value]) => (
-							<div key={label} className="min-w-0">
-								<dt className="text-xs text-muted-foreground">{label}</dt>
+								["soil-texture", "Texture", soil.data.texture ?? NOT_AVAILABLE],
+								[
+									"available-water",
+									"Available water, top 39 in",
+									withUnit(soil.data.availableWaterIn, " in"),
+								],
+								[
+									"organic-matter",
+									"Organic matter",
+									withUnit(soil.data.organicMatterPct, "%"),
+								],
+								["slope", "Slope", withUnit(soil.data.slopePct, "%")],
+								[
+									"k-factor",
+									"Erodibility by water (K factor)",
+									withUnit(soil.data.kFactor, ""),
+								],
+								[
+									"wind-erodibility",
+									"Wind erodibility index",
+									withUnit(soil.data.windErodibilityIndex, " tons/acre/yr"),
+								],
+								[
+									"hydrologic-group",
+									"Hydrologic group",
+									soil.data.hydrologicGroup ?? NOT_AVAILABLE,
+								],
+							] satisfies [TermId, string, string][]
+						).map(([term, label, value]) => (
+							<div key={term} className="min-w-0">
+								<dt className="text-xs text-muted-foreground">
+									{/* Each soil fact is a glossary term: the label is its tooltip. */}
+									<Term id={term} className="min-h-6">
+										{label}
+									</Term>
+								</dt>
 								<dd className="font-medium">{value}</dd>
 							</div>
 						))}

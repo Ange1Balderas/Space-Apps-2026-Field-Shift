@@ -10,30 +10,23 @@
 // shows only once a loaded rotation needs no-till equipment, because until then it would
 // change nothing. The market switch waits until its effect is defined.
 
-import { useId, useRef } from "react";
+import { Fragment, useId, useRef } from "react";
+import { Term } from "@/components/Glossary";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { INDICATOR_LABELS } from "@/lib/card-text";
+import { INDICATOR_LABELS, PRIORITY_LABELS } from "@/lib/card-text";
+import { INDICATOR_TERMS } from "@/lib/glossary";
 import { LIBRARY, PRIORITIES, SCORING } from "@/lib/library";
 import { usePrioritiesStore } from "@/lib/priorities-store";
 import { type Constraints, DEFAULT_PRIORITIES } from "@/lib/scoring";
 import type { Priority } from "@/lib/types";
 
-const PRIORITY_LABELS: Record<Priority, string> = {
-	saveWater: "Save water",
-	protectSoil: "Protect soil",
-	income: "Income",
-	simplicity: "Simplicity",
-};
-
 function PrioritySlider({ priority }: { priority: Priority }) {
 	const labelId = useId();
 	const value = usePrioritiesStore((state) => state.priorities[priority]);
 	const setPriority = usePrioritiesStore((state) => state.setPriority);
-	const weighs = SCORING.priorityIndicators[priority]
-		.map((id) => INDICATOR_LABELS[id].toLowerCase())
-		.join(", ");
+	const weighs = SCORING.priorityIndicators[priority];
 	return (
 		<div className="space-y-1.5">
 			<div className="flex items-baseline justify-between gap-3">
@@ -56,7 +49,17 @@ function PrioritySlider({ priority }: { priority: Priority }) {
 				// The track is 6 px tall; the slider answers a touch anywhere in this 44 px band.
 				className="min-h-11"
 			/>
-			<p className="text-xs text-muted-foreground">Weighs {weighs}.</p>
+			{/* Each indicator is a glossary term: its tooltip says how the score is made. */}
+			<p className="text-xs text-muted-foreground">
+				Weighs{" "}
+				{weighs.map((id, index) => (
+					<Fragment key={id}>
+						{index > 0 ? ", " : ""}
+						<Term id={INDICATOR_TERMS[id]}>{INDICATOR_LABELS[id].toLowerCase()}</Term>
+					</Fragment>
+				))}
+				.
+			</p>
 		</div>
 	);
 }

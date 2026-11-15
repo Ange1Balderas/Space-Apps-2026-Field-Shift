@@ -1,29 +1,33 @@
+"use client";
+
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
-import { ExternalLinkIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { SOURCE_BADGE_ENTRIES, sourceAnchor } from "@/lib/about";
+import { useViewStore } from "@/lib/view-store";
+
+export type SourceName = keyof typeof SOURCE_BADGE_ENTRIES;
 
 // SPEC.md, "UI rules": every number carries a small source badge that opens its About the
-// Data entry. That tab arrives in Phase 5. Until then the badge opens the provider's own page.
-const SOURCE_LINKS = {
-	"NASA POWER": "https://power.larc.nasa.gov/",
-	"USDA NASS CDL":
-		"https://www.nass.usda.gov/research-and-science/cropland/sars1a",
-	"USDA NRCS SSURGO":
-		"https://www.nrcs.usda.gov/resources/data-and-reports/soil-survey-geographic-database-ssurgo",
-} as const;
-
-export type SourceName = keyof typeof SOURCE_LINKS;
-
+// Data entry. The entry says what the tool takes from the source and how far to trust it,
+// and holds the link to the provider's own page.
 export function SourceBadge({ source }: { source: SourceName }) {
+	const openAbout = useViewStore((state) => state.openAbout);
 	return (
 		<Badge asChild variant="outline" className="min-h-6">
-			<a href={SOURCE_LINKS[source]} target="_blank" rel="noreferrer">
+			<button
+				type="button"
+				className="cursor-pointer hover:border-foreground/50 hover:bg-accent hover:text-accent-foreground"
+				onClick={(event) =>
+					openAbout(sourceAnchor(SOURCE_BADGE_ENTRIES[source]), event.currentTarget)
+				}
+			>
 				<span className="sr-only">Source: </span>
 				{source}
-				<ExternalLinkIcon aria-hidden="true" />
-				<span className="sr-only"> (opens in a new tab)</span>
-			</a>
+				<InfoIcon aria-hidden="true" />
+				<span className="sr-only">. Opens its entry on the About the data tab.</span>
+			</button>
 		</Badge>
 	);
 }

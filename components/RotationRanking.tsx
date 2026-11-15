@@ -10,6 +10,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { type ReactNode, useMemo } from "react";
+import { GlossedText, Term } from "@/components/Glossary";
 import { PrioritySliders } from "@/components/PrioritySliders";
 import { RotationCard } from "@/components/RotationCard";
 import { SourceBadge } from "@/components/SourceBadge";
@@ -171,9 +172,7 @@ export function RotationRanking({
 		if (!recent) {
 			list = (
 				<QuietNote title="No monthly climate for this point">
-					The rotations are scored from monthly rain and reference
-					evapotranspiration, and this answer has none. Nothing is estimated in
-					their place.
+					<GlossedText text="The rotations are scored from monthly rain and reference evapotranspiration, and this answer has none. Nothing is estimated in their place." />
 				</QuietNote>
 			);
 		} else {
@@ -363,7 +362,8 @@ export function RotationRanking({
 					<div className="space-y-1 text-xs text-muted-foreground">
 						{leftOutForIrrigation.length > 0 ? (
 							<p>
-								Not shown, because this field is scored as dryland and{" "}
+								Not shown, because this field is scored as{" "}
+								<Term id="dryland">dryland</Term> and{" "}
 								{leftOutForIrrigation.length === 1 ? "it needs" : "they need"}{" "}
 								irrigation: {leftOutForIrrigation.map((item) => item.name).join(", ")}.
 							</p>
@@ -376,8 +376,8 @@ export function RotationRanking({
 						) : null}
 						<p>
 							The library holds {LIBRARY.rotations.length} rotations so far. Crop
-							water demand is potential demand: what a well-watered crop would
-							use.
+							water demand is <Term id="potential-demand">potential demand</Term>:
+							what a well-watered crop would use.
 						</p>
 					</div>
 				</>

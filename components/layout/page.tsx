@@ -1,5 +1,5 @@
 // Ported from Stragents (github.com/Ange1Balderas/hack_the_midwest, agent-flow branch): fe/src/components/layout/page.tsx
-// AI-assisted: ported with Claude (#/ alias now @/), reviewed by Angel Balderas.
+// AI-assisted: ported with Claude (#/ alias now @/; Section can take an id and keyboard focus), reviewed by Angel Balderas.
 
 import { type ReactNode, useId } from "react";
 import { cn } from "@/lib/utils";
@@ -49,6 +49,8 @@ export function Section({
 	action,
 	className,
 	contentClassName,
+	id,
+	focusable = false,
 	children,
 }: {
 	title: ReactNode;
@@ -56,13 +58,23 @@ export function Section({
 	action?: ReactNode;
 	className?: string;
 	contentClassName?: string;
+	/** An id for links and scripts to find the section by. */
+	id?: string;
+	/** True when a script may move keyboard focus here. The section then reads as its title. */
+	focusable?: boolean;
 	children: ReactNode;
 }) {
 	const headingId = useId();
 	return (
 		<section
+			id={id}
+			tabIndex={focusable ? -1 : undefined}
 			aria-labelledby={headingId}
-			className={cn("rounded-lg border bg-card", className)}
+			className={cn(
+				"rounded-lg border bg-card",
+				focusable && "outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+				className,
+			)}
 		>
 			<header className="flex items-center justify-between gap-4 border-b px-4 py-3">
 				<div className="min-w-0">

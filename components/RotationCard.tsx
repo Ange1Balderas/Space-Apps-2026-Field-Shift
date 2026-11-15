@@ -9,6 +9,8 @@
 
 import { type ReactNode, useState } from "react";
 import { FieldCalendar } from "@/components/FieldCalendar";
+import { Glossed, Term } from "@/components/Glossary";
+import { LinkedText } from "@/components/LinkedText";
 import { SourceBadge } from "@/components/SourceBadge";
 import {
 	benefitLines,
@@ -17,14 +19,15 @@ import {
 	INDICATOR_LABELS,
 	informationGaps,
 	riskLines,
-	splitSource,
 	VERIFY_LOCALLY,
 } from "@/lib/card-text";
 import type { ClimateWindows } from "@/lib/climate-windows";
+import { INDICATOR_TERMS, markTerms } from "@/lib/glossary";
 import { INDICATOR_IDS, LIBRARY } from "@/lib/library";
 import { distinctCrops, type RankedRotation } from "@/lib/scoring";
 import type { ClimateResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useViewStore } from "@/lib/view-store";
 
 function cropNames(item: RankedRotation): string {
 	const names = distinctCrops(item.rotation).map(
@@ -66,50 +69,25 @@ function Fold({
 /** Where a sentence comes from: the words of its source, with each link as a link. */
 function SourceLine({ source }: { source: string | null }) {
 	if (!source) return null;
-	const parts = splitSource(source);
-	// A link shows the site it leads to. For a screen reader its name also carries the
-	// publication, because a list of links would otherwise repeat one site name.
-	const citationBefore = (index: number): string => {
-		for (let back = index - 1; back >= 0; back -= 1) {
-			const part = parts[back];
-			if ("text" in part && part.text.length > 3) return part.text;
-		}
-		return "";
-	};
 	return (
 		<span className="block text-muted-foreground">
-			Source:{" "}
-			{parts.map((part, index) =>
-				"url" in part ? (
-					<a
-						// The parts of one fixed string: their position is their identity.
-						key={index}
-						href={part.url}
-						target="_blank"
-						rel="noreferrer"
-						className="rounded-sm underline underline-offset-2 outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-					>
-						{part.host}
-						<span className="sr-only">
-							{citationBefore(index) ? `, ${citationBefore(index)}` : ""} (opens in a
-							new tab)
-						</span>
-					</a>
-				) : (
-					<span key={index}>{index > 0 ? ` ${part.text} ` : `${part.text} `}</span>
-				),
-			)}
+			<LinkedText text={source} prefix="Source:" />
 		</span>
 	);
 }
 
+/**
+ * The sentences of one part of a card. A glossary term is a tooltip where the part first
+ * uses it, and plain text after that.
+ */
 function Lines({ lines, none }: { lines: readonly CardLine[]; none: string }) {
 	if (lines.length === 0) return <p className="text-muted-foreground">{none}</p>;
+	const marked = markTerms(lines.map((line) => line.text));
 	return (
 		<ul className="space-y-1.5">
-			{lines.map((line) => (
+			{lines.map((line, index) => (
 				<li key={line.text}>
-					{line.text}
+					<Glossed parts={marked[index]} />
 					<SourceLine source={line.source} />
 				</li>
 			))}
@@ -142,9 +120,15 @@ export function RotationCard({
 	regionName: string | null;
 	calendarOpen: boolean;
 }) {
+	const openAbout = useViewStore((state) => state.openAbout);
 	const name = item.rotation.name;
 	const risks = riskLines(item, climate, regionName);
 	const benefits = benefitLines(item, own);
+	const gaps = informationGaps(item);
+	// Each part of the card is its own block: a term is a tooltip at its first use there.
+	const markedLines = markTerms(lines);
+	const markedGaps = markTerms(gaps);
+	const markedWhys = markTerms(INDICATOR_IDS.map((id) => item.indicators[id].why));
 	return (
 		<div
 			className={cn(
@@ -184,9 +168,9 @@ export function RotationCard({
 				</p>
 			</div>
 
-			{lines.map((line) => (
+			{lines.map((line, index) => (
 				<p key={line} className="text-xs text-muted-foreground">
-					{line}
+					<Glossed parts={markedLines[index]} />
 				</p>
 			))}
 
@@ -197,7 +181,9 @@ export function RotationCard({
 					return (
 						<div key={id} className="flex items-center gap-2 text-xs">
 							<dt className="w-[9.5rem] shrink-0 text-muted-foreground">
-								{INDICATOR_LABELS[id]}
+								<Term id={INDICATOR_TERMS[id]} className="min-h-6">
+									{INDICATOR_LABELS[id]}
+								</Term>
 							</dt>
 							<dd className="flex min-w-0 flex-1 items-center gap-2">
 								<span
@@ -240,8 +226,10 @@ export function RotationCard({
 				</Fold>
 				<Fold title="Information gaps" rotationName={name}>
 					<ul className="space-y-1.5">
-						{informationGaps(item).map((gap) => (
-							<li key={gap}>{gap}</li>
+						{gaps.map((gap, index) => (
+							<li key={gap}>
+								<Glossed parts={markedGaps[index]} />
+							</li>
 						))}
 					</ul>
 				</Fold>
@@ -253,15 +241,25 @@ export function RotationCard({
 				</Fold>
 				<Fold title="How these scores were worked out" rotationName={name}>
 					<ul className="space-y-1.5 text-muted-foreground">
-						{INDICATOR_IDS.map((id) => (
+						{INDICATOR_IDS.map((id, index) => (
 							<li key={id}>
 								<span className="font-medium text-foreground">
 									{INDICATOR_LABELS[id]}:
 								</span>{" "}
-								{item.indicators[id].why}
+								<Glossed parts={markedWhys[index]} />
 							</li>
 						))}
 					</ul>
+					<p className="mt-2">
+						<button
+							type="button"
+							className="inline-flex min-h-6 cursor-pointer items-center rounded-sm text-left underline underline-offset-2 outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+							onClick={(event) => openAbout("about-scores", event.currentTarget)}
+						>
+							How each score is worked out, and every number the tool chose
+							<span className="sr-only">. Opens the About the data tab.</span>
+						</button>
+					</p>
 					<div className="mt-2 flex flex-wrap items-center gap-1.5">
 						<span className="text-muted-foreground">Scores draw on</span>
 						<SourceBadge source="NASA POWER" />
