@@ -63,7 +63,7 @@ TypeScript, Next.js 16 (App Router), React, Tailwind CSS 4, shadcn/ui on Radix U
 
 - Live app: https://space-apps-2026-field-shift.vercel.app (shows the last build pushed; push first)
 - Code: https://github.com/Ange1Balderas/Space-Apps-2026-Field-Shift
-- Demo deck: to add. The address after the PDF is pushed to the repo will be https://github.com/Ange1Balderas/Space-Apps-2026-Field-Shift/blob/main/docs/Field-Shift-Kansas-demo-deck.pdf (it does not work before that push)
+- Demo deck (7 slides, PDF): https://github.com/Ange1Balderas/Space-Apps-2026-Field-Shift/blob/main/docs/Field-Shift-Kansas-demo-deck.pdf
 
 ## Use of AI
 

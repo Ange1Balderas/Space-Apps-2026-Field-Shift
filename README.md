@@ -8,6 +8,8 @@ A decision support tool that uses NASA Earth data, USDA soil and crop data, and 
 
 Live app: https://space-apps-2026-field-shift.vercel.app
 
+Project report, 7 slides (PDF): [docs/Field-Shift-Kansas-demo-deck.pdf](docs/Field-Shift-Kansas-demo-deck.pdf)
+
 ## What it does
 
 - Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. "Use my location" chooses the point where the device is, once the browser allows it. A point outside the state gets a short message instead of data.
@@ -109,6 +111,7 @@ The hackathon requires this disclosure, and it is kept current each phase.
 - [research/2026-11-14-crop-values.md](research/2026-11-14-crop-values.md) is an AI-compiled list of sourced crop reference values. Angel's rule for it: the source of each value is opened again and checked before the value is loaded, a value the research marked as an inference is not loaded as a fact, and Angel then reviews the data files. In Phase 3 the values the tool needs were loaded that way into `data/` and `config/`: a second AI check opened each source and confirmed each value first. Where a value is the tool's own pick among published numbers, the file says so in an `assumption` note. [data/README.md](data/README.md) carries the acknowledgement that these data files were compiled with AI. Angel's review of them is the next step.
 - The scoring model (which indicators, how they combine) was proposed by Claude in SPEC.md and built by Claude. The constants in `config/scoring.json` were chosen by Claude and are listed in [data/README.md](data/README.md) for Angel to confirm or change.
 - The glossary definitions (`data/glossary.json`), the source list (`data/sources.json`) and the wording of the About the data tab were written by Claude from the sources linked beside them. A second AI check compared each definition in the two data files with its source, and those corrections were applied. A further check of the About tab's own sentences found 27 places that said more than their evidence supports. They are listed in `spec/2026-11-14-phase-5-explain/implementation.md` and were corrected. The NDVI definition and the vegetation layer's entry were added on 2026-11-15 and checked the same way, and what that third check found was corrected too. The tab says in the app that its text is AI-generated, and claims no review. Angel reviews it with the phase.
+- The 7-slide project report in `docs/` and the 5-slide pitch deck were drafted by Claude from this README and from screenshots of the app; the report's last slide says so. The pitch script and the draft text for the project page were also drafted by Claude, and reworded into plainer first-person words at Angel's request on 2026-11-15. Angel gave the pitch.
 - Any text a language model generates while the app runs will be labeled as AI-generated. There is none yet: the sentences in the Field panel are fixed wording and templates filled with computed numbers. The templates, like the rest of the code, were written with AI and are reviewed by Angel.
 
 ## Other references
