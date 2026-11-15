@@ -109,7 +109,7 @@ In the browser, on the production build (`next start`), with the pane shown, abo
 | 375 x 812 | No sideways scrolling. Choosing a field scrolled to the panel, with "Back to the map" at its top and keyboard focus on the panel. The four tabs fit on one line |
 | Console | No errors |
 
-Three more checks, on the last build, about 21:52 to 21:56 CST, with real pointer clicks:
+Three more checks, on the last build, about 21:51 to 21:53 CST, with real pointer clicks:
 
 | Check | Result |
 | --- | --- |
