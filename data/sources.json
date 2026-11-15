@@ -1,0 +1,410 @@
+[
+  {
+    "id": "nasa-power",
+    "kind": "live",
+    "name": "NASA POWER",
+    "links": [
+      {
+        "label": "NASA POWER",
+        "url": "https://power.larc.nasa.gov/"
+      },
+      {
+        "label": "API documentation",
+        "url": "https://power.larc.nasa.gov/docs/services/api/"
+      },
+      {
+        "label": "Methodology",
+        "url": "https://power.larc.nasa.gov/docs/methodology/"
+      }
+    ],
+    "purpose": "Daily weather for the place since 1981: high and low temperature, rain, sunlight, dew point, humidity and wind. Every climate chart and trend, the hot, dry and frost windows, reference evapotranspiration, and so the water fit and heat scores are worked out from it. In the answers the tool has received, sunlight is missing before 1984, so reference evapotranspiration starts in 1984.",
+    "resolution": "About 50 km grid. NASA POWER gives its weather values on a grid of ½° latitude by ⅝° longitude, which in Kansas is about 55 km, or roughly 35 miles, on a side. Its sunlight values are on a coarser grid of 1° by 1°.",
+    "confidence": "Medium: regional climate, not a field station"
+  },
+  {
+    "id": "usda-cdl",
+    "kind": "live",
+    "name": "USDA NASS Cropland Data Layer",
+    "links": [
+      {
+        "label": "USDA NASS, Cropland Data Layer",
+        "url": "https://www.nass.usda.gov/research-and-science/cropland/sars1a"
+      }
+    ],
+    "purpose": "The crop at the chosen point in each of the last 8 years, read through USDA's Cropland Data Layer image service. The field's own rotation is built from those years, and any year can be corrected by hand.",
+    "resolution": "30 m pixel",
+    "confidence": "High; single-pixel misclassification is possible, so the farmer can edit"
+  },
+  {
+    "id": "usda-ssurgo",
+    "kind": "live",
+    "name": "USDA NRCS SSURGO soil survey",
+    "links": [
+      {
+        "label": "USDA NRCS, SSURGO",
+        "url": "https://www.nrcs.usda.gov/resources/data-and-reports/soil-survey-geographic-database-ssurgo"
+      },
+      {
+        "label": "Soil Data Access, query page",
+        "url": "https://sdmdataaccess.sc.egov.usda.gov/Query.aspx"
+      }
+    ],
+    "purpose": "The soil map unit under the point and its main soil: texture, available water, organic matter, slope, K factor, wind erodibility index and hydrologic group, read through Soil Data Access. It sets how much water the soil can store for the next crop and the erosion risk behind the soil protection score.",
+    "resolution": "Field scale",
+    "confidence": "High for soil type; the map unit can still mix soils"
+  },
+  {
+    "id": "fao-56",
+    "kind": "method",
+    "name": "FAO Irrigation and Drainage Paper 56, Crop Evapotranspiration (Allen, Pereira, Raes and Smith, 1998)",
+    "links": [
+      {
+        "label": "Contents",
+        "url": "https://www.fao.org/4/X0490E/x0490e00.htm"
+      },
+      {
+        "label": "Chapter 1, the terms",
+        "url": "https://www.fao.org/4/X0490E/x0490e04.htm"
+      },
+      {
+        "label": "Chapter 3, the weather equations",
+        "url": "https://www.fao.org/4/X0490E/x0490e07.htm"
+      },
+      {
+        "label": "Chapter 4, reference evapotranspiration",
+        "url": "https://www.fao.org/4/X0490E/x0490e08.htm"
+      },
+      {
+        "label": "Chapter 6, crop coefficients and stage lengths",
+        "url": "https://www.fao.org/4/X0490E/x0490e0b.htm"
+      }
+    ],
+    "purpose": "The method for reference evapotranspiration (the Penman-Monteith equation), and the crop coefficients and growth-stage lengths behind each crop's potential water demand. It is a worldwide handbook: none of the stage lengths the tool uses is given for Kansas, so they are scaled to the Kansas season.",
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "epa-g9",
+    "kind": "method",
+    "name": "U.S. EPA, Guidance for Data Quality Assessment: Practical Methods for Data Analysis (EPA QA/G-9, QA00 update, July 2000)",
+    "links": [
+      {
+        "label": "EPA QA/G-9 (PDF)",
+        "url": "https://www.epa.gov/sites/default/files/2015-06/documents/g9-final.pdf"
+      }
+    ],
+    "purpose": "The trend methods: the Mann-Kendall test and Sen's slope, and what a regression slope assumes (section 4.3).",
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "nws-glossary",
+    "kind": "method",
+    "name": "U.S. National Weather Service, Glossary",
+    "links": [
+      {
+        "label": "Glossary, Freeze",
+        "url": "https://forecast.weather.gov/glossary.php?word=freeze"
+      }
+    ],
+    "purpose": "The 32°F threshold for a freeze.",
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "usda-nass-planting-dates",
+    "kind": "library",
+    "name": "USDA NASS, Field Crops Usual Planting and Harvesting Dates (Agricultural Handbook 628, October 2010)",
+    "links": [
+      {
+        "label": "Handbook 628 (PDF)",
+        "url": "https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "usda-nass-crop-progress",
+    "kind": "library",
+    "name": "USDA NASS, Kansas Crop Progress and Condition, weekly reports of July and August 2026",
+    "links": [
+      {
+        "label": "Week ending 12 July 2026 (PDF)",
+        "url": "https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0713.pdf"
+      },
+      {
+        "label": "Week ending 19 July 2026 (PDF)",
+        "url": "https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0720.pdf"
+      },
+      {
+        "label": "Week ending 2 August 2026 (PDF)",
+        "url": "https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0803.pdf"
+      },
+      {
+        "label": "Week ending 9 August 2026 (PDF)",
+        "url": "https://www.nass.usda.gov/sites/default/files/Statistics_by_State/Kansas/Publications/Crop_Progress_and_Condition/2026/KS-weekly0810.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-c529",
+    "kind": "library",
+    "name": "K-State, Wheat Production Handbook (C529, May 1997)",
+    "links": [
+      {
+        "label": "C529 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/C529.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-c560",
+    "kind": "library",
+    "name": "K-State, Corn Production Handbook (C560, September 2007)",
+    "links": [
+      {
+        "label": "C560 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/C560.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-c687",
+    "kind": "library",
+    "name": "K-State, Grain Sorghum Production Handbook (C687, revised May 1998)",
+    "links": [
+      {
+        "label": "C687 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/C687.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-c449",
+    "kind": "library",
+    "name": "K-State, Soybean Production Handbook (C449, October 2016)",
+    "links": [
+      {
+        "label": "C449 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/C449.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-c683",
+    "kind": "library",
+    "name": "K-State, Alfalfa Production Handbook (C683, revised October 1998)",
+    "links": [
+      {
+        "label": "C683 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/C683.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-srp1173",
+    "kind": "library",
+    "name": "K-State, 2022 Kansas Performance Tests with Soybean Varieties (SRP1173, January 2023)",
+    "links": [
+      {
+        "label": "SRP1173 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/2022-kansas-performance-tests-with-soybean-varieties_SRP1173.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-mf2604",
+    "kind": "library",
+    "name": "K-State, The Value of Crop Residue (MF2604, October 2003)",
+    "links": [
+      {
+        "label": "MF2604 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/download/value-of-crop-residue_MF2604"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-l904",
+    "kind": "library",
+    "name": "K-State, Soil, Water, and Plant Relationships (L904, December 2014)",
+    "links": [
+      {
+        "label": "L904 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/L904.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-mf2586",
+    "kind": "library",
+    "name": "K-State, Soil Test Interpretations and Fertilizer Recommendations in Kansas (MF2586, January 2024)",
+    "links": [
+      {
+        "label": "MF2586 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/MF2586.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-mf3066",
+    "kind": "library",
+    "name": "K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012)",
+    "links": [
+      {
+        "label": "MF3066 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "kstate-mf3335",
+    "kind": "library",
+    "name": "K-State, Kansas Climate Basics: Precipitation Trends and Changes in Drought (MF3335, April 2017)",
+    "links": [
+      {
+        "label": "MF3335 (PDF)",
+        "url": "https://bookstore.ksre.ksu.edu/pubs/MF3335.pdf"
+      }
+    ],
+    "purpose": "The long-term average rain of the western, middle and eastern thirds of Kansas, from which the tool sets the edges between west, central and east.",
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "nrcs-nebraska-residue",
+    "kind": "library",
+    "name": "USDA NRCS, Nebraska Conservation Planning Sheet No. 4, Crop Residue Management (revised December 2006)",
+    "links": [
+      {
+        "label": "Planning Sheet No. 4 (PDF, hosted by mssoy.org)",
+        "url": "https://www.mssoy.org/sites/default/files/documents/residue-mgmt-nrcs-2006.pdf"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "nielsen-vigil-2010",
+    "kind": "library",
+    "name": "Nielsen and Vigil (2010), Precipitation Storage Efficiency during Fallow in Wheat-Fallow Systems, Agronomy Journal 102(2):537-543, USDA-ARS, Akron, Colorado",
+    "links": [
+      {
+        "label": "Article (PDF, USDA-ARS)",
+        "url": "https://www.ars.usda.gov/ARSUserFiles/30100500/Publications%202010-2019/544%20Nielsen%20Vigil%20-%20Precipitation%20storage%20efficiency%20during%20fallow%20in%20wheat-fallow%20systems.PDF"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "schlegel-2020",
+    "kind": "library",
+    "name": "Schlegel, Haag and Burnett (2020), Large-Scale Dryland Cropping Systems, Kansas Agricultural Experiment Station Research Reports 6(8)",
+    "links": [
+      {
+        "label": "Report (PDF)",
+        "url": "https://journals.newprairiepress.org/kaesrr/article/11125/galley/11018/download/"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "ucdavis-rice",
+    "kind": "library",
+    "name": "UC Davis, Growing Rice with Less Fertilizer",
+    "links": [
+      {
+        "label": "ucdavis.edu",
+        "url": "https://www.ucdavis.edu/food/news/growing-rice-with-less-fertilizer"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "unl-legume",
+    "kind": "library",
+    "name": "University of Nebraska-Lincoln research news",
+    "links": [
+      {
+        "label": "research.unl.edu",
+        "url": "https://research.unl.edu/blog/husker-scientist-leads-effort-to-understand-adapt-legume-nitrogen-conversion/"
+      }
+    ],
+    "purpose": null,
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "openfreemap",
+    "kind": "map",
+    "name": "OpenFreeMap, Positron style",
+    "links": [
+      {
+        "label": "openfreemap.org",
+        "url": "https://openfreemap.org/"
+      }
+    ],
+    "purpose": "The background map. Its own credits are shown in the corner of the map.",
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "census-tigerweb",
+    "kind": "map",
+    "name": "U.S. Census Bureau, TIGERweb",
+    "links": [
+      {
+        "label": "TIGERweb",
+        "url": "https://tigerweb.geo.census.gov/tigerwebmain/TIGERweb_main.html"
+      },
+      {
+        "label": "The query the rectangle came from",
+        "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STUSAB%3D%27KS%27&returnExtentOnly=true&outSR=4326&f=json"
+      }
+    ],
+    "purpose": "The rectangle around Kansas that the map opens on and that the tool uses to decide whether a point is inside the state. It is a rectangle, not the state line, so ground just outside Kansas can pass where the border is not straight.",
+    "resolution": null,
+    "confidence": null
+  }
+]

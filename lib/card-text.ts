@@ -7,7 +7,7 @@
 import type { Library } from "@/lib/library";
 import { INDICATOR_IDS } from "@/lib/library";
 import type { RotationScore } from "@/lib/scoring";
-import type { ClimateResponse, CropId, IndicatorId } from "@/lib/types";
+import type { ClimateResponse, CropId, IndicatorId, Priority } from "@/lib/types";
 
 export const INDICATOR_LABELS: Record<IndicatorId, string> = {
 	waterFit: "Water fit",
@@ -16,6 +16,13 @@ export const INDICATOR_LABELS: Record<IndicatorId, string> = {
 	soilBuilding: "Soil building",
 	pestBreak: "Pest and disease break",
 	marketFit: "Market fit",
+	simplicity: "Simplicity",
+};
+
+export const PRIORITY_LABELS: Record<Priority, string> = {
+	saveWater: "Save water",
+	protectSoil: "Protect soil",
+	income: "Income",
 	simplicity: "Simplicity",
 };
 
@@ -190,7 +197,7 @@ export function informationGaps(score: RotationScore): string[] {
 	const gaps = [
 		"The tool cannot see local prices, this field's history beyond the crop map, irrigation rights, crop insurance rules or local disease pressure.",
 		"Crop water demand is potential demand: what a well-watered crop would use. A dryland crop uses less and yields less.",
-		"NASA POWER describes an area roughly 30 miles across, not this field.",
+		"NASA POWER describes an area roughly 35 miles across, not this field.",
 	];
 	for (const id of INDICATOR_IDS) {
 		const indicator = score.indicators[id];
