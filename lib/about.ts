@@ -382,7 +382,10 @@ export function assumptions(library: Library = LIBRARY): Assumption[] {
 /** A rule the tool follows that has no constant in the config. */
 export type ToolRule = { title: string; text: string };
 
-/** Each of these says what the code does. The file that does it is named in the test. */
+/**
+ * Each of these says what the code does: lib/scoring.ts, lib/calendar.ts, lib/crop-water.ts,
+ * lib/climate-windows.ts, lib/existing-rotation.ts, lib/indicators.ts and lib/trends.ts.
+ */
 export const TOOL_RULES: readonly ToolRule[] = [
 	{
 		title: "Recent weather",
@@ -414,7 +417,7 @@ export const TOOL_RULES: readonly ToolRule[] = [
 	},
 	{
 		title: "Freeze day",
-		text: `A day whose low is ${FREEZE_F}°F or below. The National Weather Service's definition also asks for a widespread area and a lasting spell. The tool's rule is simpler: one day in NASA POWER's grid cell.`,
+		text: `A day whose low is ${FREEZE_F}°F or below. The National Weather Service's definition also asks for a widespread area and "a climatologically significant period of time". The tool's rule is simpler: one day in NASA POWER's grid cell.`,
 	},
 	{
 		title: "Trend test",
