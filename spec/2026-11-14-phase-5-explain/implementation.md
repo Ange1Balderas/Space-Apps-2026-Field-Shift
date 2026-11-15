@@ -1,6 +1,6 @@
 # Phase 5: Explain. Implementation notes
 
-Date: 2026-11-14 (Saturday), about 22:00 to 23:10 CST. Status: built, checked on the production build, committed locally. **Not pushed.** Waiting for Angel's review. The public URL still shows Phase 3.
+Date: 2026-11-14 (Saturday), about 22:00 to 23:10 CST. Status: built, checked on the production build, committed locally. **Not pushed.** **Open: a second source check found 27 wording corrections for the About tab, listed at the end of this file and not applied yet** (the session's usage limit was reached). Waiting for Angel's review. The public URL still shows Phase 3.
 
 SPEC.md suggests a multi-agent workflow for this phase. It was done in normal mode, with one `data-verifier` run and one `ui-reviewer` run, because the plan allowance is tight.
 
@@ -173,3 +173,50 @@ Left as they are: the tooltip names the About tab but cannot link to it, because
 2. Choices 1, 4, 5, 7 and 9 above.
 3. Carried over, unchanged: the four rotations not loaded, the market switch's meaning, the bottom sheet on phones, the vegetation layer, the trend of crop water demand, the 12 px text on cards.
 4. Nothing since Phase 3 is deployed. SPEC.md's Saturday checkpoint, "MVP live" at 11:30 PM, needs a push of Phases 4 and 5, which is Angel's to do or to ask for.
+
+## Second source check: 27 findings, NOT applied yet
+
+A second `data-verifier` run, files only, about 11 minutes, 231k tokens. It covered what the first run could not see: the sentences of the About tab (`components/AboutData.tsx`, `lib/about.ts`) and the fields reworded after the first run. It confirmed every EPA quotation, the weights paragraph, 12 of 13 constant texts, the 2019 example and the arithmetic. It flagged 27 places that say more than their evidence supports. **None is applied.** The session's usage limit was reached as its report arrived. Each line gives the place, the problem and the wording to use.
+
+`components/AboutData.tsx`
+
+1. "Every sentence on a rotation card is a fixed template filled with a computed number or a sourced library entry": overstated. Some sentences are fixed wording with no number and no source. Use: "fixed wording, a template filled with a number the tool worked out, or a library entry with its source". The same claim is in a comment in `components/RotationCard.tsx` (line 7), in `lib/card-text.ts` (line 4) and in README.md's AI-use section. The card sentence "A dryland crop uses less and yields less" (`lib/card-text.ts`, information gaps) has no source: replace it with "The tool does not estimate what a dryland crop actually uses or yields."
+2. "written by Claude ... from the sources linked beside them": add "and from the tool's own code for its own terms and rules".
+3. "A value with no source yet is left out, never guessed": use "A published value with no source yet is left out. The rotations themselves and the numbers the tool chose are its own design, listed below."
+4. "NASA POWER describes an area roughly 35 miles across": true of weather values only. Use "NASA POWER's weather values describe an area roughly 35 miles across, and its sunlight values a larger one." The same sentence is in `lib/card-text.ts`.
+5. Note under the resolution table: heat exposure uses no soil. Use "... so they describe the area's weather, not this field's own. Water fit also uses this field's soil."
+6. "Its temperature, rain, humidity and wind come from NASA's weather models": say "from MERRA-2, a NASA weather model that takes in observations". Checked after the run: NASA POWER's own answers name MERRA2 as the source of PRECTOTCORR, T2M_MAX, RH2M, WS2M and T2MDEW, and SYN1DEG for sunlight (saved answers of 2026-11-14, 37.97, -100.72).
+7. "The tool estimates the water stored before planting from rain and one published average": add the soil cap and where the average is from. Use "from the rain on the bare field, one average measured at Akron, Colorado, and the most water this soil can hold".
+8. "The survey describes a map unit by its main soil": wrong for available water and slope, which are figures for the whole map unit, and it is the tool's query that picks the main soil. Use "The tool reads texture, organic matter, K factor, wind erodibility and hydrologic group from the main soil of the map unit, and available water and slope as the survey's figures for the whole unit." The same blur is in `data/sources.json` (usda-ssurgo, purpose) and in the note under the soil facts in `components/FieldSummary.tsx`.
+9. "Weather in one year is not wholly independent of the year before": unsupported. Use "If one year's weather carries over into the next, a label can look more certain than it is. The tool has not tested these series for that."
+
+`lib/about.ts`
+
+10. Library note, "Each one was checked against its source before it was loaded": use "A second AI pass checked each value against its source before it was loaded; some wording was corrected afterwards without a new check. Which crops a rotation holds, in what order, and where it is usual are this project's own design."
+11. "their names say where": use "most of their names say where".
+12. Region text, "its long-term average rain": the field's figure is NASA POWER's average since 1984, and K-State's averages are for 1895 to 2015. Say both.
+13. "The tool has values for corn, grain sorghum, soybeans, winter wheat and alfalfa": overstated. Alfalfa has no stage lengths, heat-sensitive months, residue class or usual dates, so an alfalfa year is not counted in water fit or heat exposure. Say so, best worked out from the crop file.
+14. "the 8 years": use "up to 8 years", and "a year with any other crop, or none on record, is named and left out".
+15. "A crop's season": add that alfalfa has no usual dates on file and is treated as in the ground the whole year it is planted.
+16. "Otherwise it is bare": add that in a year whose crop the tool does not know, the months are marked as not known.
+17. "Which rotations are ranked": add that a library rotation with the same crops as the field's own is left out, because it would repeat that card.
+18. "Recent weather": add that the penalty for rising heat looks at the trend over the whole record.
+
+`data/glossary.json`
+
+19. reference-et, here: "the elevation NASA POWER gives for its grid cell", not the place's own.
+20. potential-demand, source and note: the FAO sentence about "potential ET" stands under the heading "Reference crop evapotranspiration (ETo)". It is about names for reference ET. Applying it to the tool's word for crop demand is the tool's own extension. Say so in both fields, and in choice 4 above, which states it too broadly.
+21. potential-demand, note: "means exactly the quantity defined here" should be "means the quantity defined here, estimated as described above".
+22. fallow, here: "a month in which no crop is in the ground for at least half of it is shown as bare".
+23. available-water, source: the first quotation stops mid-sentence. Add ", with corrections for salinity, rock fragments, and rooting depth."
+24. slope, here: the meaning of the column is inferred. Use "the soil survey's map-unit slope (column slopegradwta), which matched the share-weighted average of the soils' slopes at the one map unit checked".
+25. freeze, definition: "surface air temperature", as the source says, not "air temperature at the surface".
+
+`data/sources.json`
+
+26. nasa-power, resolution: "About 50 km grid" contradicts "about 55 km" in the same field, and leads with metric. Use "Roughly 35 miles across (about 55 km) for weather values, on a grid of 1/2 degree latitude by 5/8 degree longitude. Sunlight values are on a coarser grid of 1 degree by 1 degree." The test in `lib/about.test.ts` that expects "About 50 km grid" changes with it, and SPEC.md's table says "About 50 km grid", which is Angel's to change.
+27. fao-56, purpose: "none of the stage-length rows the tool uses is labelled for Kansas (they are for Idaho, Spain and California, the USA, Pakistan and the Mediterranean, and the central USA)".
+
+Also noticed: `components/FieldCalendar.tsx` writes "95°F" and "5 of the last 10 years" by hand in its caption. They should come from `config/scoring.json` and `RECENT_YEARS`.
+
+Could not be checked from files: the row labels of FAO-56 Tables 11 and 12 (chapter 6 was not saved; checked in Phase 3), the 30 m pixel of the Cropland Data Layer (from SPEC.md), and that sunlight is missing before 1984 beyond the points tried.
