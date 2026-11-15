@@ -2,7 +2,9 @@
 
 Date: 2026-11-14.
 
-**Status: built and committed on local `main`. Not pushed, so not deployed.** The public URL still shows Phase 3.
+**Status: accepted by Angel, built and committed on local `main`. Not pushed, so not deployed.** The public URL still shows Phase 3.
+
+After the summary of this phase, with its choices to confirm, its cuts and what was not verified, Angel wrote "All right, let's continue working." at about 21:58 CST on 2026-11-14. Claude took that as approval of the phase as built and as the go-ahead for Phase 5. It did not settle the choices listed below one by one; any of them can still be changed.
 
 User flow steps 1 to 7 work on a local run at desktop size and at an emulated 375 x 812 phone size, with the limits listed under "What was cut" and "Not checked". Step 6's soil moisture and groundwater belong to Phase 6.
 
