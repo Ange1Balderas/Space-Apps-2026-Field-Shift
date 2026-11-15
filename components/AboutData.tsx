@@ -28,8 +28,8 @@ import {
 	type SourceEntry,
 	slopeRows,
 	sourceAnchor,
-	TOOL_RULES,
 	termAnchor,
+	toolRules,
 	usesOf,
 } from "@/lib/about";
 import { selectionOf, useFieldStore } from "@/lib/field-store";
@@ -51,6 +51,7 @@ export const ABOUT_PARTS = [
 ] as const;
 
 const ASSUMPTIONS = assumptions();
+const TOOL_RULES = toolRules();
 const LIVE_SOURCES = SOURCES.filter((source) => source.kind === "live");
 const INDICATOR_ENTRIES = GLOSSARY.filter((entry) => entry.group === "scores");
 
@@ -338,14 +339,16 @@ export function AboutData() {
 							Crop water demand is potential demand: what a well-watered crop would use.
 						</li>
 						<li>
-							NASA POWER describes an area roughly 35 miles across, not this field. A
-							hot day is counted only when that area&apos;s high reaches{" "}
-							{SCORING.hotDayF}°F. At one point in central Kansas, its hottest day of
-							2019 was 94.9°F, so that year shows no hot day there.
+							NASA POWER&apos;s weather values describe an area roughly 35 miles across,
+							and its sunlight values a larger one. Neither is this field. A hot day is
+							counted only when that area&apos;s high reaches {SCORING.hotDayF}°F. At one
+							point in central Kansas, its hottest day of 2019 was 94.9°F, so that year
+							shows no hot day there.
 						</li>
 						<li>
-							The library holds {LIBRARY.rotations.length} rotations so far. A value
-							with no source yet is left out, never guessed.
+							The library holds {LIBRARY.rotations.length} rotations so far. A published
+							value with no source yet is left out. The rotations themselves and the
+							numbers the tool chose are its own design, listed below.
 						</li>
 					</ul>
 				</div>
@@ -353,10 +356,12 @@ export function AboutData() {
 					<Heading3>How this text was written</Heading3>
 					<p className="text-xs text-muted-foreground">
 						AI-generated: the explanations on this tab and in the term tooltips were
-						written by Claude, an AI assistant, from the sources linked beside them.
-						Where one matters to a decision, open its source. Nothing on screen is
-						written by AI while you use the tool. Every sentence on a rotation card is a
-						fixed template filled with a computed number or a sourced library entry.
+						written by Claude, an AI assistant, from the sources linked beside them,
+						and from the tool&apos;s own code for its own terms and rules. Where one
+						matters to a decision, open its source. Nothing on screen is written by AI
+						while you use the tool. Every sentence on a rotation card is fixed wording,
+						a template filled with a number the tool worked out, or a library entry
+						with its source.
 					</p>
 				</div>
 			</Section>
@@ -428,8 +433,8 @@ export function AboutData() {
 					</div>
 					<p className="text-xs text-muted-foreground">
 						A score is only as local as its coarsest input. Water fit and heat exposure
-						are worked out from NASA POWER, so they describe the area&apos;s weather on
-						this field&apos;s soil, not this field&apos;s own weather.
+						are worked out from NASA POWER, so they describe the area&apos;s weather, not
+						this field&apos;s own. Water fit also uses this field&apos;s soil.
 					</p>
 				</Section>
 			</div>
@@ -448,8 +453,9 @@ export function AboutData() {
 					</p>
 					<p>
 						NASA POWER is itself both. Its temperature, rain, humidity and wind come
-						from NASA&apos;s weather models, and its sunlight from satellite
-						observations. A local reading would sharpen the answer here:
+						from MERRA-2, a NASA weather model that takes in observations, and its
+						sunlight from satellite observations. A local reading would sharpen the
+						answer here:
 					</p>
 					<ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
 						<li>
@@ -459,8 +465,9 @@ export function AboutData() {
 						</li>
 						<li>
 							<span className="font-medium text-foreground">Water in the soil.</span>{" "}
-							The tool estimates the water stored before planting from rain and one
-							published average. A soil probe at planting measures it.
+							The tool estimates the water stored before planting from the rain on the
+							bare field, one average measured at Akron, Colorado, and the most water
+							this soil can hold. A soil probe at planting measures it.
 						</li>
 						<li>
 							<span className="font-medium text-foreground">Crops grown.</span> The
@@ -468,8 +475,10 @@ export function AboutData() {
 							own records are better, and you can enter them on the Field tab.
 						</li>
 						<li>
-							<span className="font-medium text-foreground">Soil.</span> The survey
-							describes a map unit by its main soil, and a map unit can include other
+							<span className="font-medium text-foreground">Soil.</span> The tool reads
+							texture, organic matter, K factor, wind erodibility and hydrologic group
+							from the main soil of the map unit, and available water and slope as the
+							survey&apos;s figures for the whole unit. A map unit can include other
 							soils. What you know of this field&apos;s soil counts for more.
 						</li>
 					</ul>
@@ -510,9 +519,9 @@ export function AboutData() {
 							It treats the years as independent of each other. EPA&apos;s guidance
 							warns that &quot;applying the usual tests to correlated data tends to
 							result in a test whose actual significance level (false rejection error
-							rate) is larger than the nominal error rate&quot;. Weather in one year is
-							not wholly independent of the year before, so a label can look more
-							certain than it is.
+							rate) is larger than the nominal error rate&quot;. If one year&apos;s
+							weather carries over into the next, a label can look more certain than it
+							is. The tool has not tested these series for that.
 						</p>
 						<p>
 							<LinkedText

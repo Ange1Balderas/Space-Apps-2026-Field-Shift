@@ -1,8 +1,8 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 //
 // The words on a rotation card (SPEC.md, "How each card's five fields are written"). Every
-// sentence here is a fixed template filled with a computed number or a library entry, so
-// each claim traces to a value. No language model writes any of it.
+// sentence here is fixed wording, a template filled with a computed number, or a library
+// entry with its source. No language model writes any of it.
 
 import type { Library } from "@/lib/library";
 import { INDICATOR_IDS } from "@/lib/library";
@@ -196,8 +196,8 @@ export function splitSource(source: string): SourcePart[] {
 export function informationGaps(score: RotationScore): string[] {
 	const gaps = [
 		"The tool cannot see local prices, this field's history beyond the crop map, irrigation rights, crop insurance rules or local disease pressure.",
-		"Crop water demand is potential demand: what a well-watered crop would use. A dryland crop uses less and yields less.",
-		"NASA POWER describes an area roughly 35 miles across, not this field.",
+		"Crop water demand is potential demand: what a well-watered crop would use. The tool does not estimate what a dryland crop actually uses or yields.",
+		"NASA POWER's weather values describe an area roughly 35 miles across, and its sunlight values a larger one. Neither is this field.",
 	];
 	for (const id of INDICATOR_IDS) {
 		const indicator = score.indicators[id];

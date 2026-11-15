@@ -4,8 +4,9 @@
 //
 // One rotation card (SPEC.md, user flow step 4 and feature 8): the score, the seven indicator
 // scores behind it, the field calendar, and the five fields: why suggested, evidence,
-// benefits, information gaps and risks to verify locally. Every sentence comes from a
-// template in lib/card-text.ts filled with a computed number or a sourced library entry.
+// benefits, information gaps and risks to verify locally. Every sentence is fixed wording,
+// a template from lib/card-text.ts filled with a computed number, or a library entry with
+// its source.
 
 import { type ReactNode, useState } from "react";
 import { FieldCalendar } from "@/components/FieldCalendar";

@@ -12,6 +12,7 @@ import {
 	citations,
 	describeUses,
 	formatSlope,
+	CROP_HISTORY_YEARS,
 	pairCount,
 	SOURCE_BADGE_ENTRIES,
 	SOURCE_KINDS,
@@ -19,10 +20,12 @@ import {
 	slopeRows,
 	sourcesProblems,
 	TOOL_RULES,
+	toolRules,
 	unlistedLinks,
 	usesOf,
 } from "@/lib/about";
 import { GLOSSARY } from "@/lib/glossary";
+import { HISTORY_YEARS } from "@/lib/cropland";
 import { FREEZE_F } from "@/lib/indicators";
 import { LIBRARY, SCORING } from "@/lib/library";
 import { RECENT_YEARS } from "@/lib/scoring";
@@ -87,7 +90,9 @@ describe("the source list as committed", () => {
 		);
 		expect(source("usda-cdl").resolution).toBe("30 m pixel");
 		expect(source("usda-ssurgo").resolution).toBe("Field scale");
-		expect(source("nasa-power").resolution).toContain("About 50 km grid");
+		// SPEC.md rounds NASA POWER's grid to "about 50 km". Its own methodology page gives
+		// half a degree by five eighths, which in Kansas is about 55 km, or 34 miles.
+		expect(source("nasa-power").resolution).toContain("Roughly 35 miles across (about 55 km)");
 	});
 
 	it("has the entry that each source badge opens", () => {
@@ -259,6 +264,57 @@ describe("the rules with no constant", () => {
 		expect(text).toContain(`the last ${RECENT_YEARS} full years`);
 		expect(text).toContain(`${FREEZE_F}°F or below`);
 		expect(text).toContain(`at least ${MIN_TREND_POINTS} complete years`);
+	});
+
+	it("say which crops the tool can score in a field's own rotation, from the crop file", () => {
+		const own = TOOL_RULES.find((rule) => rule.title === "Your current rotation")?.text ?? "";
+		expect(own).toContain(
+			"The tool has the values it needs for corn, grain sorghum, soybeans and winter wheat.",
+		);
+		// Alfalfa has crop coefficients but no stage lengths and no heat-sensitive months yet.
+		expect(own).toContain(
+			"For alfalfa some values are not sourced yet, so its years are not counted in water fit or heat exposure.",
+		);
+		expect(own).toContain(`up to ${HISTORY_YEARS} years`);
+		expect(CROP_HISTORY_YEARS).toBe(HISTORY_YEARS);
+
+		// Once alfalfa is fully loaded, the sentence about it goes and it joins the list.
+		const loaded = toolRules({
+			...LIBRARY,
+			crops: LIBRARY.crops.map((crop) =>
+				crop.id === "alfalfa"
+					? {
+							...crop,
+							stageDays: { value: { ini: 10, dev: 30, mid: 25, late: 10 }, source: "Made up for a test. https://example.org/" },
+							heatSensitiveMonths: { value: [7], source: "Made up for a test. https://example.org/" },
+						}
+					: crop,
+			),
+		});
+		const ownLoaded = loaded.find((rule) => rule.title === "Your current rotation")?.text ?? "";
+		expect(ownLoaded).toContain("soybeans, winter wheat and alfalfa.");
+		expect(ownLoaded).not.toContain("not sourced yet");
+	});
+
+	it("say that a perennial with no usual dates covers the whole year, while that is so", () => {
+		const season = TOOL_RULES.find((rule) => rule.title === "A crop's season")?.text ?? "";
+		expect(LIBRARY.calendar.alfalfa).toBeNull();
+		expect(season).toContain(
+			"Alfalfa has no usual dates on file and is taken to be in the ground the whole year it is planted.",
+		);
+		const dated = toolRules({
+			...LIBRARY,
+			calendar: {
+				...LIBRARY.calendar,
+				alfalfa: {
+					value: { plantStart: "08-15", plantEnd: "09-15", harvestStart: "05-15", harvestEnd: "09-30" },
+					source: "Made up for a test. https://example.org/",
+				},
+			},
+		});
+		expect(dated.find((rule) => rule.title === "A crop's season")?.text).not.toContain(
+			"no usual dates on file",
+		);
 	});
 
 	it("each have a title and a sentence", () => {

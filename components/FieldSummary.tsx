@@ -239,8 +239,9 @@ function Soil({
 						))}
 					</dl>
 					<p className="text-xs text-muted-foreground">
-						The soil map unit under this point, described by its main soil. A map
-						unit can include other soils.
+						The soil map unit under this point. Available water and slope are for
+						the whole unit, and the other figures for its main soil. A map unit can
+						include other soils.
 					</p>
 				</>
 			) : null}

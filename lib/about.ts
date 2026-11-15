@@ -11,12 +11,13 @@
 import sourcesJson from "@/data/sources.json";
 import { INDICATOR_LABELS, PRIORITY_LABELS, splitSource } from "@/lib/card-text";
 import { GLOSSARY, type GlossaryEntry } from "@/lib/glossary";
+import { CDL_CROPS } from "@/lib/existing-rotation";
 import { FREEZE_F, GROWING_SEASON } from "@/lib/indicators";
 import { LIBRARY, type Library, PRIORITIES } from "@/lib/library";
 import { RECENT_YEARS } from "@/lib/scoring";
 import { monthName } from "@/lib/trend-text";
 import { MIN_TREND_POINTS, type TrendLabel } from "@/lib/trends";
-import type { ClimateResponse, ScoringConfig } from "@/lib/types";
+import type { ClimateResponse, CropId, ScoringConfig } from "@/lib/types";
 
 export const SOURCE_KINDS = [
 	{
@@ -32,7 +33,7 @@ export const SOURCE_KINDS = [
 	{
 		id: "library",
 		title: "Crop and rotation values",
-		note: "The crop values and the benefits and risks of each rotation were compiled with an AI assistant from these publications. Each one was checked against its source before it was loaded. Several were written for other places, and their names say where.",
+		note: "The crop values and the benefits and risks of each rotation were compiled with an AI assistant from these publications. A second AI pass checked each value against its source before it was loaded, and some wording was corrected afterwards without a new check. Which crops a rotation holds, in what order, and where in Kansas it is usual are this project's own design. Several publications were written for other places, and most of their names say where.",
 	},
 	{ id: "map", title: "Map", note: "" },
 ] as const;
@@ -299,7 +300,7 @@ export function assumptions(library: Library = LIBRARY): Assumption[] {
 			key: "regionRainBandsIn",
 			label: "West, central and east Kansas",
 			value: `${westBelow} and ${centralBelow} in of rain a year`,
-			text: `A field counts as western Kansas when its long-term average rain is below ${westBelow} in a year, as central below ${centralBelow} in, and as eastern from there up. The two edges are halfway between K-State's long-term averages for the western, middle and eastern thirds of Kansas: 20.2, 26.0 and 37.2 in, 1895 to 2015.`,
+			text: `A field counts as western Kansas when its average rain in a year, in NASA POWER's record since 1984, is below ${westBelow} in, as central below ${centralBelow} in, and as eastern from there up. The two edges are halfway between K-State's averages for the western, middle and eastern thirds of Kansas over 1895 to 2015: 20.2, 26.0 and 37.2 in. The field's figure and K-State's cover different years.`,
 			source:
 				"K-State, Kansas Climate Basics: Precipitation Trends and Changes in Drought (MF3335, April 2017). https://bookstore.ksre.ksu.edu/pubs/MF3335.pdf",
 		},
@@ -382,48 +383,95 @@ export function assumptions(library: Library = LIBRARY): Assumption[] {
 /** A rule the tool follows that has no constant in the config. */
 export type ToolRule = { title: string; text: string };
 
+/** How many years of crop history the field's own rotation is built from (lib/cropland.ts, HISTORY_YEARS). */
+export const CROP_HISTORY_YEARS = 8;
+
+function capitalized(text: string): string {
+	return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
+}
+
 /**
- * Each of these says what the code does: lib/scoring.ts, lib/calendar.ts, lib/crop-water.ts,
- * lib/climate-windows.ts, lib/existing-rotation.ts, lib/indicators.ts and lib/trends.ts.
+ * The rules the tool follows that have no constant in the config. Each says what the code
+ * does: lib/scoring.ts, lib/calendar.ts, lib/crop-water.ts, lib/climate-windows.ts,
+ * lib/existing-rotation.ts, lib/indicators.ts and lib/trends.ts. What depends on which crop
+ * values are loaded is worked out from the library, so it stays true as values are added.
  */
-export const TOOL_RULES: readonly ToolRule[] = [
-	{
-		title: "Recent weather",
-		text: `Water fit and heat exposure use the average of the last ${RECENT_YEARS} full years on record, not the whole record.`,
-	},
-	{
-		title: "A crop's season",
-		text: "A crop is taken to be in the ground from the middle of its usual planting window to the middle of its usual harvest window, on USDA's most active dates for Kansas. FAO-56's growth-stage lengths are not given for Kansas, so they are stretched or shrunk in proportion until they fill that season.",
-	},
-	{
-		title: "Crop months and bare months",
-		text: "A month counts as a crop month when a crop is in the ground for at least half of it. Otherwise it is bare. Water is counted by days, not by these months, and every year is taken as 365 days.",
-	},
-	{
-		title: "Hot, dry and frost windows",
-		text: "The three rows at the top of a field calendar. Each has its own rule, given in the glossary below, and none of them changes a score.",
-	},
-	{
-		title: "Which rotations are ranked",
-		text: "The library lists each rotation for one or more parts of Kansas. Only the rotations listed for the field's part are ranked. The others are scored the same way and shown apart. A rotation that needs irrigation is left out until the switch says the field can be irrigated.",
-	},
-	{
-		title: "Your current rotation",
-		text: "Built from the 8 years of the Cropland Data Layer and your corrections, taken as one cycle that repeats. The tool has values for corn, grain sorghum, soybeans, winter wheat and alfalfa. It counts fallow as a year with no planting, and it reads the three double-crop classes of winter wheat with soybeans, corn or sorghum as two crops in one year. A year with any other crop is named and left out of the score. Winter wheat seen in a year is taken as planted the fall before.",
-	},
-	{
-		title: "Pest and disease break",
-		text: "100 times the number of different crops, divided by that number plus one, then divided by the longest run of years in which the same crop is planted. The form is the tool's own.",
-	},
-	{
-		title: "Freeze day",
-		text: `A day whose low is ${FREEZE_F}°F or below. The National Weather Service's definition also asks for a widespread area and "a climatologically significant period of time". The tool's rule is simpler: one day in NASA POWER's grid cell.`,
-	},
-	{
-		title: "Trend test",
-		text: `A series needs at least ${MIN_TREND_POINTS} complete years to be tested. The p-value is two-sided, because the tool does not know in advance which way a series is heading. EPA's worked examples test one direction at a time.`,
-	},
-];
+export function toolRules(library: Library = LIBRARY): ToolRule[] {
+	const nameOf = (id: CropId) =>
+		(library.crops.find((crop) => crop.id === id)?.name ?? id).toLowerCase();
+
+	// A perennial with no usual dates on file is in the ground the whole year it is planted
+	// (lib/calendar.ts).
+	const wholeYear = library.crops
+		.filter((crop) => crop.kind === "perennial" && library.calendar[crop.id] === null)
+		.map((crop) => crop.name.toLowerCase());
+
+	// The crops a field's own rotation can hold, and what the tool can score for each.
+	const ownCrops = [...new Set(Object.values(CDL_CROPS).flat())];
+	const missingFor = (id: CropId): string[] => {
+		const crop = library.crops.find((item) => item.id === id);
+		const parts: string[] = [];
+		// Water demand needs the crop coefficients and the stage lengths (lib/crop-water.ts).
+		if (!crop?.kc || !crop.stageDays) parts.push("water fit");
+		// Heat exposure needs the heat-sensitive months (lib/scoring.ts).
+		if (!crop?.heatSensitiveMonths) parts.push("heat exposure");
+		return parts;
+	};
+	const complete = ownCrops.filter((id) => missingFor(id).length === 0).map(nameOf);
+	const partly = ownCrops
+		.filter((id) => missingFor(id).length > 0)
+		.map(
+			(id) =>
+				` For ${nameOf(id)} some values are not sourced yet, so its years are not counted in ${missingFor(id).join(" or ")}.`,
+		)
+		.join("");
+
+	return [
+		{
+			title: "Recent weather",
+			text: `Water fit and heat exposure use the average of the last ${RECENT_YEARS} full years on record, not the whole record. The penalty for rising heat is the exception: it follows the trend over the whole record.`,
+		},
+		{
+			title: "A crop's season",
+			text: `A crop is taken to be in the ground from the middle of its usual planting window to the middle of its usual harvest window, on USDA's most active dates for Kansas. FAO-56's growth-stage rows are not labelled for Kansas, so their lengths are stretched or shrunk in proportion until they fill that season.${
+				wholeYear.length > 0
+					? ` ${capitalized(listed(wholeYear))} ${wholeYear.length === 1 ? "has" : "have"} no usual dates on file and ${wholeYear.length === 1 ? "is" : "are"} taken to be in the ground the whole year ${wholeYear.length === 1 ? "it is" : "they are"} planted.`
+					: ""
+			}`,
+		},
+		{
+			title: "Crop months and bare months",
+			text: "A month counts as a crop month when a crop is in the ground for at least half of it. Otherwise it is bare. In a year whose crop the tool does not know, the months are marked as not known. Water is counted by days, not by these months, and every year is taken as 365 days.",
+		},
+		{
+			title: "Hot, dry and frost windows",
+			text: "The three rows at the top of a field calendar. Each has its own rule, given in the glossary below, and none of them changes a score.",
+		},
+		{
+			title: "Which rotations are ranked",
+			text: "The library lists each rotation for one or more parts of Kansas. Only the rotations listed for the field's part are ranked. The others are scored the same way and shown apart. A rotation that needs irrigation is left out until the switch says the field can be irrigated. A library rotation with the same crops as the field's own is left out, because it would repeat that card.",
+		},
+		{
+			title: "Your current rotation",
+			text: `Built from up to ${CROP_HISTORY_YEARS} years of the Cropland Data Layer and your corrections, taken as one cycle that repeats. The tool has the values it needs for ${listed(complete)}.${partly} Fallow counts as a year with no planting, and the three double-crop classes of winter wheat with soybeans, corn or sorghum are read as two crops in one year. A year with any other crop, or with none on record, is named and left out of the score. Winter wheat seen in a year is taken as planted the fall before.`,
+		},
+		{
+			title: "Pest and disease break",
+			text: "100 times the number of different crops, divided by that number plus one, then divided by the longest run of years in which the same crop is planted. The form is the tool's own.",
+		},
+		{
+			title: "Freeze day",
+			text: `A day whose low is ${FREEZE_F}°F or below. The National Weather Service's definition also asks for a widespread area and "a climatologically significant period of time". The tool's rule is simpler: one day in NASA POWER's grid cell.`,
+		},
+		{
+			title: "Trend test",
+			text: `A series needs at least ${MIN_TREND_POINTS} complete years to be tested. The p-value is two-sided, because the tool does not know in advance which way a series is heading. EPA's worked examples test one direction at a time.`,
+		},
+	];
+}
+
+/** The rules as the app shows them, for the library as loaded. */
+export const TOOL_RULES: readonly ToolRule[] = toolRules();
 
 const SLOPE_SERIES = [
 	{ id: "hotDays", name: "Hot days", unit: "days" },

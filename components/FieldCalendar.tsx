@@ -10,7 +10,7 @@
 
 import { Term } from "@/components/Glossary";
 import type { RotationCalendar } from "@/lib/calendar";
-import type { ClimateWindows } from "@/lib/climate-windows";
+import { type ClimateWindows, RECENT_YEARS } from "@/lib/climate-windows";
 import { LIBRARY } from "@/lib/library";
 import type { CropId } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -166,7 +166,7 @@ export function FieldCalendar({
 				{hasShared ? "A + after a letter means a second crop shares the month. " : ""}
 				{hasUnknown ? "A month marked ? is in a year whose crop the tool does not know. " : ""}
 				{hasWindows
-					? "A bar in the top three rows marks a month that is usually hot, dry or frosty here. Hot: a 95°F day in more than 5 of the last 10 years. Dry: evaporation runs further ahead of rain than in this field's average month. Frost: between the average first fall freeze and the average last spring freeze. These are the tool's own rules, from NASA POWER."
+					? `A bar in the top three rows marks a month that is usually hot, dry or frosty here. Hot: a ${LIBRARY.scoring.hotDayF}°F day in more than half of the last ${RECENT_YEARS} years. Dry: evaporation runs further ahead of rain than in this field's average month. Frost: between the average first fall freeze and the average last spring freeze. These are the tool's own rules, from NASA POWER.`
 					: ""}
 			</p>
 		</div>

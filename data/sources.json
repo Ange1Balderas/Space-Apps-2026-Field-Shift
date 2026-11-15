@@ -18,7 +18,7 @@
       }
     ],
     "purpose": "Daily weather for the place since 1981: high and low temperature, rain, sunlight, dew point, humidity and wind. Every climate chart and trend, the hot, dry and frost windows, reference evapotranspiration, and so the water fit and heat scores are worked out from it. In the answers the tool has received, sunlight is missing before 1984, so reference evapotranspiration starts in 1984.",
-    "resolution": "About 50 km grid. NASA POWER gives its weather values on a grid of ½° latitude by ⅝° longitude, which in Kansas is about 55 km, or roughly 35 miles, on a side. Its sunlight values are on a coarser grid of 1° by 1°.",
+    "resolution": "Roughly 35 miles across (about 55 km) for weather values, on a grid of ½° latitude by ⅝° longitude. Sunlight values are on a coarser grid of 1° by 1°.",
     "confidence": "Medium: regional climate, not a field station"
   },
   {
@@ -49,7 +49,7 @@
         "url": "https://sdmdataaccess.sc.egov.usda.gov/Query.aspx"
       }
     ],
-    "purpose": "The soil map unit under the point and its main soil: texture, available water, organic matter, slope, K factor, wind erodibility index and hydrologic group, read through Soil Data Access. It sets how much water the soil can store for the next crop and the erosion risk behind the soil protection score.",
+    "purpose": "The soil map unit under the point, read through Soil Data Access: the texture, organic matter, K factor, wind erodibility index and hydrologic group of its main soil, and the available water and slope of the whole unit. It sets how much water the soil can store for the next crop and the erosion risk behind the soil protection score.",
     "resolution": "Field scale",
     "confidence": "High for soil type; the map unit can still mix soils"
   },
@@ -79,7 +79,7 @@
         "url": "https://www.fao.org/4/X0490E/x0490e0b.htm"
       }
     ],
-    "purpose": "The method for reference evapotranspiration (the Penman-Monteith equation), and the crop coefficients and growth-stage lengths behind each crop's potential water demand. It is a worldwide handbook: none of the stage lengths the tool uses is given for Kansas, so they are scaled to the Kansas season.",
+    "purpose": "The method for reference evapotranspiration (the Penman-Monteith equation), and the crop coefficients and growth-stage lengths behind each crop's potential water demand. It is a worldwide handbook: none of the stage-length rows the tool uses is labelled for Kansas (they are for Idaho, for Spain and California, for the USA, Pakistan and the Mediterranean, and for the central USA), so their lengths are scaled to the Kansas season.",
     "resolution": null,
     "confidence": null
   },

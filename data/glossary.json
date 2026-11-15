@@ -17,7 +17,7 @@
     "term": "Reference evapotranspiration (reference ET)",
     "match": ["reference evapotranspiration", "reference ET"],
     "definition": "The evapotranspiration from a reference surface that is not short of water: a hypothetical grass crop with specific characteristics.",
-    "here": "The tool works it out for each day from NASA POWER weather (temperature, sunlight, humidity and wind) and the place's latitude and elevation, with the FAO-56 Penman-Monteith equation.",
+    "here": "The tool works it out for each day from NASA POWER weather (temperature, sunlight, humidity and wind), the place's latitude and the elevation NASA POWER gives for its grid cell, with the FAO-56 Penman-Monteith equation.",
     "note": null,
     "own": false,
     "sourceName": "FAO-56",
@@ -42,10 +42,10 @@
     "match": ["potential water demand", "potential crop demand", "potential demand"],
     "definition": "The tool's name for what FAO-56 calls crop evapotranspiration under standard conditions: the evapotranspiration of a disease-free, well-fertilized crop in a large field, with the best soil water conditions, reaching full production in the given climate.",
     "here": "Worked out from the average reference ET of each month over the last {recentYears} years, times the crop coefficient for each day, added up over the crop's usual Kansas season.",
-    "note": "FAO-56 advises against the name potential ET, because the word has been defined in more than one way. The tool says potential only in the plain sense of what a crop would use if water were never short, and means exactly the quantity defined here.",
+    "note": "FAO-56 discourages calling reference evapotranspiration potential ET, because the word has been defined in more than one way. It says nothing of the kind about crop demand: carrying the caution over is this tool's own care. The tool uses potential only in the plain sense of what a crop would use if water were never short, and means the quantity defined here, estimated as described above.",
     "own": false,
     "sourceName": "FAO-56",
-    "source": "FAO Irrigation and Drainage Paper 56 (Allen, Pereira, Raes and Smith, 1998), Chapter 1, Crop evapotranspiration under standard conditions (ETc): \"The crop evapotranspiration under standard conditions, denoted as ETc, is the evapotranspiration from disease-free, well-fertilized crops, grown in large fields, under optimum soil water conditions, and achieving full production under the given climatic conditions.\" The same chapter says: \"The use of other denominations such as potential ET is strongly discouraged due to ambiguities in their definitions.\" https://www.fao.org/4/X0490E/x0490e04.htm"
+    "source": "FAO Irrigation and Drainage Paper 56 (Allen, Pereira, Raes and Smith, 1998), Chapter 1, Crop evapotranspiration under standard conditions (ETc): \"The crop evapotranspiration under standard conditions, denoted as ETc, is the evapotranspiration from disease-free, well-fertilized crops, grown in large fields, under optimum soil water conditions, and achieving full production under the given climatic conditions.\" Under its heading Reference crop evapotranspiration (ETo), the same chapter says: \"The use of other denominations such as potential ET is strongly discouraged due to ambiguities in their definitions.\" https://www.fao.org/4/X0490E/x0490e04.htm"
   },
   {
     "id": "water-balance",
@@ -65,7 +65,7 @@
     "term": "Fallow",
     "match": ["fallow"],
     "definition": "A common practice in the western Great Plains, with the goal of storing water in the soil for future crops.",
-    "here": "In this tool, a year of a rotation in which nothing is planted is a fallow year. On the field calendar, a month with no crop in the ground is shown as bare.",
+    "here": "In this tool, a year of a rotation in which nothing is planted is a fallow year. On the field calendar, a month in which no crop is in the ground for at least half of it is shown as bare.",
     "note": null,
     "own": false,
     "sourceName": "K-State MF3066",
@@ -105,7 +105,7 @@
     "note": null,
     "own": false,
     "sourceName": "USDA NRCS soil survey and K-State MF3066",
-    "source": "USDA NRCS Soil Data Access, the soil survey's own description of \"Available Water Supply, 0 to 100 cm\" (table sdvattribute, read 2026-11-14): \"It is commonly estimated as the amount of water held between field capacity and the wilting point\" and \"AWS is calculated as the available water capacity times the thickness of each soil horizon to a specified depth.\" https://sdmdataaccess.sc.egov.usda.gov/Query.aspx ; K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Chapter 2: \"Field capacity refers to the amount of water that is stored in the soil after the excess (gravitational) water has drained away\", and at the permanent wilting point \"plants are not able to extract this water\". https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
+    "source": "USDA NRCS Soil Data Access, the soil survey's own description of \"Available Water Supply, 0 to 100 cm\" (table sdvattribute, read 2026-11-14): \"It is commonly estimated as the amount of water held between field capacity and the wilting point, with corrections for salinity, rock fragments, and rooting depth.\" and \"AWS is calculated as the available water capacity times the thickness of each soil horizon to a specified depth.\" https://sdmdataaccess.sc.egov.usda.gov/Query.aspx ; K-State, Efficient Crop Water Use in Kansas (MF3066, August 2012), Chapter 2: \"Field capacity refers to the amount of water that is stored in the soil after the excess (gravitational) water has drained away\", and at the permanent wilting point \"plants are not able to extract this water\". https://bookstore.ksre.ksu.edu/pubs/MF3066.pdf"
   },
   {
     "id": "organic-matter",
@@ -125,8 +125,8 @@
     "term": "Slope",
     "match": [],
     "definition": "The difference in height between two points, as a percentage of the distance between them.",
-    "here": "The figure is the soil survey's value for the whole map unit. The tool multiplies it by the K factor to rate the risk of erosion by water.",
-    "note": null,
+    "here": "The figure is the soil survey's slope for the whole map unit (its column slopegradwta). The tool multiplies it by the K factor to rate the risk of erosion by water.",
+    "note": "No description of that column was found. At the one map unit that was checked, it matched the average of the soils' slopes weighted by each soil's share of the unit.",
     "own": false,
     "sourceName": "USDA NRCS soil survey",
     "source": "USDA NRCS Soil Data Access, the soil survey's own description of \"Representative Slope\" (table sdvattribute, read 2026-11-14): \"Slope gradient is the difference in elevation between two points, expressed as a percentage of the distance between those points.\" https://sdmdataaccess.sc.egov.usda.gov/Query.aspx"
@@ -208,7 +208,7 @@
     "group": "climate",
     "term": "Freeze",
     "match": ["freeze"],
-    "definition": "The National Weather Service uses the word when the air temperature at the surface is expected to be 32°F or below over a widespread area for a climatologically significant period of time.",
+    "definition": "The National Weather Service uses the word when the surface air temperature is expected to be 32°F or below over a widespread area for a climatologically significant period of time.",
     "here": "In this tool, a freeze day is a day whose low in NASA POWER is {freezeF}°F or below. The last one from January to June is the last spring freeze, and the first one from July to December is the first fall freeze.",
     "note": null,
     "own": false,

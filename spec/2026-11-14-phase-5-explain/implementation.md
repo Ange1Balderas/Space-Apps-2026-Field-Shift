@@ -1,6 +1,6 @@
 # Phase 5: Explain. Implementation notes
 
-Date: 2026-11-14 (Saturday), about 22:00 to 23:10 CST. Status: built, checked on the production build, committed locally. **Not pushed.** **Open: a second source check found 27 wording corrections for the About tab, listed at the end of this file and not applied yet** (the session's usage limit was reached). Waiting for Angel's review. The public URL still shows Phase 3.
+Date: 2026-11-14 (Saturday), about 22:00 to 23:30 CST, and 2026-11-15, 00:05 to 00:25 CST, for the second source check's corrections. Status: built, checked on the production build, committed locally. **Not pushed.** The 27 corrections of the second source check are applied (see the end of this file). Waiting for Angel's review. The public URL still shows Phase 3.
 
 SPEC.md suggests a multi-agent workflow for this phase. It was done in normal mode, with one `data-verifier` run and one `ui-reviewer` run, because the plan allowance is tight.
 
@@ -36,8 +36,8 @@ Changed: `app/page.tsx`, `app/layout.tsx`, `components/SourceBadge.tsx`, `compon
 1. **Two terms SPEC.md lists are left out**: soil moisture anomaly and NDVI. A definition of something the app does not show would be decoration. They belong with Phase 6 and with the vegetation layer.
 2. **About is a second tab of the panel**, not a page. Both tabs stay in the page and the one not chosen is hidden, so the cards a reader opened, the chart they chose and their place are kept. Choosing a field while About is open brings the Field tab forward.
 3. **A source badge no longer leaves the app.** It opens the entry, which holds the provider's links. SPEC.md asks for exactly this; it is listed because it changes what a click did in Phases 1 to 4.
-4. **"Potential demand" keeps its name, with a caution.** FAO-56, Chapter 1, says: "The use of other denominations such as potential ET is strongly discouraged due to ambiguities in their definitions." SPEC.md calls the quantity potential demand, so the name stays, and its About entry now says what FAO advises and that the tool means FAO's crop evapotranspiration under standard conditions. A different name, such as full water demand, is Angel's call.
-5. **"Roughly 30 miles" became "roughly 35 miles"** in three sentences that were already on screen (under each chart, in a card's information gaps, in the README). NASA POWER's methodology page gives its weather values on a grid of ½° latitude by ⅝° longitude. In Kansas that is about 55 km on a side: 0.5° of latitude is 55.6 km, and 0.625° of longitude is 53 to 56 km between 40°N and 37°N. That is 34 miles. SPEC.md's "about 50 km grid" is kept as the first words of the resolution, with the exact grid after it. The same page puts POWER's radiation values, sunlight among them, on a coarser grid of 1° by 1°, and the About tab says so.
+4. **"Potential demand" keeps its name, with a caution.** FAO-56, Chapter 1, says under its heading for reference evapotranspiration: "The use of other denominations such as potential ET is strongly discouraged due to ambiguities in their definitions." That sentence is about names for reference ET. FAO says nothing of the kind about crop demand, so carrying the caution over to the tool's word is the tool's own care, and the About entry says so. SPEC.md calls the quantity potential demand, so the name stays. A different name, such as full water demand, is Angel's call.
+5. **"Roughly 30 miles" became "roughly 35 miles"** in three sentences that were already on screen (under each chart, in a card's information gaps, in the README). NASA POWER's methodology page gives its weather values on a grid of ½° latitude by ⅝° longitude. In Kansas that is about 55 km on a side: 0.5° of latitude is 55.6 km, and 0.625° of longitude is 53 to 56 km between 40°N and 37°N. That is 34 miles. The resolution on the About tab now reads "Roughly 35 miles across (about 55 km) for weather values", miles first as CLAUDE.md rule 5 asks. **SPEC.md's table still says "About 50 km grid"**: it was not changed, because SPEC.md is Angel's. The same page puts POWER's radiation values, sunlight among them, on a coarser grid of 1° by 1°, and the About tab says so.
 6. **The sentence about 1984 says what was observed.** "In the answers the tool has received, sunlight is missing before 1984." No NASA page was opened that states a start date.
 7. **How the AI label rule is met.** CLAUDE.md: "Any AI-generated text shown in the app is labeled as AI-generated." The About tab says so under "How this text was written": "AI-generated: the explanations on this tab and in the term tooltips were written by Claude, an AI assistant, from the sources linked beside them." A tooltip does not repeat the label; it points to the About tab. The label claims no review. A first version said "and reviewed by Angel Balderas", which would have been shown to the public before it was true, so it was taken out. Angel can add a review clause after reading the tab and the glossary.
 8. **The comparison table has a fifth row, the average temperature of the year.** The tool computes that trend (SPEC.md lists the series) but draws no chart for it.
@@ -47,7 +47,7 @@ Changed: `app/page.tsx`, `app/layout.tsx`, `components/SourceBadge.tsx`, `compon
 12. **`RECENT_YEARS` (10) is a constant in the code, not in the config.** It is shown on the About tab under the rules. Moving it into `config/scoring.json` would change a shared type, which needs SPEC.md first.
 13. **The trend caveats quote EPA.** That Sen's slope is "insensitive to outliers" and regression "very sensitive to extreme values (outliers)" (sections 4.3.3.1 and 4.3.2.1), and that tests on correlated data tend to have a false-alarm rate above the stated one (section 4.8). The sentence "Weather in one year is not wholly independent of the year before" is the tool's own reading and is not measured for any field.
 14. **One example on the About tab is from a single point.** "At one point in central Kansas, its hottest day of 2019 was 94.9°F." Asked again on 2026-11-14 at about 22:25 CST: at 38.33°N, 97.32°W, NASA POWER's highest daily maximum of 2019 is 34.92°C (94.86°F) on 20 August, with no day at or above 95°F and 18 at or above 90°F.
-15. **A slope's description is narrower than before.** The soil survey's column for the slope shown (`slopegradwta`) has no description that could be found, so the glossary says only that the figure is "the soil survey's value for the whole map unit".
+15. **What the slope figure means is partly inferred, and the About entry says so.** The soil survey's column for the slope shown (`slopegradwta`) has no description that could be found. The tooltip says the figure is the survey's slope for the whole map unit; the About entry adds that, at the one map unit checked, it matched the average of the soils' slopes weighted by their share.
 
 ## What the source check found
 
@@ -84,7 +84,7 @@ Not covered by that run, and said so by it: the K-State handbooks other than MF3
 
 ## Verification
 
-Final run on 2026-11-14 at 23:06 to 23:07 CST, after the last code change:
+Run on 2026-11-14 at 23:06 to 23:07 CST, and again on 2026-11-15 at 00:20 CST after the second check's corrections, when the tests numbered 396 (two more, for the rules worked out from the crop file):
 
 ```text
 $ npm run typecheck
@@ -174,9 +174,18 @@ Left as they are: the tooltip names the About tab but cannot link to it, because
 3. Carried over, unchanged: the four rotations not loaded, the market switch's meaning, the bottom sheet on phones, the vegetation layer, the trend of crop water demand, the 12 px text on cards.
 4. Nothing since Phase 3 is deployed. SPEC.md's Saturday checkpoint, "MVP live" at 11:30 PM, needs a push of Phases 4 and 5, which is Angel's to do or to ask for.
 
-## Second source check: 27 findings, NOT applied yet
+## Second source check: 27 findings, applied
 
-A second `data-verifier` run, files only, about 11 minutes, 231k tokens. It covered what the first run could not see: the sentences of the About tab (`components/AboutData.tsx`, `lib/about.ts`) and the fields reworded after the first run. It confirmed every EPA quotation, the weights paragraph, 12 of 13 constant texts, the 2019 example and the arithmetic. It flagged 27 places that say more than their evidence supports. **None is applied.** The session's usage limit was reached as its report arrived. Each line gives the place, the problem and the wording to use.
+A second `data-verifier` run, files only, about 11 minutes, 231k tokens. It covered what the first run could not see: the sentences of the About tab (`components/AboutData.tsx`, `lib/about.ts`) and the fields reworded after the first run. It confirmed every EPA quotation, the weights paragraph, 12 of 13 constant texts, the 2019 example and the arithmetic. It flagged 27 places that say more than their evidence supports. The session's usage limit was reached as its report arrived, so they were listed here first. **All 27 were applied on 2026-11-15, after Angel wrote "Yes, apply them"**, with the wording given in each line, except where noted here:
+
+- 13 to 18: the rules are no longer typed sentences. `toolRules()` in `lib/about.ts` works out which crops are fully loaded and which perennial has no usual dates from the crop and calendar files, and two tests pin the sentences, so they stay true when alfalfa's values are loaded.
+- 24: the tooltip stays short. The caveat about the slope column is in the About entry, as a note.
+- 26: SPEC.md still says "About 50 km grid". See choice 5.
+- Also done: the calendar caption reads its numbers from the config and the code.
+
+**The corrected sentences were not sent back to the verifier.** They were read on the built app at 00:20 CST: the About tab, the soil note, the calendar caption and a card's information gaps show the new wording, with no error or warning.
+
+Each line below gives the place, the problem and the wording to use.
 
 `components/AboutData.tsx`
 
