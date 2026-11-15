@@ -349,11 +349,11 @@ export function AboutData() {
 				<div className="space-y-1.5">
 					<Heading3>How this text was written</Heading3>
 					<p className="text-xs text-muted-foreground">
-						AI-assisted: the explanations on this tab and in the term tooltips were
-						written with Claude, an AI assistant, from the sources linked beside them,
-						and reviewed by Angel Balderas. Nothing on screen is written by AI while you
-						use the tool. Every sentence on a rotation card is a fixed template filled
-						with a computed number or a sourced library entry.
+						AI-generated: the explanations on this tab and in the term tooltips were
+						written by Claude, an AI assistant, from the sources linked beside them.
+						Where one matters to a decision, open its source. Nothing on screen is
+						written by AI while you use the tool. Every sentence on a rotation card is a
+						fixed template filled with a computed number or a sourced library entry.
 					</p>
 				</div>
 			</Section>
