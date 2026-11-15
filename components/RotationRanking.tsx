@@ -183,6 +183,16 @@ export function RotationRanking({
 			const leftOutForIrrigation = ranking.hiddenForIrrigation.filter(
 				(item) => item !== ranking.sameAsExisting,
 			);
+			// The switch can add a rotation that ranks low and sits behind the disclosure. It is
+			// named here with its place, so the switch is seen to have done something.
+			const addedByIrrigation = constraints.irrigationAvailable
+				? [
+						...ranking.candidates.map((item, index) => ({ item, place: `ranked ${index + 1}` })),
+						...ranking.elsewhere.map((item) => ({ item, place: "usual elsewhere in Kansas" })),
+					]
+						.filter(({ item }) => item.rotation.water === "irrigated")
+						.map(({ item, place }) => `${item.rotation.name} (${place})`)
+				: [];
 			const top = ranking.candidates.slice(0, TOP_CANDIDATES);
 			const rest = ranking.candidates.slice(TOP_CANDIDATES);
 			const more = rest.length + ranking.elsewhere.length;
@@ -225,6 +235,13 @@ export function RotationRanking({
 							published crop values. It is not a forecast of yield or price, and
 							it is yours to weigh against what you know of the field.
 						</p>
+
+						{addedByIrrigation.length > 0 ? (
+							<p className="text-xs text-muted-foreground">
+								Included because this field can be irrigated:{" "}
+								{addedByIrrigation.join(", ")}.
+							</p>
+						) : null}
 
 						{soil.status === "error" ? (
 							<QuietNote title="Scored without the soil facts">

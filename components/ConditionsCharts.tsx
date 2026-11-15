@@ -114,7 +114,7 @@ const SERIES: Series[] = [
 		low: "Driest",
 		high: "Wettest",
 		tableHeader: `Rain, ${SEASON} (in)`,
-		note: `${SEASON} is this tool's own choice of growing season. No public source defines one for Kansas. `,
+		note: `${SEASON} is this tool's own choice of growing season: no public definition for Kansas was found. `,
 	},
 	{
 		id: "lastSpringFreezeDoy",

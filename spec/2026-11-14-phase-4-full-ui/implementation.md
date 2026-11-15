@@ -52,7 +52,8 @@ Both are in SPEC.md ("Decisions made on 2026-11-14, after Phase 2", items 8 and 
 9. **First fall freeze has a chart, which SPEC.md's feature list does not ask for.** Feature 2 names three charts; SPEC.md's trend detection lists the fall freeze among its series. Its trend is the clearest finding at all three samples (likely later by 3 to 4 days per decade), and the chart is one entry in a list. Remove the entry in `components/ConditionsCharts.tsx` if you do not want it.
 10. **"Use my location"** asks for a coarse position once, accepts one up to an hour old, and gives up after 15 seconds. It jumps the map to the point without animation.
 11. **Phone layout.** SPEC.md asks for a bottom sheet. The panel still sits under the map; choosing a field scrolls to it, and "Back to the map" returns.
-12. **The water-fit sentence** now gives a share and inches per crop ("cover about 39 percent of potential crop demand: on average 13.1 of 33.8 in per crop"), not a total per cycle.
+12. **A line names what the irrigation switch added.** At a field whose own rotation is not the irrigated one, the switch adds continuous corn, which ranks low and sits behind the disclosure. Without the line the switch would look as if it did nothing.
+13. **The water-fit sentence** now gives a share and inches per crop ("cover about 39 percent of potential crop demand: on average 13.1 of 33.8 in per crop"), not a total per cycle.
 
 ## What was cut
 
@@ -82,7 +83,7 @@ Both are in SPEC.md ("Decisions made on 2026-11-14, after Phase 2", items 8 and 
 
 ## Verification
 
-Run on 2026-11-14 at 21:45 to 21:47 CST, after the last code change:
+Run on 2026-11-14 at 21:51 CST, after the last code change:
 
 | Command | Result |
 | --- | --- |
@@ -108,9 +109,21 @@ In the browser, on the production build (`next start`), with the pane shown, abo
 | 375 x 812 | No sideways scrolling. Choosing a field scrolled to the panel, with "Back to the map" at its top and keyboard focus on the panel. The four tabs fit on one line |
 | Console | No errors |
 
+Three more checks, on the last build, about 21:52 to 21:56 CST, with real pointer clicks:
+
+| Check | Result |
+| --- | --- |
+| A click on the map at 38.431, -99.253 (not a sample) | Three live routes answered 200. Central Kansas, 26 in of rain. The point is pasture, so a note says its own rotation is not scored; three ranked cards, each with its calendar; four chart tabs |
+| Both freeze charts, after the date axis was widened | Each axis label sits on one line ("Nov 26", "Oct 27", "Apr 10"). At that point the first fall freeze shows a likely trend, about 3.5 days later per decade (p = 0.01) |
+| The irrigation switch at the Thomas sample | Continuous corn joins the list, ranked 5 with a score of 54, behind the disclosure ("3 more rotations"). A line above the cards says "Included because this field can be irrigated: Continuous corn (ranked 5)." The field's own water fit stays at 45 |
+
 Earlier, on the development server and before the review fixes: the irrigation switch, the five fields of the best card (evidence, benefits, gaps, risks, how the scores were worked out) and the rain and spring-freeze charts were read and looked at.
 
-Not checked: the public URL, a real phone, a screen reader, automated accessibility tests, a live (non-sample) click on this build.
+Not checked: the public URL, a real phone, a screen reader, automated accessibility tests. "Use my location" was exercised on the denied path only: it needs one try in a real browser or on a phone, which only Angel can do.
+
+## Data check
+
+The `data-verifier` was not run in this phase. No value in `data/` or `config/` changed. `data/README.md` gained one sentence, in the row for the irrigation cap, stating Angel's decision that an irrigated rotation never scores above what it would on rain alone. Every new number on screen is computed from values that were verified in Phase 3. One sentence under the rain chart was reworded from "no public source defines" a growing season to "no public definition for Kansas was found", which is what is known.
 
 ## UI review
 

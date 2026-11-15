@@ -49,7 +49,7 @@ None of these is a published fact. Each is a choice this tool made, kept in one 
 | `hotDayF` | 95 | A day counts as hot at or above 95°F (SPEC.md) |
 | `growingSeasonMonths` | April to September | The months of "growing season rain". No public source defines them for Kansas |
 | `regionRainBandsIn` | 23.1 and 31.6 in | A field is west, central or east by its average yearly rain. The edges are halfway between K-State's long-term averages for the western, middle and eastern thirds of Kansas: 20.2, 26.0 and 37.2 in, 1895 to 2015 ([MF3335](https://bookstore.ksre.ksu.edu/pubs/MF3335.pdf)) |
-| `irrigationNeedCapIn` | 24 in a year | An irrigated rotation that needs this much or more scores 0 on water fit. Two feet of water a year; a round number, not a measured limit |
+| `irrigationNeedCapIn` | 24 in a year | An irrigated rotation that needs this much or more scores 0 on water fit, and one that needs none scores 100. Two feet of water a year; a round number, not a measured limit. By Angel's decision of 2026-11-14 an irrigated rotation also never scores higher than it would on rain alone, so its water fit is the lower of the two |
 | `hotDaysCap` | 31 | A crop with 31 or more hot days in its sensitive month scores 0 on heat exposure; 31 is the length of the longest month |
 | `risingTrendPenalty` | 10 points | Taken off the heat score where hot days are likely rising |
 | `erosion.kTimesSlopeCap` | 4 | Water erosion risk is the soil's K factor times its slope in percent, and counts as highest at 4 or more, for example a K factor of 0.4 on a 10 percent slope |
