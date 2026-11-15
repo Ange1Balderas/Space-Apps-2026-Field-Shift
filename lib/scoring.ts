@@ -248,32 +248,36 @@ function scoreWater(
 	}
 	const left = skipped.length > 0 ? ` Not counted: ${skipped.join(", ")} (not sourced yet).` : "";
 	const period = `${recent.firstYear} to ${recent.lastYear}`;
-	if (mode === "irrigated") {
-		const total = seasons.reduce((sum, season) => sum + season.shortfallIn, 0);
-		const irrigationNeedIn = total / Math.max(1, knownYears);
-		return {
-			result: {
-				score: 100 * (1 - clamp(irrigationNeedIn / scoring.irrigationNeedCapIn, 0, 1)),
-				why: `Would need about ${one(irrigationNeedIn)} in of irrigation a year on ${period} weather, against a cap of ${scoring.irrigationNeedCapIn} in.${left}`,
-			},
-			detail: { mode, seasons, irrigationNeedIn },
-		};
-	}
-	const score =
+	// What the rotation would score on rain alone: the share of each crop's potential demand
+	// that rain and stored soil water cover, averaged over its crops.
+	const onRain =
 		seasons.reduce(
 			(sum, season) => sum + 100 * (1 - season.shortfallIn / season.demandIn),
 			0,
 		) / seasons.length;
-	const demand = seasons.reduce((sum, season) => sum + season.demandIn, 0);
-	const supply = seasons.reduce(
-		(sum, season) => sum + season.effectiveRainIn + season.storedIn,
-		0,
-	);
+	const demandPerCrop =
+		seasons.reduce((sum, season) => sum + season.demandIn, 0) / seasons.length;
+	const coveredPerCrop =
+		seasons.reduce((sum, season) => sum + season.demandIn - season.shortfallIn, 0) /
+		seasons.length;
+	const coverage = `Rain and stored soil water cover about ${Math.round(onRain)} percent of potential crop demand: on average ${one(coveredPerCrop)} of ${one(demandPerCrop)} in per crop, on ${period} weather.`;
+	if (mode === "irrigated") {
+		const total = seasons.reduce((sum, season) => sum + season.shortfallIn, 0);
+		const irrigationNeedIn = total / Math.max(1, knownYears);
+		const pumping =
+			100 * (1 - clamp(irrigationNeedIn / scoring.irrigationNeedCapIn, 0, 1));
+		return {
+			result: {
+				// Angel's decision of 2026-11-14 (SPEC.md, formula 3): pumping never makes a rotation
+				// fit its water better than the same rotation would on rain alone.
+				score: Math.min(pumping, onRain),
+				why: `Irrigating it would take about ${one(irrigationNeedIn)} in a year, which scores ${Math.round(pumping)} against a cap of ${scoring.irrigationNeedCapIn} in. ${coverage} The score is the lower of the two.${left}`,
+			},
+			detail: { mode, seasons, irrigationNeedIn },
+		};
+	}
 	return {
-		result: {
-			score,
-			why: `Rain and stored soil water cover about ${one(supply)} in of ${one(demand)} in of potential crop demand per cycle on ${period} weather.${left}`,
-		},
+		result: { score: onRain, why: `${coverage}${left}` },
 		detail: { mode, seasons, irrigationNeedIn: null },
 	};
 }

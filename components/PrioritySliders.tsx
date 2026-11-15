@@ -2,16 +2,22 @@
 
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 //
-// The four priority sliders (SPEC.md, user flow step 5). Each slider sets the weight of
-// the indicators listed under it; which indicators those are comes from config/scoring.json.
+// The four priority sliders and the switches about the farm (SPEC.md, user flow step 5).
+// Each slider sets the weight of the indicators listed under it; which indicators those
+// are comes from config/scoring.json.
+//
+// Switches (Angel's decision of 2026-11-14): irrigation is shown always. The no-till switch
+// shows only once a loaded rotation needs no-till equipment, because until then it would
+// change nothing. The market switch waits until its effect is defined.
 
 import { useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { INDICATOR_LABELS } from "@/lib/card-text";
-import { PRIORITIES, SCORING } from "@/lib/library";
+import { LIBRARY, PRIORITIES, SCORING } from "@/lib/library";
 import { usePrioritiesStore } from "@/lib/priorities-store";
-import { DEFAULT_PRIORITIES } from "@/lib/scoring";
+import { type Constraints, DEFAULT_PRIORITIES } from "@/lib/scoring";
 import type { Priority } from "@/lib/types";
 
 const PRIORITY_LABELS: Record<Priority, string> = {
@@ -55,6 +61,41 @@ function PrioritySlider({ priority }: { priority: Priority }) {
 	);
 }
 
+function FarmSwitch({
+	name,
+	label,
+	help,
+}: {
+	name: keyof Constraints;
+	label: string;
+	help: string;
+}) {
+	const id = useId();
+	const checked = usePrioritiesStore((state) => state.constraints[name]);
+	const setConstraint = usePrioritiesStore((state) => state.setConstraint);
+	return (
+		<div className="flex items-start justify-between gap-4">
+			<div className="min-w-0">
+				<label htmlFor={id} className="text-sm font-medium">
+					{label}
+				</label>
+				<p id={`${id}-help`} className="text-xs text-muted-foreground">
+					{help}
+				</p>
+			</div>
+			{/* The row is at least 44 px tall, and the label is a second target for the same switch. */}
+			<span className="flex min-h-11 shrink-0 items-center">
+				<Switch
+					id={id}
+					checked={checked}
+					aria-describedby={`${id}-help`}
+					onCheckedChange={(value) => setConstraint(name, value)}
+				/>
+			</span>
+		</div>
+	);
+}
+
 export function PrioritySliders() {
 	const headingId = useId();
 	const groupRef = useRef<HTMLDivElement>(null);
@@ -62,6 +103,9 @@ export function PrioritySliders() {
 	const resetPriorities = usePrioritiesStore((state) => state.resetPriorities);
 	const changed = PRIORITIES.some(
 		(priority) => priorities[priority] !== DEFAULT_PRIORITIES[priority],
+	);
+	const someRotationNeedsNoTill = LIBRARY.rotations.some(
+		(rotation) => rotation.needsNoTill,
 	);
 	return (
 		<div ref={groupRef} role="group" aria-labelledby={headingId} className="space-y-3">
@@ -97,6 +141,20 @@ export function PrioritySliders() {
 				{PRIORITIES.map((priority) => (
 					<PrioritySlider key={priority} priority={priority} />
 				))}
+			</div>
+			<div className="space-y-2 border-t pt-3">
+				<FarmSwitch
+					name="irrigationAvailable"
+					label="This field can be irrigated"
+					help="Adds the rotations that need irrigation, and scores your own rotation as irrigated."
+				/>
+				{someRotationNeedsNoTill ? (
+					<FarmSwitch
+						name="hasNoTillEquipment"
+						label="I have no-till equipment"
+						help="Without it, a rotation that needs no-till scores lower on simplicity."
+					/>
+				) : null}
 			</div>
 		</div>
 	);

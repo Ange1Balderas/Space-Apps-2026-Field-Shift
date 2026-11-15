@@ -22,7 +22,6 @@ import { usePrioritiesStore } from "@/lib/priorities-store";
 import { cropLabel, rotationYears } from "@/lib/rotation-edit";
 import {
 	annualRainIn,
-	DEFAULT_CONSTRAINTS,
 	distinctCrops,
 	type RankedRotation,
 	rank,
@@ -198,8 +197,10 @@ function ownLines(own: ExistingRotation, item: RankedRotation): string[] {
 	}
 	if (item.water?.mode === "dryland") {
 		lines.push(
-			"Scored as dryland. The crop map does not show irrigation, and the tool has not been told this field has any.",
+			"Scored as dryland. The crop map does not show irrigation: turn the switch on above if this field is irrigated.",
 		);
+	} else if (item.water?.mode === "irrigated") {
+		lines.push("Scored as irrigated, because the switch above says this field can be.");
 	}
 	return lines;
 }
@@ -216,6 +217,7 @@ export function RotationRanking({
 	cropEdits: Readonly<Record<number, number>>;
 }) {
 	const priorities = usePrioritiesStore((state) => state.priorities);
+	const constraints = usePrioritiesStore((state) => state.constraints);
 	const reducedMotion = useReducedMotion();
 
 	const climateData = climate.status === "ready" ? climate.data : null;
@@ -238,11 +240,11 @@ export function RotationRanking({
 				? scoreField(
 						{ climate: climateData, soil: soilData },
 						LIBRARY,
-						DEFAULT_CONSTRAINTS,
+						constraints,
 						own,
 					)
 				: null,
-		[climateData, soilData, own],
+		[climateData, soilData, own, constraints],
 	);
 	const ranking = useMemo(
 		() => (scores ? rank(scores, priorities, LIBRARY.scoring) : null),

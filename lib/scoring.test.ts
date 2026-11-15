@@ -220,6 +220,22 @@ describe("water fit (formula 3)", () => {
 		expect(wet.water?.mode).toBe("irrigated");
 	});
 
+	it("an irrigated rotation never scores higher than it would on rain alone", () => {
+		// Corn every second year. Pumping would take 11.375 in over two years, 5.69 in a year,
+		// which scores 76 against the 24 in cap. On rain alone the corn covers 53.8 percent of
+		// its demand. The lower of the two is the score, so irrigating changes nothing here.
+		const either = rotation([{ crop: "corn", plantYear: 2 }], { water: "either" });
+		const dry = scoreRotation(either, field, library, { irrigationAvailable: false, hasNoTillEquipment: true });
+		const wet = scoreRotation(either, field, library, { irrigationAvailable: true, hasNoTillEquipment: true });
+		expect(wet.water?.irrigationNeedIn).toBeCloseTo(11.375 / 2, 8);
+		expect(wet.indicators.waterFit.score).toBeCloseTo(100 * (1 - 11.375 / 24.6), 8);
+		expect(wet.indicators.waterFit.score).toBeCloseTo(dry.indicators.waterFit.score ?? Number.NaN, 8);
+		expect(wet.indicators.waterFit.why).toMatch(/would take about 5\.7 in a year, which scores 76 .* The score is the lower of the two\./);
+		expect(dry.indicators.waterFit.why).toBe(
+			"Rain and stored soil water cover about 54 percent of potential crop demand: on average 13.2 of 24.6 in per crop, on 2016 to 2025 weather.",
+		);
+	});
+
 	it("a fallow year banks more rain, so the shortfall is smaller", () => {
 		// Corn every second year: the bare stretch is 242 + 365 days, 60.7 in of rain, 12.14 in
 		// at 20%, still limited to the soil's 4 in. With a deeper soil all of it counts.
@@ -445,6 +461,15 @@ describe("the three sample fields", () => {
 		expect(without.candidates.map((score) => score.rotation.id)).not.toContain("continuous-corn");
 		expect(fieldScores(samples.thomas, true).candidates.map((score) => score.rotation.id)).toContain("continuous-corn");
 	});
+
+	it.each(Object.keys(samples))(
+		"switching irrigation on never raises the water fit of the field's own rotation at %s",
+		(name) => {
+			const off = fieldScores(samples[name], false).existing?.indicators.waterFit.score ?? Number.NaN;
+			const on = fieldScores(samples[name], true).existing?.indicators.waterFit.score ?? Number.NaN;
+			expect(on).toBeLessThanOrEqual(off);
+		},
+	);
 
 	it("moving a weight re-orders the list", () => {
 		const scores = fieldScores(samples.finney, false);
