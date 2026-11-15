@@ -2,11 +2,11 @@
 
 Date: 2026-11-14.
 
-**Status: approved by Angel, built and committed on local `main`. Not pushed, so not deployed.** The public URL still shows Phase 2.
+**Status: approved by Angel, deployed, and checked on the public URL.** `main` was pushed at 18:32 CST on 2026-11-14 at Angel's request, and the checks under "Deployment" passed on https://space-apps-2026-field-shift.vercel.app by 18:38 CST.
 
 Angel answered "Approved" to "Do you approve Phase 3 as built?" on 2026-11-14 at about 18:25 CST, after the summary of what works, what is weak and what was cut. That approves the phase as it stands, with the loaded data files and the choices listed below; any of them can still be changed. Open item 6 (irrigated and dryland water fit share one scale) was not part of that answer and is still open before Phase 4.
 
-The phase's "done when" is met on a local run of the app: each of the three sample fields produces a ranked list with a visible breakdown, moving a slider re-orders it, and the two sanity tests pass. It was checked in Claude's own browser on the development server, at desktop size and at an emulated 375 x 812 phone size, and once on the production build. It has not been checked on the public URL, on a real phone or with a screen reader.
+The phase's "done when" is met on a local run of the app: each of the three sample fields produces a ranked list with a visible breakdown, moving a slider re-orders it, and the two sanity tests pass. It was checked in Claude's own browser on the development server, at desktop size and at an emulated 375 x 812 phone size, and once on the production build. It was then checked on the public URL (see "Deployment"). It has not been checked on a real phone or with a screen reader.
 
 ## What was built
 
@@ -195,6 +195,32 @@ On the final production build (`next start`, commit b2869b9), about 17:50 CST. T
 | Console | No errors |
 
 Not checked in a browser: the climate-failure note and the soil-failure note of the Rotations section (they are two short branches, read in the code), the public URL, a real phone, a screen reader, automated accessibility tests. Screenshots stopped working late in the session, so the last check was read from the page's text and attributes.
+
+## Deployment
+
+Angel asked Claude to push ("Push and check"). `main` went to GitHub at 18:32:39 CST on 2026-11-14 (`1f018c8..38a600c`, nine commits), and Vercel was serving the new build by 18:33:15, about 36 seconds later.
+
+Checks on https://space-apps-2026-field-shift.vercel.app between 18:33 and 18:38 CST:
+
+| # | Check | Result |
+| --- | --- | --- |
+| 1 | `/api/climate?lat=38.51&lon=-98.32`, a point never asked for on the deployed app | 200 in 1.97 s, 38 KB, live. 45 years; 504 monthly rows, 1984 to 2025; 12 normals. The seven-parameter NASA POWER request works from Vercel |
+| 2 | The same request again | 200 in 0.20 s, `X-Vercel-Cache: HIT` (`MISS` the first time) |
+| 3 | `/api/climate` at the Finney sample point, live | Years, trends, monthly rows, normals and elevation equal the saved sample file |
+| 4 | `/api/history` and `/api/soil` at 38.51382, -98.32008 | 200 in 3.8 s and 0.4 s, both live |
+| 5 | A point outside Kansas, and a malformed point | 400 each, with a plain message |
+| 6 | The Finney sample in the browser | Its own rotation 60; four ranked rotations, wheat-fallow first at 68; corn-soybean shown apart. The same numbers as the local run |
+| 7 | A live click at 38.431, -97.849, which is pasture in all 8 years | Three routes 200. A note that the field's own rotation is not scored, and three central Kansas rotations ranked |
+| 8 | The map's center chosen with Enter: 38.514, -98.320, a field of wheat, sorghum and soybeans | Its own rotation scored 64 on all 8 years; three ranked rotations, each with its "why suggested" sentence |
+| 9 | Sliders, with real key presses | 0, 100, 0, 0 put continuous wheat first; Reset brought back 50 with focus on "Save water" |
+| 10 | 375 x 812 | No sideways scrolling |
+| 11 | Console | No errors |
+
+The browser pane had to be shown for the map to finish loading; while it was hidden the page did not draw.
+
+Not checked on the public URL: a private window on Angel's machine, a real phone, a screen reader.
+
+Seen there, for Phase 4: the water-fit sentence adds demand over the whole cycle, so an 8-year rotation reads "128.6 in of 205.5 in of potential crop demand per cycle". A share, or inches per crop, would be easier to read.
 
 ## UI review
 
