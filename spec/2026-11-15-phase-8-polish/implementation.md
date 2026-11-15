@@ -101,6 +101,8 @@ Two cautions for the deck, from what the app actually shows:
 - **Slide 2 should not use the hot-day trend.** SPEC.md suggests it, but at the three samples it is "no clear trend" twice and "possible trend" once. The first fall freeze is a likely trend at all three, and so is the average temperature of the year at Finney County (+0.41°F a decade, p = 0.002).
 - **Slide 4 should name only the NASA data the app uses**: NASA POWER and the MODIS vegetation index through NASA GIBS. SPEC.md's slide also names SMAP and GRACE, which are not built.
 
+5. **The project page.** `submission-draft.md` in this folder is a draft of each text field, put together from the README and from this walk-through. It is AI-written and yours to edit. It leaves out SMAP, GRACE, NASS QuickStats and earthaccess, which SPEC.md's checklist names and the app does not use.
+
 ## Files AI wrote or changed in this phase (Claude), for Angel to review
 
-`README.md`, `components/VegetationControl.tsx` (the fold), `lib/data-mode.ts` (a comment), two sentences of `spec/2026-11-15-phase-7-stretch/implementation.md`, and the files of this folder.
+`README.md`, `components/VegetationControl.tsx` (the fold), `lib/data-mode.ts` (a comment), two sentences of `spec/2026-11-15-phase-7-stretch/implementation.md`, and the files of this folder, `submission-draft.md` among them.
