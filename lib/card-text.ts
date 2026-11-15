@@ -103,9 +103,86 @@ export function evidenceLines(
 	return lines;
 }
 
-/** Benefits: what the library says, with its source. */
-export function benefitLines(score: RotationScore): CardLine[] {
-	return score.rotation.benefits.map((item) => ({ text: item.text, source: item.source }));
+/**
+ * What the numbers show in this rotation's favour, next to the field's own rotation
+ * (SPEC.md: "library benefits plus any computed advantage"). Only differences the tool
+ * works out, never a judgement.
+ */
+export function computedAdvantages(
+	candidate: RotationScore,
+	own: RotationScore | null,
+): CardLine[] {
+	if (!own) return [];
+	const lines: CardLine[] = [];
+	const mine = candidate.calendar;
+	const theirs = own.calendar;
+	if (
+		mine.bareShare !== null &&
+		theirs.bareShare !== null &&
+		mine.bareShare < theirs.bareShare - 1e-9
+	) {
+		lines.push({
+			text: `The field is bare for less of the cycle than under your current rotation: ${mine.bareMonths} of ${mine.knownMonths} months against ${theirs.bareMonths} of ${theirs.knownMonths}.`,
+			source: "USDA NASS usual planting and harvesting dates",
+		});
+	}
+	const myNeed = candidate.water?.irrigationNeedIn ?? null;
+	const theirNeed = own.water?.irrigationNeedIn ?? null;
+	if (
+		myNeed !== null &&
+		theirNeed !== null &&
+		myNeed < theirNeed &&
+		one(myNeed) !== one(theirNeed)
+	) {
+		lines.push({
+			text: `Irrigating it would take about ${one(theirNeed - myNeed)} in less water a year than your current rotation: ${one(myNeed)} in against ${one(theirNeed)} in.`,
+			source: "NASA POWER rain and weather, FAO-56 method and crop coefficients",
+		});
+	}
+	return lines;
+}
+
+/** Benefits: what the library says, with its source, then what the numbers show. */
+export function benefitLines(
+	score: RotationScore,
+	own: RotationScore | null = null,
+): CardLine[] {
+	return [
+		...score.rotation.benefits.map((item) => ({ text: item.text, source: item.source })),
+		...computedAdvantages(score, own),
+	];
+}
+
+/** A piece of a source string: words, or a link with the site it points to. */
+export type SourcePart = { text: string } | { url: string; host: string };
+
+/**
+ * Splits a source string from the data files into its words and its links, in order, so a
+ * card can show each link as a link. A source can name several publications, joined by
+ * " ; " or " and ".
+ */
+export function splitSource(source: string): SourcePart[] {
+	const parts: SourcePart[] = [];
+	const addText = (raw: string) => {
+		const text = raw.replace(/^[\s;]+/, "").trim();
+		if (text.length > 0) parts.push({ text });
+	};
+	let from = 0;
+	for (const match of source.matchAll(/https?:\/\/\S+/g)) {
+		addText(source.slice(from, match.index));
+		// A full stop, comma or bracket after a link belongs to the sentence, not to the link.
+		const url = match[0].replace(/[.,;)]+$/, "");
+		let host = url;
+		try {
+			host = new URL(url).hostname.replace(/^www\./, "");
+		} catch {
+			// Not a link after all: it is shown as written.
+		}
+		parts.push({ url, host });
+		from = match.index + url.length;
+	}
+	addText(source.slice(from));
+	return parts;
 }
 
 /** Information gaps: what the tool cannot see, and what it could not work out here. */

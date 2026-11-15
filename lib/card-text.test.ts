@@ -3,10 +3,12 @@
 import { describe, expect, it } from "vitest";
 import {
 	benefitLines,
+	computedAdvantages,
 	evidenceLines,
 	INDICATOR_LABELS,
 	informationGaps,
 	riskLines,
+	splitSource,
 	VERIFY_LOCALLY,
 	whySuggested,
 } from "@/lib/card-text";
@@ -52,6 +54,97 @@ describe("whySuggested", () => {
 		expect(whySuggested(same, null)).toBe("There is no current rotation to compare it with.");
 		// An indicator with no score on either side is not compared.
 		expect(whySuggested(withScores({ waterFit: 90 }), withScores({ waterFit: null }))).toMatch(/does not score higher/);
+	});
+});
+
+describe("splitSource", () => {
+	it("splits a source into its words and its links, and names each link's site", () => {
+		expect(
+			splitSource(
+				"K-State, The Value of Crop Residue (MF2604). https://bookstore.ksre.ksu.edu/download/x_MF2604 ; USDA NRCS sheet. https://www.mssoy.org/a.pdf",
+			),
+		).toEqual([
+			{ text: "K-State, The Value of Crop Residue (MF2604)." },
+			{ url: "https://bookstore.ksre.ksu.edu/download/x_MF2604", host: "bookstore.ksre.ksu.edu" },
+			{ text: "USDA NRCS sheet." },
+			{ url: "https://www.mssoy.org/a.pdf", host: "mssoy.org" },
+		]);
+		// Two links joined by "and", and a link that ends a sentence inside brackets.
+		expect(
+			splitSource("See https://a.example/1.pdf and https://b.example/2.pdf (also https://c.example/3)."),
+		).toEqual([
+			{ text: "See" },
+			{ url: "https://a.example/1.pdf", host: "a.example" },
+			{ text: "and" },
+			{ url: "https://b.example/2.pdf", host: "b.example" },
+			{ text: "(also" },
+			{ url: "https://c.example/3", host: "c.example" },
+			{ text: ")." },
+		]);
+		expect(splitSource("no link here")).toEqual([{ text: "no link here" }]);
+	});
+
+	it("finds a well-formed link in every source of the data files", () => {
+		const sources: string[] = [];
+		for (const crop of LIBRARY.crops) {
+			for (const value of [crop.kc, crop.stageDays, crop.heatSensitiveMonths, crop.nFixing, crop.residue, crop.rootDepth]) {
+				if (value) sources.push(value.source);
+			}
+		}
+		for (const dates of Object.values(LIBRARY.calendar)) if (dates) sources.push(dates.source);
+		for (const rotation of LIBRARY.rotations) {
+			for (const item of [...rotation.benefits, ...rotation.risks]) sources.push(item.source);
+		}
+		for (const value of [LIBRARY.scoring.effectiveRainFraction, LIBRARY.scoring.fallowEfficiency]) {
+			if (value) sources.push(value.source);
+		}
+		expect(sources.length).toBeGreaterThan(30);
+		for (const source of sources) {
+			const links = splitSource(source).flatMap((part) => ("url" in part ? [part] : []));
+			expect(links.length, source).toBeGreaterThan(0);
+			for (const link of links) {
+				expect(() => new URL(link.url), link.url).not.toThrow();
+				expect(link.host, link.url).toMatch(/\.(org|edu|gov|com)$/);
+				expect(link.url, link.url).not.toMatch(/[.,;)]$/);
+			}
+		}
+	});
+});
+
+describe("computedAdvantages", () => {
+	const own = scores.existing;
+	if (!own) throw new Error("expected the field's own rotation");
+
+	it("says when the field is bare for less of the cycle", () => {
+		// The Finney field is corn every year: bare in 56 of 96 months. Continuous wheat is bare in 3 of 12.
+		const wheat = scores.candidates.find((score) => score.rotation.id === "continuous-wheat");
+		if (!wheat) throw new Error("expected continuous wheat");
+		expect(computedAdvantages(wheat, own)).toEqual([
+			{
+				text: "The field is bare for less of the cycle than under your current rotation: 3 of 12 months against 56 of 96.",
+				source: "USDA NASS usual planting and harvesting dates",
+			},
+		]);
+		// Wheat-fallow is bare for more of the cycle, so nothing is claimed for it.
+		expect(computedAdvantages(wheatFallow, own)).toEqual([]);
+		expect(computedAdvantages(wheat, null)).toEqual([]);
+		expect(benefitLines(wheat, own)).toHaveLength(wheat.rotation.benefits.length + 1);
+	});
+
+	it("says how much less irrigation it would take, when both are irrigated", () => {
+		const need = (inches: number) =>
+			({
+				...own,
+				calendar: { ...own.calendar, bareShare: null },
+				water: { mode: "irrigated", seasons: [], irrigationNeedIn: inches },
+			}) as typeof own;
+		expect(computedAdvantages(need(12.3), need(20.7))).toEqual([
+			{
+				text: "Irrigating it would take about 8.4 in less water a year than your current rotation: 12.3 in against 20.7 in.",
+				source: "NASA POWER rain and weather, FAO-56 method and crop coefficients",
+			},
+		]);
+		expect(computedAdvantages(need(20.7), need(12.3))).toEqual([]);
 	});
 });
 
