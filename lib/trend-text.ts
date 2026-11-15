@@ -17,6 +17,8 @@ export type SeriesWords = {
 	rise: string;
 	/** Word for a fall, for example "fewer". */
 	fall: string;
+	/** True when the change word follows the unit: "2 days later", not "2 later days". */
+	changeAfterUnit?: boolean;
 };
 
 export const HOT_DAY_WORDS: SeriesWords = {
@@ -24,6 +26,22 @@ export const HOT_DAY_WORDS: SeriesWords = {
 	plural: "hot days",
 	rise: "more",
 	fall: "fewer",
+};
+
+export const SEASON_RAIN_WORDS: SeriesWords = {
+	singular: "inch of rain",
+	plural: "inches of rain",
+	rise: "more",
+	fall: "fewer",
+};
+
+/** For a date that moves: a rise is a later date. */
+export const FREEZE_DATE_WORDS: SeriesWords = {
+	singular: "day",
+	plural: "days",
+	rise: "later",
+	fall: "earlier",
+	changeAfterUnit: true,
 };
 
 // SPEC.md, "Trend detection" > "Labels".
@@ -53,7 +71,29 @@ export function describeChange(perDecade: number, words: SeriesWords): string {
 	const amount = formatAmount(perDecade);
 	const unit = amount === "1" ? words.singular : words.plural;
 	const change = direction === "up" ? words.rise : words.fall;
-	return `about ${amount} ${change} ${unit} per decade`;
+	return words.changeAfterUnit
+		? `about ${amount} ${unit} ${change} per decade`
+		: `about ${amount} ${change} ${unit} per decade`;
+}
+
+const MONTHS = [
+	"January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December",
+];
+
+/**
+ * A day of the year as a date, for example "April 12" or "Apr 12". Day 1 is 1 January. The
+ * date is read on a year of 365 days, so in a leap year it can be one day off after February.
+ */
+export function formatDayOfYear(dayOfYear: number, style: "long" | "short" = "long"): string {
+	const date = new Date(Date.UTC(2001, 0, Math.round(dayOfYear)));
+	const month = MONTHS[date.getUTCMonth()];
+	return `${style === "short" ? month.slice(0, 3) : month} ${date.getUTCDate()}`;
+}
+
+/** The name of a calendar month, 1 to 12. */
+export function monthName(month: number): string {
+	return MONTHS[month - 1];
 }
 
 /**
