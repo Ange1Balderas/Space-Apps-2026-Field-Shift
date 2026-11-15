@@ -229,3 +229,16 @@ Each line below gives the place, the problem and the wording to use.
 Also noticed: `components/FieldCalendar.tsx` writes "95°F" and "5 of the last 10 years" by hand in its caption. They should come from `config/scoring.json` and `RECENT_YEARS`.
 
 Could not be checked from files: the row labels of FAO-56 Tables 11 and 12 (chapter 6 was not saved; checked in Phase 3), the 30 m pixel of the Cropland Data Layer (from SPEC.md), and that sunlight is missing before 1984 beyond the points tried.
+
+## After this phase: Angel's message of 2026-11-15, about 00:10 CST
+
+While the corrections above were being applied, Angel wrote, word for word:
+
+> going to go to sleep keep working without me and also if you hit limit wait till limit resets and keep going to finish all phases or of all that you can
+
+Claude's reading, which Angel has not confirmed:
+
+- It lifts CLAUDE.md's stop at the end of each phase for the rest of this run. Phases 6, 7 and 8 may be started without a review in between. Phase 5 itself was not reviewed before the next work began.
+- It does not cover pushing. CLAUDE.md says "Do not push; Angel pushes to deploy", and nothing in the message asks for a push. Every commit is kept safe to push, because Angel may push on waking.
+- It does not cover changing SPEC.md, swapping a data source, or anything that needs an account, a key or a login. Where a phase needs one of those, the phase is recorded as blocked, with the steps left for Angel.
+- "Wait till limit resets and keep going": a session cannot restart itself after a cut. One check-in an hour is scheduled inside this session only, to pick the work up from the hand-over note if a limit stops it. It is deleted when the list is done, and it ends with the session.

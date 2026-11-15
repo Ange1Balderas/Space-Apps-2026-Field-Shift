@@ -4,7 +4,7 @@ NASA Space Apps Challenge 2026, Kansas City local event, team ANGEL. Challenge: 
 
 A decision support tool that uses NASA Earth data, USDA soil and crop data, and farmer priorities to compare crop rotations for Kansas fields. The tool supports farmer judgment. It does not replace it.
 
-> **Status: Phase 5 (explain), built and not yet deployed.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. Science terms have tooltips, and an About the data tab lists every source, every number the tool chose and the glossary. The live app below shows Phase 3 until the next push. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
+> **Status: Phases 1 to 5 are built.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. Science terms have tooltips, and an About the data tab lists every source, every number the tool chose and the glossary. The live app below is whatever was last pushed to `main`: if its panel has no About the data tab, it is an older build than this README describes. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
 
 Live app: https://space-apps-2026-field-shift.vercel.app
 
