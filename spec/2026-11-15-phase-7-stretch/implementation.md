@@ -15,7 +15,7 @@ A card on the map, bottom left, with a switch named "Vegetation from space". It 
 - **Switched on**, the app first asks NASA for one tile over the middle of Kansas, with a 15-second limit. If it comes, the pictures are drawn on the map, under the roads, borders and place names, and the map's credits line gains "NASA GIBS". If it does not come, the card says "NASA's vegetation pictures could not be loaded just now. The rest of the map still works." and offers "Try again". The map stays as it was.
 - **If the first tile comes but later ones do not**, the card says "Some parts of this picture did not load, so it has gaps." and offers "Try again".
 - **The legend** is NASA's own colour scale, drawn from the numbers in NASA's colour map (no NASA image is copied): 0.0 at one end, 1.0 at the other, and "NDVI (a ratio, no unit)". NDVI is a glossary term, so its definition and its source are one tap away.
-- **The date picker** has a year and a date. It offers only the dates NASA lists for the layer: 613 pictures, from March 5, 2000 to October 16, 2026. Changing the year keeps the time of year. On a phone it starts folded, to leave room for the map.
+- **The date picker** has a year and a date. It offers only the dates NASA lists for the layer: 613 pictures, from March 5, 2000 to October 16, 2026. Changing the year keeps the time of year. It starts folded, to leave room for the map (on every screen since the Phase 8 walk-through; before that, only on a phone).
 - **The source badge** "NASA GIBS MODIS" opens the layer's entry on the About the data tab, like the other badges.
 - The card says "No score uses it" off, and "A picture only: no score uses it." on. That is true: only the map, the card and the glossary read `lib/vegetation.ts`. No scoring code does.
 
@@ -87,7 +87,7 @@ All on the production build (`npm run build`, then `npm run start`), in the app'
 - **The badge** opened "NASA GIBS, Vegetation Index (16-Day, MODIS, Terra)" on the About the data tab with focus on the entry; "Back to where you were" returned to the Field tab with focus on the badge.
 - **Keyboard order** on the map: the three samples, "Use my location", the switch, NDVI, the badge, the fold, the two pickers, the map, zoom in, zoom out, the credits.
 - **Console**: no messages.
-- **Seen on screen twice, briefly.** The browser pane would not draw for most of the night, so most checks are by script. At about 00:50 CST it drew at phone width: the green picture over Kansas and its neighbours, with state lines, roads and town names above it, and the card with the legend. The colours of the picture and the legend agreed by eye. It has **not** been seen on a wide screen, on a real phone, or on the public URL.
+- **Seen on screen twice, briefly.** The browser pane would not draw for most of the night, so most checks are by script. At about 00:50 CST it drew at phone width: the green picture over Kansas and its neighbours, with state lines, roads and town names above it, and the card with the legend. The colours of the picture and the legend agreed by eye. During the Phase 8 walk-through, at about 01:02 CST, it was seen once more at 1280 px wide, with the Finney County marker drawn above the picture. It has **not** been seen on a real phone or on the public URL.
 
 ## Not built, and why
 

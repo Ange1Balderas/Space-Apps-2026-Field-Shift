@@ -12,7 +12,7 @@
 //
 // The control sits on the map, and on a phone the map is small. The switch, the legend and
 // the source badge are always there while the layer is on. The date picker folds away, and
-// starts folded on a narrow screen.
+// starts folded, so the card covers as little of the map as it can.
 
 import { useId, useState } from "react";
 import { Term } from "@/components/Glossary";
@@ -47,9 +47,10 @@ function PictureDetails({ day, onDay }: { day: string; onDay: (day: string) => v
 	const yearId = useId();
 	const dayId = useId();
 	const year = Number(day.slice(0, 4));
-	// Open on a screen with room for it, folded on a phone. After that it is the reader's,
-	// until the layer is switched off.
-	const [open, setOpen] = useState(() => window.matchMedia("(min-width: 640px)").matches);
+	// Folded at first on every screen. The card sits over the south-west of the map, and with
+	// the pickers open it hid the south-west corner of Kansas on a laptop. After that it is
+	// the reader's, until the layer is switched off.
+	const [open, setOpen] = useState(false);
 	return (
 		<details open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
 			{/* The triangle is drawn here, so the browser's own marker is taken away. */}

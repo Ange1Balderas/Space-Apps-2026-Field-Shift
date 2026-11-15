@@ -4,11 +4,11 @@ NASA Space Apps Challenge 2026, Kansas City local event, team ANGEL. Challenge: 
 
 A decision support tool that uses NASA Earth data, USDA soil and crop data, and farmer priorities to compare crop rotations for Kansas fields. The tool supports farmer judgment. It does not replace it.
 
-> **Status: Phases 1 to 5 are built, with one stretch feature, NASA's vegetation layer on the map.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. Science terms have tooltips, and an About the data tab lists every source, every number the tool chose and the glossary. The live app below is whatever was last pushed to `main`: if its panel has no About the data tab, it is an older build than this README describes. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
+> **Status on 2026-11-15: Phases 1 to 5 are built, with one stretch feature, NASA's vegetation layer on the map. Phase 6 (NASA SMAP soil moisture and GRACE groundwater) is not built, because it needs a NASA Earthdata Login.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. Science terms have tooltips, and an About the data tab lists every source, every number the tool chose and the glossary. The live app below is whatever was last pushed to `main`: if its panel has no About the data tab, it is an older build than this README describes. This build was checked on a local production build, not yet on the public URL or on a phone. [What is not built](#what-is-not-built) lists the rest. [SPEC.md](SPEC.md) is the build plan and the source of truth.
 
 Live app: https://space-apps-2026-field-shift.vercel.app
 
-## What works now
+## What it does
 
 - Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. "Use my location" chooses the point where the device is, once the browser allows it. A point outside the state gets a short message instead of data.
 - **Crops grown here:** the crop at that point in each of the last 8 years, read from the USDA Cropland Data Layer. Any year can be changed by hand, a changed year is marked as yours, and one button brings the detected crops back.
@@ -22,12 +22,31 @@ Live app: https://space-apps-2026-field-shift.vercel.app
 - The three facts come from three services and load on their own. If one fails, the other two still show, and the failed one says so and offers a retry. If the crop history fails, the 8 years can be filled in by hand.
 - Three sample fields (Finney, Thomas and Brown counties) load saved copies of all three facts, so the demo works without a live connection to NASA or USDA.
 
+## How it works
+
+The app is one page. The point chosen on the map goes to three routes of the app's own, one for each fact: `/api/climate` (NASA POWER), `/api/history` (the USDA Cropland Data Layer) and `/api/soil` (the USDA soil survey). The browser never calls those three services itself. Each route has a 15-second timeout, a cache and a plain-language error. The scores, the trend tests and the calendars are worked out by the app's own code in `lib/` from the three answers. Map pictures are the exception, as SPEC.md's architecture says: the map loads the basemap tiles and NASA's vegetation tiles itself.
+
 How a rotation is scored: crop water demand is reference evapotranspiration (FAO-56 Penman-Monteith, from NASA POWER weather) times the FAO-56 crop coefficient, added up over the crop's usual Kansas season. That is potential demand, what a well-watered crop would use. It is set against the rain in the season plus the rain banked on the bare field before planting, on the average of the last ten years. The other indicators use the hot days in each crop's sensitive month, the bare months of the rotation with the soil survey's erodibility and slope, and published crop traits. The scores compare rotations; they do not forecast a yield or a price. [data/README.md](data/README.md) lists every source and every constant the tool chose.
 
 How the trend is worked out: a Mann-Kendall test (with the correction for tied values) decides the label, with p below 0.05 as likely, 0.05 to 0.20 as possible and anything higher as no clear trend. The change per decade is Sen's slope. An ordinary least-squares slope is computed beside it, and the About the data tab shows the two side by side for the selected field.
 
-## What is planned
+## Limitations
 
+- A score compares rotations with each other. It is not a forecast of yield, price or profit, and the tool does not decide for the farmer.
+- The tool cannot see local prices, the field's history beyond the crop map, irrigation rights, crop insurance rules or local disease pressure.
+- It works from one point, not a field outline. The crop history is read from one pixel of the Cropland Data Layer, which can be wrong for a year, so any year can be changed by hand. The crop map does not show irrigation; a switch says whether the field can be irrigated.
+- The soil is the soil map unit under the point. Available water and slope are for the whole unit and the other figures for its main soil, and a map unit can include other soils.
+- NASA POWER's weather values describe an area roughly 35 miles across, and its sunlight values a larger one. Neither is the field. A hot day is counted only when that area's high reaches 95°F.
+- Crop water demand is potential demand: what a well-watered crop would use. The tool does not estimate what a dryland crop actually uses or yields.
+- The library holds 6 of the 10 planned rotations. A published value with no source yet is left out. The rotations themselves, the scoring model and the numbers the tool chose are its own design; the About the data tab lists them.
+- The vegetation layer is a picture only: no score uses it. The dates it offers are the ones NASA listed when `scripts/gibs-vegetation-layer.mjs` was last run.
+- There is no soil moisture or groundwater record in the tool: NASA SMAP and GRACE are not built.
+- Kansas only. A point outside the state gets a short message instead of data.
+
+## What is not built
+
+- NASA SMAP soil moisture and GRACE/GRACE-FO groundwater (Phase 6). Both need a NASA Earthdata Login. The 105 county centroids and the SMAP request are ready; the steps are in `spec/2026-11-15-phase-6-county-data/implementation.md`.
+- Four stretch features of SPEC.md: the scenario slider, a summary written by a language model, county yields from USDA NASS, and a printable summary. `spec/2026-11-15-phase-7-stretch/implementation.md` says why each was left.
 - Switches for no-till equipment and market access. The no-till switch is built and appears once a loaded rotation needs no-till; the market switch is not defined yet.
 - The four remaining rotations: corn-wheat, corn-soybean-wheat with double-crop soybean, wheat-cover crop-sorghum, and alfalfa then corn or wheat.
 - The trend of each crop's water demand.
@@ -45,7 +64,7 @@ npm run dev
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Local app at http://localhost:3000 |
-| `npm run dev:mock` | Same, in mock mode (`NEXT_PUBLIC_DATA_MODE=mock`): the app calls no live service. The sample fields work from their saved files, and any other point gets a message saying mock mode has no data for it |
+| `npm run dev:mock` | Same, in mock mode (`NEXT_PUBLIC_DATA_MODE=mock`): the three routes call no live service. The sample fields work from their saved files, and any other point gets a message saying mock mode has no data for it. The map still loads its own tiles |
 | `npm run typecheck` | Generates route types, then runs `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest unit tests |
@@ -56,9 +75,9 @@ npm run dev
 
 ## Stack
 
-Next.js 16 (App Router, strict TypeScript), Tailwind CSS 4, shadcn/ui components on Radix UI, MapLibre GL through react-map-gl with OpenFreeMap tiles, Recharts, Zustand. Deployed on Vercel. Python scripts will preprocess the heavier NASA data (Phase 6).
+Next.js 16 (App Router, strict TypeScript), Tailwind CSS 4, shadcn/ui components on Radix UI, MapLibre GL through react-map-gl with OpenFreeMap tiles, Recharts, Zustand. Deployed on Vercel. One Python script (standard library only) writes the county centroids and the SMAP request for Phase 6; the preprocessing of the heavier NASA data is not built.
 
-## Data sources
+## Data used
 
 In use now:
 
@@ -67,16 +86,14 @@ In use now:
 - [USDA NRCS SSURGO through Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/documents/AdvancedQueries.html): the soil map unit under the point and its properties. Route: `/api/soil`.
 - [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/): the layer `MODIS_Terra_L3_NDVI_16Day`, NASA's vegetation index (NDVI) from MODIS on the Terra satellite (product MOD13Q1, about 820 ft (250 m) at its sharpest, about one picture every 16 days since March 2000), drawn over the map when it is switched on. `data/vegetation-layer.json` holds its dates, colour scale and description, written from GIBS by `scripts/gibs-vegetation-layer.mjs`. No score uses the layer.
 - [OpenFreeMap](https://openfreemap.org/) Positron basemap (OpenMapTiles schema, OpenStreetMap data).
-- [U.S. Census Bureau TIGERweb](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer): the Kansas bounding box, and the county boxes inside which the three sample fields were chosen.
+- [U.S. Census Bureau TIGERweb](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer): the Kansas bounding box, the county boxes inside which the three sample fields were chosen, and the 105 county centroids in `data/kansas-county-centroids.csv`.
 
 - FAO Irrigation and Drainage Paper 56 (Allen, Pereira, Raes and Smith, 1998): the Penman-Monteith method for reference evapotranspiration ([Chapter 3](https://www.fao.org/4/X0490E/x0490e07.htm) and [Chapter 4](https://www.fao.org/4/X0490E/x0490e08.htm)), and the crop coefficients and growth-stage lengths in `data/crops.json` ([Chapter 6](https://www.fao.org/4/X0490E/x0490e0b.htm)).
 - [USDA NASS, Field Crops Usual Planting and Harvesting Dates](https://esmis.nal.usda.gov/sites/default/release-files/vm40xr56k/dv13zw65p/w9505297d/planting-10-29-2010.pdf) (Agricultural Handbook 628, 2010): the Kansas planting and harvest windows in `data/calendar.json`.
 - K-State Research and Extension publications, USDA NASS Kansas Crop Progress reports, a USDA NRCS residue sheet and a USDA-ARS fallow study: crop traits, heat-sensitive months, and the benefits and risks of each rotation. [data/README.md](data/README.md) lists them value by value.
 - The glossary definitions in `data/glossary.json`: K-State MF3066, [FAO-56 Chapter 1](https://www.fao.org/4/X0490E/x0490e04.htm), the USDA soil survey's own descriptions of its attributes (through [Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/Query.aspx)), EPA QA/G-9 and the National Weather Service glossary. `data/sources.json` is the full list the About the data tab shows.
 
-The browser never calls the three data services (NASA POWER, the crop history service, the soil survey). It calls the app's own three routes, each with a 15-second timeout, a cache and a plain-language error. Map pictures are the exception, as SPEC.md's architecture says: the map loads the basemap tiles and NASA's vegetation tiles itself.
-
-Planned, with the phase that adds each one (details in [SPEC.md](SPEC.md), "Data sources"):
+Not in use, with the phase that would add each one (details in [SPEC.md](SPEC.md), "Data sources"):
 
 - NASA SMAP soil moisture through AppEEARS and GRACE/GRACE-FO water storage (Phase 6). Not built: both need an Earthdata Login. The 105 county centroids and the AppEEARS request are ready to submit; the steps are in `spec/2026-11-15-phase-6-county-data/implementation.md`.
 
@@ -85,12 +102,13 @@ Planned, with the phase that adds each one (details in [SPEC.md](SPEC.md), "Data
 The hackathon requires this disclosure, and it is kept current each phase.
 
 - Claude (Anthropic), running in Claude Code, researched the data sources, proposed the architecture and scoring model written up in SPEC.md, and writes most of the code.
-- Angel Balderas chose the challenge and the Kansas focus, decides each design choice, and reviews the code, data and results at the end of every build phase before the next phase starts.
-- Files written or ported mostly by AI start with an `AI-assisted` comment. Each phase's `spec/<date>-<phase>/implementation.md` lists those files and what was verified.
+- Angel Balderas chose the challenge and the Kansas focus, decides each design choice, and reviews the code, data and results at the end of each build phase. Through Phase 4, each phase stopped for that review before the next one started.
+- On the night of 2026-11-15 Claude worked on unattended, at Angel's instruction: the Phase 6 files (the county centroids and the SMAP request), the vegetation layer, the final walk-through of the app and the final shape of this README. That work, and the glossary and About the data text of Phase 5, have not been reviewed by Angel yet.
+- Files written or ported mostly by AI start with an `AI-assisted` comment. Its words "reviewed by Angel Balderas" are the project's fixed header: for the files of 2026-11-15 that review is the one still to do. Each phase's `spec/<date>-<phase>/implementation.md` lists those files and what was verified.
 - After reviewing Phase 2, Angel made six decisions on 2026-11-14: the crop history source, the three sample fields, the list of crops, how a field's detected crops are matched to that list, the growing-season months, and how researched values get into the app. Claude laid out the options for each; Angel chose. They are recorded in [SPEC.md](SPEC.md), "Decisions made on 2026-11-14, after Phase 2".
 - [research/2026-11-14-crop-values.md](research/2026-11-14-crop-values.md) is an AI-compiled list of sourced crop reference values. Angel's rule for it: the source of each value is opened again and checked before the value is loaded, a value the research marked as an inference is not loaded as a fact, and Angel then reviews the data files. In Phase 3 the values the tool needs were loaded that way into `data/` and `config/`: a second AI check opened each source and confirmed each value first. Where a value is the tool's own pick among published numbers, the file says so in an `assumption` note. [data/README.md](data/README.md) carries the acknowledgement that these data files were compiled with AI. Angel's review of them is the next step.
 - The scoring model (which indicators, how they combine) was proposed by Claude in SPEC.md and built by Claude. The constants in `config/scoring.json` were chosen by Claude and are listed in [data/README.md](data/README.md) for Angel to confirm or change.
-- The glossary definitions (`data/glossary.json`), the source list (`data/sources.json`) and the wording of the About the data tab were written by Claude from the sources linked beside them. A second AI check compared each definition in the two data files with its source, and those corrections were applied. A further check of the About tab's own sentences found 27 places that said more than their evidence supports. They are listed in `spec/2026-11-14-phase-5-explain/implementation.md` and were corrected. The tab says in the app that its text is AI-generated, and claims no review. Angel reviews it with the phase.
+- The glossary definitions (`data/glossary.json`), the source list (`data/sources.json`) and the wording of the About the data tab were written by Claude from the sources linked beside them. A second AI check compared each definition in the two data files with its source, and those corrections were applied. A further check of the About tab's own sentences found 27 places that said more than their evidence supports. They are listed in `spec/2026-11-14-phase-5-explain/implementation.md` and were corrected. The NDVI definition and the vegetation layer's entry were added on 2026-11-15 and checked the same way, and what that third check found was corrected too. The tab says in the app that its text is AI-generated, and claims no review. Angel reviews it with the phase.
 - Any text a language model generates while the app runs will be labeled as AI-generated. There is none yet: the sentences in the Field panel are fixed wording and templates filled with computed numbers. The templates, like the rest of the code, were written with AI and are reviewed by Angel.
 
 ## Other references
