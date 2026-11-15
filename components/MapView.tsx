@@ -251,10 +251,18 @@ export function MapView() {
 							setVegetationGaps(null);
 						}}
 						day={vegetationDay}
-						onDay={setVegetationDay}
+						onDay={(next) => {
+							setVegetationDay(next);
+							// Gaps belong to the picture that had them. Coming back to its day
+							// asks for it afresh.
+							setVegetationGaps(null);
+						}}
 						status={vegetationStatus}
 						gaps={vegetationGaps === vegetationAsk}
-						onRetry={() => setVegetationTry((count) => count + 1)}
+						onRetry={() => {
+							setVegetationTry((count) => count + 1);
+							setVegetationGaps(null);
+						}}
 					/>
 				</div>
 			) : null}
@@ -318,7 +326,7 @@ export function MapView() {
 						// One failed tile also arrives here. That is not a failed map. A failed tile of
 						// the vegetation layer leaves a gap in its picture, and its control says so.
 						if ("tile" in event) {
-							if (isVegetationTileError(event)) setVegetationGaps(vegetationAsk);
+							if (isVegetationTileError(event, vegetationDay)) setVegetationGaps(vegetationAsk);
 							return;
 						}
 						// Once the map has loaded there is something to show, so keep showing it.

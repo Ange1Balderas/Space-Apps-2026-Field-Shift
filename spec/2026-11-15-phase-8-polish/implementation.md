@@ -61,13 +61,15 @@ The three samples with every disclosure open, and the About the data tab: the pa
 
 ### Checks
 
-`npm run typecheck`, `npm run lint`: clean. `npm run test`: 30 files, 419 tests pass. `npm run build`: compiles, 6 pages. Run after the last change of this phase.
+`npm run typecheck`, `npm run lint`: clean. `npm run test`: 30 files, 420 tests pass. `npm run build`: compiles, 6 pages. Run after the last change of this phase.
 
 ## What the walk changed
 
 **The vegetation card's date picker now starts folded on every screen.** With the layer switched on and the two pickers open, the card stood 216 px tall over the south-west of the map. In the 1280 px screenshot its top edge was level with Dodge City, so the south-west corner of Kansas was under it and a field there could not be clicked without dragging the map. Folded, the card is 162 px tall. At 1024 by 768 the Finney County marker then stays 77 px above it. One tap on "Picture dated ..." opens the pickers.
 
 What is left of this for Angel to know: going by the pixel positions, with the layer on the folded card still covers a thin strip at the far south-west of the state on a laptop screen. Dragging the map uncovers it. With the layer off, the card sat below Kansas's southern border in the 1280 px screenshot.
+
+**A second UI review of the vegetation card**, run on the result of the first one's fixes, found two faults in the new gaps note (it could come back for a date that had loaded whole, and a screen reader might not announce it). Both are fixed and were checked in the browser. What it found and what was left is in `spec/2026-11-15-phase-7-stretch/implementation.md`, "Second UI review", with one limit to look at on a real phone: on a short screen the card scrolls inside itself while the layer is on.
 
 `lib/data-mode.ts`: a comment said mock mode calls no live service. The three data routes call none; the map still loads its tiles. The comment and the README row now say so.
 
@@ -105,4 +107,4 @@ Two cautions for the deck, from what the app actually shows:
 
 ## Files AI wrote or changed in this phase (Claude), for Angel to review
 
-`README.md`, `components/VegetationControl.tsx` (the fold), `lib/data-mode.ts` (a comment), two sentences of `spec/2026-11-15-phase-7-stretch/implementation.md`, and the files of this folder, `submission-draft.md` among them.
+`README.md`, `components/VegetationControl.tsx` (the fold and the gaps note), `components/MapView.tsx`, `lib/vegetation.ts` and its test (the gaps note), `lib/data-mode.ts` (a comment), two sentences of `spec/2026-11-15-phase-7-stretch/implementation.md`, and the files of this folder, `submission-draft.md` among them.

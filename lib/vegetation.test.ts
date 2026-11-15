@@ -172,6 +172,21 @@ describe("the size of a reading and a failed tile", () => {
 		expect(isVegetationTileError({ sourceId: "nasa-vegetation" })).toBe(false);
 		expect(isVegetationTileError(null)).toBe(false);
 	});
+
+	it("does not count a late report about another day's picture", () => {
+		const failed = (url?: string) => ({
+			tile: {},
+			sourceId: "nasa-vegetation",
+			error: url ? Object.assign(new Error("404"), { url }) : new TypeError("Failed to fetch"),
+		});
+		const address = vegetationTileUrl("2026-10-16").replace("{z}/{y}/{x}", "7/49/28");
+		expect(isVegetationTileError(failed(address), "2026-10-16")).toBe(true);
+		expect(isVegetationTileError(failed(address), "2012-07-11")).toBe(false);
+		// No address to go by: the network failed before any answer. It counts.
+		expect(isVegetationTileError(failed(), "2012-07-11")).toBe(true);
+		// No day asked about: any failed tile of the layer counts.
+		expect(isVegetationTileError(failed(address))).toBe(true);
+	});
 });
 
 describe("the colour scale and the words for a day", () => {

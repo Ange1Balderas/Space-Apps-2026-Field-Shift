@@ -73,9 +73,24 @@ Smaller points, also done: the first tile is no longer read to the end (only NAS
 
 One idea was **not** taken: a sentence on the card saying what the colours mean ("greener means denser green leaves"). It would be a new published claim after the source check. The meaning is in the NDVI definition, which is sourced.
 
+## Second UI review (`ui-reviewer` on the result, about 42,000 tokens)
+
+Run at about 01:13 CST, after the Phase 8 walk-through, and asked only to check the fixes above and what they might have broken. No must-fix. Four should-fix items:
+
+| Item | What was done |
+|---|---|
+| The gaps note arrived on the page with its words already inside a `role="status"`, which a screen reader often does not read out | The line that is always on the page now announces it ("Showing the picture dated ..., with gaps: some parts of it did not load."). The note itself is plain text with its button |
+| The gaps were remembered by date and try, so going to another date and back showed the note before any tile had failed. A late report about the old picture could also be counted against the new one | The memory is cleared when the date changes and on "Try again". A report that names the address that failed counts only if the address is the current date's (`isVegetationTileError`, with a test) |
+| On a very short map the card can shrink to a sliver | **Not changed.** A floor on the card's height would push it over the map's credits instead. See the limit below |
+| On a phone, the fold's row and the two "Try again" buttons are 24 px tall | "Try again" is 36 px tall on a phone. The fold's row stays 24 px: it is as wide as the card, and 12 px more would bring back the scrolling inside the card on a 375 by 812 screen |
+
+Checked in the browser afterwards, on the rebuilt app: gaps on one date; another date with no note; back to the first date with no note and 18 tiles answered 200; "Try again" clearing the note with focus on the switch; one status region only; no console messages. 420 tests pass.
+
+**A limit to know, not fixed.** The card needs about 150 px while the layer is on (82 px off). On a phone the map is 55% of the window's height, and at 375 px wide the sample buttons and "Use my location" take 162 px of it. By that arithmetic, where the visible window is shorter than about 700 px the card scrolls inside itself while the layer is on, and its last row, the date fold, starts out of view. It was measured only at 375 by 812, where everything fits. Worth a look on a real phone.
+
 ## Verification
 
-All on the production build (`npm run build`, then `npm run start`), in the app's browser pane, driven by script.
+The results below are from before the second UI review, except where a later section says otherwise. All on the production build (`npm run build`, then `npm run start`), in the app's browser pane, driven by script.
 
 - `npm run typecheck`, `npm run lint`: clean. `npm run test`: 30 files, 419 tests pass. `npm run build`: compiles, 6 pages. Last run at 00:52 CST.
 - **On**: "Asking NASA for the picture dated October 16, 2026." then "Showing the picture dated October 16, 2026." The first request is the one tile over Kansas; 17 tile requests followed, all answered 200. The credits line read "NASA GIBS | MapLibre | OpenFreeMap © OpenMapTiles Data from OpenStreetMap".

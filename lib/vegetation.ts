@@ -169,11 +169,20 @@ export function vegetationResolutionText(layer: Pick<VegetationLayer, "resolutio
 /**
  * True for the map's report that one tile of the vegetation layer could not be loaded. The
  * map reports every failed tile; only this layer's leave a gap in its picture.
+ *
+ * When a day is given and the report names the address that failed, the address has to be
+ * that day's: a late report about the picture shown before is not a gap in this one. A
+ * report with no address (the network failed before any answer) counts.
  */
-export function isVegetationTileError(event: unknown): boolean {
-	return (
-		isRecord(event) && "tile" in event && event.sourceId === VEGETATION_SOURCE_ID
-	);
+export function isVegetationTileError(event: unknown, day?: string): boolean {
+	if (!isRecord(event) || !("tile" in event) || event.sourceId !== VEGETATION_SOURCE_ID) {
+		return false;
+	}
+	const error = event.error;
+	const url =
+		typeof error === "object" && error !== null && "url" in error ? error.url : undefined;
+	if (day === undefined || typeof url !== "string") return true;
+	return url.includes(`/${day}/`);
 }
 
 /** Every day the layer has a picture for, oldest first. Only these are offered. */

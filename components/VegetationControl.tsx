@@ -162,7 +162,9 @@ export function VegetationControl({
 					: "A NASA satellite picture of how green the land is. No score uses it."}
 			</p>
 
-			{/* Always on the page, so that a change is read out from the first one on. */}
+			{/* Always on the page, so that a change is read out from the first one on. A note
+			    that arrives with its words already in it is often not read out, so the gaps
+			    are announced here too. */}
 			<p
 				role="status"
 				className={on && status === "checking" ? "text-muted-foreground" : "sr-only"}
@@ -172,7 +174,9 @@ export function VegetationControl({
 					: status === "checking"
 						? `Asking NASA for the picture dated ${formatVegetationDay(day, true)}.`
 						: status === "ready"
-							? `Showing the picture dated ${formatVegetationDay(day, true)}.`
+							? gaps
+								? `Showing the picture dated ${formatVegetationDay(day, true)}, with gaps: some parts of it did not load.`
+								: `Showing the picture dated ${formatVegetationDay(day, true)}.`
 							: ""}
 			</p>
 
@@ -184,7 +188,14 @@ export function VegetationControl({
 								NASA&apos;s vegetation pictures could not be loaded just now. The rest of
 								the map still works.
 							</p>
-							<Button type="button" variant="outline" size="xs" onClick={retry}>
+							{/* Taller on a phone, for a thumb. */}
+							<Button
+								type="button"
+								variant="outline"
+								size="xs"
+								className="max-sm:h-9"
+								onClick={retry}
+							>
 								Try again
 							</Button>
 						</div>
@@ -206,11 +217,18 @@ export function VegetationControl({
 						</div>
 					)}
 
-					{/* The first tile came, but the map could not load every tile after it. */}
+					{/* The first tile came, but the map could not load every tile after it. The
+					    line above announces it; this is the note to read and the way to ask again. */}
 					{status === "ready" && gaps ? (
-						<div role="status" className="space-y-1.5 rounded-md border bg-background p-2">
+						<div className="space-y-1.5 rounded-md border bg-background p-2">
 							<p>Some parts of this picture did not load, so it has gaps.</p>
-							<Button type="button" variant="outline" size="xs" onClick={retry}>
+							<Button
+								type="button"
+								variant="outline"
+								size="xs"
+								className="max-sm:h-9"
+								onClick={retry}
+							>
 								Try again
 							</Button>
 						</div>
