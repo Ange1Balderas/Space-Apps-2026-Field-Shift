@@ -1,13 +1,13 @@
 # Phase 8: Polish and verify. Implementation
 
-Date: 2026-11-15, between about 00:55 and 01:20 CST, unattended (Angel's message is quoted at the end of `spec/2026-11-14-phase-5-explain/implementation.md`). Nothing was pushed.
+Date: 2026-11-15, between about 00:55 and 01:20 CST, unattended (Angel's message is quoted at the end of `spec/2026-11-14-phase-5-explain/implementation.md`). Nothing was pushed during the night. The section "The public URL, after the push" was added the same morning, after Angel said to push.
 
 ## Status
 
 | Criterion (SPEC.md) | Status |
 |---|---|
 | Walk the full user flow on all three sample fields and two random points | **Done**, on a local production build |
-| Test the public URL in a private window and on a phone | **Not done.** The public URL shows an older build until Angel pushes |
+| Test the public URL in a private window and on a phone | **Partly done.** After Angel's push the public URL was checked with no login, in a desktop browser and at phone width. A real phone is still to do |
 | Take screenshots for the deck | **Not done.** The browser pane returns a 640 by 400 picture of a 1280 by 800 window, too small for a slide. A shot list is below |
 | Final README: what it does, how it works, data used, limitations, AI disclosure | **Done**, for Angel to review |
 
@@ -84,7 +84,7 @@ Restructured, not rewritten: What it does, How it works, Limitations, What is no
 
 ## For Angel: what only you can do
 
-1. **Push**, then open the public URL in a private window and on a phone. Every commit since Phase 3 is waiting. Things worth a look on the phone: the vegetation card under the sample buttons, a term's definition on tap, and "Use my location".
+1. **Open the public URL on a real phone.** The push is done and the public URL was checked (see the last section). Things worth a look on the phone: the vegetation card under the sample buttons, a term's definition on tap, and "Use my location".
 2. **Review** the night's work: `spec/2026-11-15-phase-6-county-data/`, `spec/2026-11-15-phase-7-stretch/` and this folder each list the choices that are yours.
 3. **The header still says "Early preview".** Your call whether it stays for the submission.
 4. **Screenshots for the deck**, from your own screen. Suggested shots, by the slides SPEC.md lists:
@@ -104,6 +104,22 @@ Two cautions for the deck, from what the app actually shows:
 - **Slide 4 should name only the NASA data the app uses**: NASA POWER and the MODIS vegetation index through NASA GIBS. SPEC.md's slide also names SMAP and GRACE, which are not built.
 
 5. **The project page.** `submission-draft.md` in this folder is a draft of each text field, put together from the README and from this walk-through. It is AI-written and yours to edit. It leaves out SMAP, GRACE, NASS QuickStats and earthaccess, which SPEC.md's checklist names and the app does not use.
+
+## The public URL, after the push (09:43 to 09:53 CST)
+
+Angel answered "Push and check". Before pushing, the 26 commits were searched for secrets, private links, email addresses and anything from the event files. None were found: the only matches were the placeholders `YOUR_TOKEN` and `YOUR_USERNAME` in the Phase 6 steps. `git push origin main` sent `38a600c..05c1e00` at 09:46 CST.
+
+- **The deployment.** Vercel built commit `05c1e00` for production in under half a minute and reports it ready, with `space-apps-2026-field-shift.vercel.app` pointing at it.
+- **No login needed.** A plain request with no cookies gets status 200 and the page, with the banner and the About the data tab in it.
+- **The three routes, live, on Vercel.** For two points that are not samples (38.524°N, 98.762°W and 37.621°N, 95.443°W) all three answered 200: the weather in about 1.8 s, the crops in about 0.5 s, the soil in about 0.3 s. A point in Nebraska got status 400 and "That point is outside Kansas. This tool covers Kansas only."
+- **In the browser, 1280 px wide.** The three samples gave the same crops, soils, scores and trend labels as the local build. A point clicked in central Kansas (38.514°N, 98.320°W) loaded in 3.3 s: Crete silt loam, about 29 in of rain a year, counted as central Kansas, wheat-sorghum-fallow first at 71. A click outside the state gave "That spot is outside Kansas".
+- **The vegetation layer.** Switched on: "Showing the picture dated October 16, 2026.", 17 tiles from NASA, all answered 200, "NASA GIBS" in the map's credits, the date fold closed at first. The year 2012 gave October 15, 2012, again with 17 tiles, all 200. The badge opened the layer's entry on the About the data tab (27 sources, 34 terms, 66 links, the AI-generated label), and "Back to where you were" returned to the badge. One screenshot shows the picture over Kansas with the Finney County marker above it.
+- **375 px wide.** The three samples with every disclosure open, and the About the data tab: no sideways scroll, the banner on each. The vegetation card is 82, 150 and 208 px tall (off, on, pickers open), with nothing to scroll inside it.
+- **Console:** no messages.
+
+Not checked on the public URL: the failure paths (checked on the local build only, by making the page's requests fail), "Use my location", and a real phone.
+
+How it was done: the app's browser pane was hidden for part of this, and a hidden pane does not draw, so the map did not finish loading there. The checks that need the map were run after the pane was shown.
 
 ## Files AI wrote or changed in this phase (Claude), for Angel to review
 
