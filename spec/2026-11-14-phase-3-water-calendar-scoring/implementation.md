@@ -2,7 +2,9 @@
 
 Date: 2026-11-14.
 
-**Status: built and committed on local `main`. Not pushed, so not deployed.** The public URL still shows Phase 2.
+**Status: approved by Angel, built and committed on local `main`. Not pushed, so not deployed.** The public URL still shows Phase 2.
+
+Angel answered "Approved" to "Do you approve Phase 3 as built?" on 2026-11-14 at about 18:25 CST, after the summary of what works, what is weak and what was cut. That approves the phase as it stands, with the loaded data files and the choices listed below; any of them can still be changed. Open item 6 (irrigated and dryland water fit share one scale) was not part of that answer and is still open before Phase 4.
 
 The phase's "done when" is met on a local run of the app: each of the three sample fields produces a ranked list with a visible breakdown, moving a slider re-orders it, and the two sanity tests pass. It was checked in Claude's own browser on the development server, at desktop size and at an emulated 375 x 812 phone size, and once on the production build. It has not been checked on the public URL, on a real phone or with a screen reader.
 
