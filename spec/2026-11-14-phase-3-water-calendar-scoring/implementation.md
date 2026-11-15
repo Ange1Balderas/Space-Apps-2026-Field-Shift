@@ -2,7 +2,7 @@
 
 Date: 2026-11-14.
 
-**Status: approved by Angel, deployed, and checked on the public URL.** `main` was pushed at 18:32 CST on 2026-11-14 at Angel's request, and the checks under "Deployment" passed on https://space-apps-2026-field-shift.vercel.app by 18:38 CST.
+**Status: approved by Angel, deployed, and checked on the public URL.** `main` was pushed at 18:32 CST on 2026-11-14 at Angel's request, and the checks under "Deployment" passed on https://space-apps-2026-field-shift.vercel.app by 18:36 CST.
 
 Angel answered "Approved" to "Do you approve Phase 3 as built?" on 2026-11-14 at about 18:25 CST, after the summary of what works, what is weak and what was cut. That approves the phase as it stands, with the loaded data files and the choices listed below; any of them can still be changed. Open item 6 (irrigated and dryland water fit share one scale) was not part of that answer and is still open before Phase 4.
 
@@ -200,7 +200,7 @@ Not checked in a browser: the climate-failure note and the soil-failure note of 
 
 Angel asked Claude to push ("Push and check"). `main` went to GitHub at 18:32:39 CST on 2026-11-14 (`1f018c8..38a600c`, nine commits), and Vercel was serving the new build by 18:33:15, about 36 seconds later.
 
-Checks on https://space-apps-2026-field-shift.vercel.app between 18:33 and 18:38 CST:
+Checks on https://space-apps-2026-field-shift.vercel.app between 18:33 and 18:36 CST:
 
 | # | Check | Result |
 | --- | --- | --- |
