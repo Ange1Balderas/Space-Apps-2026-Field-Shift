@@ -188,11 +188,14 @@ function SlopeComparison() {
 			/>
 		);
 	}
+	// A sample has a name. A point picked on the map is "Selected point", which reads badly
+	// in the middle of a sentence.
+	const place = selection.sampleId ? selection.name : "the selected point";
 	if (panel.climate.status === "loading") {
 		return (
 			<div>
 				<p role="status" className="sr-only">
-					Loading the climate history for {selection.name}.
+					Loading the climate history for {place}.
 				</p>
 				<div aria-hidden="true" className="space-y-2">
 					<Skeleton className="h-4 w-56 max-w-full" />
@@ -223,7 +226,7 @@ function SlopeComparison() {
 		return (
 			<p className="rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground">
 				A trend needs at least {MIN_TREND_POINTS} complete years, and the record at{" "}
-				{selection.name} has fewer, so there are no slopes to compare.
+				{place} has fewer, so there are no slopes to compare.
 			</p>
 		);
 	}
@@ -241,7 +244,7 @@ function SlopeComparison() {
 			>
 				<table className="w-full border-collapse text-left text-xs tabular-nums">
 					<caption className="border-b bg-background px-3 py-2 text-left font-medium">
-						Change per decade at {selection.name}, {firstYear} to {lastYear}
+						Change per decade at {place}, {firstYear} to {lastYear}
 					</caption>
 					<thead>
 						<tr className="text-muted-foreground">

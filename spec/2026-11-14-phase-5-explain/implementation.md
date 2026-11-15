@@ -128,6 +128,8 @@ Browser checks on the production build (`next start`, port 3000), in the app's b
 | About with no field | "No field selected", with what to do. Choosing a sample from About brings the Field tab forward |
 | Two slopes, Finney | Five rows. Hot days +1.43 against +1.71 days, no clear trend, p = 0.25. First fall freeze +3.33 against +3.53 days, likely trend, p = 0.02. "In a record of 45 years there are 990 pairs of years, and any one year is part of only 44 of them" |
 | Two slopes, Brown | Five rows. Hot days +0.46 against +0.02 days, no clear trend, p = 0.54: the widest gap seen between the two slopes. First fall freeze +4.29 against +4.61 days, likely trend, p = 0.001 |
+| Two slopes, Thomas | Five rows. Hot days +2.00 against +2.08 days, possible trend, p = 0.12. First fall freeze +3.33 against +3.34 days, likely trend, p = 0.03 |
+| A live point, not a sample (38.514°N, 98.320°W, chosen with Enter on the map) | The three routes answered 200 (climate 1.5 s, crop history 0.6 s, soil 4.0 s). Field tab: the field's own rotation and three ranked cards, 114 terms. About: five rows, with the average temperature a likely trend (+0.50 against +0.49 °F, p = 0.006). No error or warning. The caption read "at Selected point"; it now reads "at the selected point" |
 | 375 px wide | Field tab with every folding part open, and About: no sideways scroll. Both tables fit |
 | Console | No error and no warning through a field load, a badge, Back and a chart tab |
 | Thomas sample, first card | Wheat-fallow, 68. Sixteen terms in the card with every part open |
@@ -141,7 +143,7 @@ Found by these checks and fixed:
 - A space before a closing bracket after a link, in citations.
 - The trend label's focus ring was clipped by its badge. Keyboard focus now inverts the label's colours.
 
-Not checked: the public URL (nothing is pushed), a real phone or a real finger, a screen reader (what it is given was read from the page, not heard), how the hover delay feels, the About table at Thomas, a live click that is not a sample, the dark colour scheme, and "Use my location" (unchanged since Phase 4, where only the denied path could be exercised). In one screenshot the map was blank for a moment after the tab changed; the next one showed it, and the map code is untouched.
+Not checked: the public URL (nothing is pushed), a real phone or a real finger, a screen reader (what it is given was read from the page, not heard), how the hover delay feels, the dark colour scheme, and "Use my location" (unchanged since Phase 4, where only the denied path could be exercised). In one screenshot the map was blank for a moment after the tab changed; the next one showed it, and the map code is untouched.
 
 ## UI review
 
