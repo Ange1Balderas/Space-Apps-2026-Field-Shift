@@ -1,6 +1,6 @@
 # Phase 6: Preprocessed NASA data. Implementation notes
 
-Date: 2026-11-15 (Sunday), 00:20 to 00:45 CST, unattended. Status: **blocked, not done.** One piece is delivered: the county centroids and a request ready for Angel to submit. No county shows a soil moisture status, which is this phase's "done when". Committed locally, not pushed.
+Date: 2026-11-15 (Sunday), 00:16 to 00:20 CST, unattended. Status: **blocked, not done.** One piece is delivered: the county centroids and a request ready for Angel to submit. No county shows a soil moisture status, which is this phase's "done when". Committed locally, not pushed.
 
 ## Why it is blocked
 
@@ -16,7 +16,7 @@ AI wrote the script. The two data files are its output.
 
 ## Verified
 
-- The script ran on 2026-11-15 at 00:30 CST and printed "105 counties, every centroid inside the Kansas rectangle."
+- The script ran on 2026-11-15 at about 00:19 CST and printed "105 counties, every centroid inside the Kansas rectangle."
 - The CSV has 105 rows and 105 distinct FIPS codes, from 20001 (Allen County) to 20209 (Wyandotte County). Latitudes run from 37.15 to 39.83 and longitudes from -101.81 to -94.76. The three sample counties are in it: Finney 20055, Thomas 20193, Brown 20013.
 - The product is real and available. AppEEARS's public product listing, read the same night, gives `SPL3SMP_E.006` as "Enhanced L3 Radiometer Soil Moisture", 9000 m, daily, from 2015-03-31 to the present, from the NSIDC DAAC (https://doi.org/10.5067/M20OXIZHY3RJ). Its layer listing holds the four layer names used, with soil moisture valid from 0.02 to 0.5 and -9999 for no value.
 - The request's shape follows AppEEARS's API documentation, "Submit task" and "Task object": `task_type`, `task_name`, `params.dates` as month-day-year, `params.layers` as product and layer, `params.coordinates` as latitude and longitude with an optional `id` and `category`.

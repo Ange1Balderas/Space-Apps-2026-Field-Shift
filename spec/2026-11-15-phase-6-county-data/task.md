@@ -24,7 +24,7 @@ Done when: any county shows its soil moisture status.
 
 ## What stands in the way
 
-Checked on 2026-11-15 at 00:20 CST, by existence only, with nothing read:
+Checked on 2026-11-15 at about 00:12 CST, by existence only, with nothing read:
 
 - This machine has no `~/.netrc` and no environment variable for an Earthdata login. Only Angel can sign in.
 - It has no Python environment for the project: no `.venv`, and none of `earthaccess`, `xarray`, `numpy`, `pandas` or `requests` is installed.

@@ -1,6 +1,6 @@
 # Phase 5: Explain. Implementation notes
 
-Date: 2026-11-14 (Saturday), about 22:00 to 23:30 CST, and 2026-11-15, 00:05 to 00:25 CST, for the second source check's corrections. Status: built, checked on the production build, committed locally. **Not pushed.** The 27 corrections of the second source check are applied (see the end of this file). Waiting for Angel's review. The public URL still shows Phase 3.
+Date: 2026-11-14 (Saturday), about 22:00 to 23:30 CST, and 2026-11-15, 00:05 to 00:11 CST, for the second source check's corrections. Status: built, checked on the production build, committed locally. **Not pushed.** The 27 corrections of the second source check are applied (see the end of this file). Waiting for Angel's review. The public URL still shows Phase 3.
 
 SPEC.md suggests a multi-agent workflow for this phase. It was done in normal mode, with one `data-verifier` run and one `ui-reviewer` run, because the plan allowance is tight.
 
@@ -84,7 +84,7 @@ Not covered by that run, and said so by it: the K-State handbooks other than MF3
 
 ## Verification
 
-Run on 2026-11-14 at 23:06 to 23:07 CST, and again on 2026-11-15 at 00:20 CST after the second check's corrections, when the tests numbered 396 (two more, for the rules worked out from the crop file):
+Run on 2026-11-14 at 23:06 to 23:07 CST, and again on 2026-11-15 at 00:11 CST after the second check's corrections, when the tests numbered 396 (two more, for the rules worked out from the crop file):
 
 ```text
 $ npm run typecheck
@@ -183,7 +183,7 @@ A second `data-verifier` run, files only, about 11 minutes, 231k tokens. It cove
 - 26: SPEC.md still says "About 50 km grid". See choice 5.
 - Also done: the calendar caption reads its numbers from the config and the code.
 
-**The corrected sentences were not sent back to the verifier.** They were read on the built app at 00:20 CST: the About tab, the soil note, the calendar caption and a card's information gaps show the new wording, with no error or warning.
+**The corrected sentences were not sent back to the verifier.** They were read on the built app at about 00:09 CST: the About tab, the soil note, the calendar caption and a card's information gaps show the new wording, with no error or warning.
 
 Each line below gives the place, the problem and the wording to use.
 
