@@ -4,17 +4,18 @@ NASA Space Apps Challenge 2026, Kansas City local event, team ANGEL. Challenge: 
 
 A decision support tool that uses NASA Earth data, USDA soil and crop data, and farmer priorities to compare crop rotations for Kansas fields. The tool supports farmer judgment. It does not replace it.
 
-> **Status: Phase 3 (water, calendar and scoring).** Pick a point on the map of Kansas, or one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, a ranked list of rotations scored for that field, and the hot days per year since 1981 with a trend label. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
+> **Status: Phase 4 (full UI), built and not yet deployed.** Pick a point on the map of Kansas, use your location, or pick one of three sample fields, and the panel shows the crops grown there in the last 8 years, the soil, rotation cards scored for that field, and four climate charts since 1981 with trend labels. The live app below shows Phase 3 until the next push. Everything under a "Planned" heading below is not built yet. [SPEC.md](SPEC.md) is the build plan and the source of truth.
 
 Live app: https://space-apps-2026-field-shift.vercel.app
 
 ## What works now
 
-- Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. A point outside the state gets a short message instead of data.
+- Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. "Use my location" chooses the point where the device is, once the browser allows it. A point outside the state gets a short message instead of data.
 - **Crops grown here:** the crop at that point in each of the last 8 years, read from the USDA Cropland Data Layer. Any year can be changed by hand, a changed year is marked as yours, and one button brings the detected crops back.
 - **Soil:** the soil map unit under the point from the USDA soil survey (SSURGO), with its texture, available water, organic matter, slope, erodibility by water and by wind, and hydrologic group.
-- **Rotations:** the field's own rotation and the library rotations usual in that part of Kansas, each scored from 0 to 100 on seven indicators (water fit, heat and drought exposure, soil protection, soil building, pest and disease break, market fit, simplicity) and listed best match first. Every row shows the seven scores and a sentence on how each was worked out. Four sliders (save water, protect soil, income, simplicity) set how much each counts, and the list re-orders as they move. Six of the ten planned rotations are loaded. A year of the field's own rotation whose crop the tool has no values for is named and left out of its score.
-- **Conditions:** the number of hot days in each year (daily high at or above 95°F) from 1981 to the last full year, the long-term average, a table of the same numbers, and a trend label: likely trend, possible trend or no clear trend.
+- **Rotations:** the field's own rotation and the library rotations usual in that part of Kansas, each scored from 0 to 100 on seven indicators (water fit, heat and drought exposure, soil protection, soil building, pest and disease break, market fit, simplicity) and shown as cards: the field's own rotation, then the three best matches, with the rest behind a disclosure. Each card has the seven scores, a field calendar, and five fields: why it is suggested, the evidence, its benefits, the information gaps and the risks to verify locally, every sentence with its source. Four sliders (save water, protect soil, income, simplicity) set how much each indicator counts, and a switch says whether the field can be irrigated; the cards re-order as they change. Six of the ten planned rotations are loaded. A year of the field's own rotation whose crop the tool has no values for is named and left out of its score.
+- **Field calendar:** on each card, one row of twelve months for each year of the rotation, filled where a crop is in the ground and empty where the field is bare, under rows that mark the months the field is usually hot, dry or frosty.
+- **Conditions:** four charts from 1981 to the last full year: hot days (daily high at or above 95°F), growing-season rain, and the dates of the last spring freeze and the first fall freeze. Each has its long-term average, a table of the same numbers, and a trend label: likely trend, possible trend or no clear trend.
 - The three facts come from three services and load on their own. If one fails, the other two still show, and the failed one says so and offers a retry. If the crop history fails, the 8 years can be filled in by hand.
 - Three sample fields (Finney, Thomas and Brown counties) load saved copies of all three facts, so the demo works without a live connection to NASA or USDA.
 
@@ -24,10 +25,9 @@ How the trend is worked out: a Mann-Kendall test (with the correction for tied v
 
 ## What is planned
 
-- The other climate charts: growing-season rain and the last spring and first fall freeze dates, each with a trend label. The freeze dates are already computed; only their charts are missing.
-- Rotation cards with each rotation's evidence, benefits, information gaps and the risks to verify locally, and switches for irrigation, no-till equipment and market access. The text for the cards is written (as fixed templates); the cards are not.
+- Switches for no-till equipment and market access. The no-till switch is built and appears once a loaded rotation needs no-till; the market switch is not defined yet.
 - The four remaining rotations: corn-wheat, corn-soybean-wheat with double-crop soybean, wheat-cover crop-sorghum, and alfalfa then corn or wheat.
-- A field calendar showing the crop months and bare months of each rotation. The month grid is computed; the strip that draws it is not built.
+- A NASA vegetation layer on the map (MODIS through NASA GIBS), and the trend of each crop's water demand.
 - A glossary for the science terms and an About the Data tab.
 
 ## Run it locally

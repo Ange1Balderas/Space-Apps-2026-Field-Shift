@@ -106,6 +106,8 @@ export function FieldPanel() {
 			behavior: still ? "auto" : "smooth",
 			block: "start",
 		});
+		// Keyboard focus follows the view, so the next Tab lands in the panel, not in the map.
+		panelRef.current?.focus({ preventScroll: true });
 	}, [chosen]);
 
 	// Facts on screen that are a saved copy because their live source failed just now.

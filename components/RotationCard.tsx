@@ -1,3 +1,5 @@
+"use client";
+
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 //
 // One rotation card (SPEC.md, user flow step 4 and feature 8): the score, the seven indicator
@@ -5,7 +7,7 @@
 // benefits, information gaps and risks to verify locally. Every sentence comes from a
 // template in lib/card-text.ts filled with a computed number or a sourced library entry.
 
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { FieldCalendar } from "@/components/FieldCalendar";
 import { SourceBadge } from "@/components/SourceBadge";
 import {
@@ -43,9 +45,16 @@ function Fold({
 	open?: boolean;
 	children: ReactNode;
 }) {
+	// `open` says how the part starts. After that it belongs to the reader: a slider that
+	// changes which card is the best match must not open or close what they are reading.
+	const [isOpen, setIsOpen] = useState(open ?? false);
 	return (
-		<details className="text-xs" open={open}>
-			<summary className="cursor-pointer rounded-sm py-1 font-medium outline-hidden focus-visible:ring-2 focus-visible:ring-ring">
+		<details
+			className="text-xs"
+			open={isOpen}
+			onToggle={(event) => setIsOpen(event.currentTarget.open)}
+		>
+			<summary className="cursor-pointer rounded-sm py-2 font-medium outline-hidden focus-visible:ring-2 focus-visible:ring-ring">
 				{title}
 				<span className="sr-only"> for {rotationName}</span>
 			</summary>
@@ -57,10 +66,20 @@ function Fold({
 /** Where a sentence comes from: the words of its source, with each link as a link. */
 function SourceLine({ source }: { source: string | null }) {
 	if (!source) return null;
+	const parts = splitSource(source);
+	// A link shows the site it leads to. For a screen reader its name also carries the
+	// publication, because a list of links would otherwise repeat one site name.
+	const citationBefore = (index: number): string => {
+		for (let back = index - 1; back >= 0; back -= 1) {
+			const part = parts[back];
+			if ("text" in part && part.text.length > 3) return part.text;
+		}
+		return "";
+	};
 	return (
 		<span className="block text-muted-foreground">
 			Source:{" "}
-			{splitSource(source).map((part, index) =>
+			{parts.map((part, index) =>
 				"url" in part ? (
 					<a
 						// The parts of one fixed string: their position is their identity.
@@ -71,7 +90,10 @@ function SourceLine({ source }: { source: string | null }) {
 						className="rounded-sm underline underline-offset-2 outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{part.host}
-						<span className="sr-only"> (opens in a new tab)</span>
+						<span className="sr-only">
+							{citationBefore(index) ? `, ${citationBefore(index)}` : ""} (opens in a
+							new tab)
+						</span>
 					</a>
 				) : (
 					<span key={index}>{index > 0 ? ` ${part.text} ` : `${part.text} `}</span>
@@ -132,17 +154,17 @@ export function RotationCard({
 		>
 			<div className="flex items-start justify-between gap-3">
 				<div className="min-w-0 space-y-0.5">
-					<p className="text-sm font-medium">
+					<h4 className="text-sm font-medium">
 						{position !== null ? `${position}. ` : ""}
 						{name}
-					</p>
+					</h4>
 					{best ? (
 						<p className="text-xs font-medium">
 							<span
 								aria-hidden="true"
 								className="mr-1.5 inline-block size-2 rounded-full bg-chart-1"
 							/>
-							Best match for these priorities
+							Best match of those compared
 						</p>
 					) : null}
 					<p className="text-xs text-muted-foreground">{cropNames(item)}</p>

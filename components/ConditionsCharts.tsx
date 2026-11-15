@@ -5,7 +5,8 @@
 // Climate charts for the selected field (SPEC.md, features 2 and 3, user flow step 6): hot
 // days, growing-season rain and the last spring freeze, one per tab, each from 1981 to the
 // last full year with its trend arrow, its confidence label, its long-term average and a
-// table of the same numbers.
+// table of the same numbers. The first fall freeze is a fourth tab: SPEC.md's trend
+// detection lists the series, and its trend is the clearest one at the sample fields.
 //
 // Hot days and rain are amounts, so they are bars from zero. A freeze date is a day of the
 // year, where zero means nothing, so it is drawn as points on a date axis.
@@ -52,7 +53,7 @@ type Point = { year: number; value: number | null };
 const SEASON = `${monthName(GROWING_SEASON.firstMonth)} to ${monthName(GROWING_SEASON.lastMonth)}`;
 
 type Series = {
-	id: "hotDays" | "seasonRainIn" | "lastSpringFreezeDoy";
+	id: "hotDays" | "seasonRainIn" | "lastSpringFreezeDoy" | "firstFallFreezeDoy";
 	tab: string;
 	title: string;
 	/** What one value is, with the years it covers. */
@@ -122,7 +123,7 @@ const SERIES: Series[] = [
 		subtitle: (first, last) =>
 			`The last day from January to June with a low of ${FREEZE_F}°F or below, ${first} to ${last}`,
 		axisTitle: "Date",
-		axisWidth: 46,
+		axisWidth: 54,
 		kind: "dates",
 		words: FREEZE_DATE_WORDS,
 		tone: { up: "warning", down: "info", flat: "neutral" },
@@ -132,6 +133,26 @@ const SERIES: Series[] = [
 		low: "Earliest",
 		high: "Latest",
 		tableHeader: `Last day at or below ${FREEZE_F}°F`,
+		note: "Dates are read on a 365-day year, so in a leap year they can be a day off. ",
+	},
+	{
+		id: "firstFallFreezeDoy",
+		tab: "Fall freeze",
+		title: "First fall freeze each year",
+		subtitle: (first, last) =>
+			`The first day from July to December with a low of ${FREEZE_F}°F or below, ${first} to ${last}`,
+		axisTitle: "Date",
+		axisWidth: 54,
+		kind: "dates",
+		words: FREEZE_DATE_WORDS,
+		// An earlier fall freeze is the one that catches a crop still in the field.
+		tone: { up: "info", down: "warning", flat: "neutral" },
+		value: (value) => formatDayOfYear(value),
+		tick: (value) => formatDayOfYear(value, "short"),
+		average: (average) => formatDayOfYear(average),
+		low: "Earliest",
+		high: "Latest",
+		tableHeader: `First day at or below ${FREEZE_F}°F`,
 		note: "Dates are read on a 365-day year, so in a leap year they can be a day off. ",
 	},
 ];
@@ -248,7 +269,12 @@ function SeriesChart({
 			/>
 			<Tooltip
 				content={TOOLTIPS[series.id]}
-				cursor={{ fill: "var(--muted)", fillOpacity: 0.6 }}
+				// A band behind the bar, or a hairline through the point, in the theme's own colours.
+				cursor={
+					series.kind === "bars"
+						? { fill: "var(--muted)", fillOpacity: 0.6 }
+						: { stroke: "var(--border)" }
+				}
 				isAnimationActive={false}
 			/>
 		</>
@@ -266,7 +292,7 @@ function SeriesChart({
 		</>
 	);
 	const label = `${series.title}, ${firstYear} to ${lastYear}. Use the left and right arrow keys to read each year.`;
-	const margin = { top: 4, right: 4, bottom: 0, left: 0 };
+	const margin = { top: 10, right: 4, bottom: 0, left: 0 };
 
 	return (
 		<article aria-labelledby={headingId} className="space-y-3">
@@ -330,9 +356,11 @@ function SeriesChart({
 								<Line
 									dataKey="value"
 									stroke="var(--chart-2)"
-									strokeWidth={2}
-									dot={{ r: 3, fill: "var(--chart-2)", strokeWidth: 0 }}
-									activeDot={{ r: 5 }}
+									// 45 points sit a few pixels apart on a phone: small dots and a thin line
+									// keep each year readable.
+									strokeWidth={1.5}
+									dot={{ r: 2, fill: "var(--chart-2)", strokeWidth: 0 }}
+									activeDot={{ r: 4 }}
 									connectNulls={false}
 									isAnimationActive={false}
 								/>
@@ -424,7 +452,8 @@ export function ConditionsCharts({ climate }: { climate: ClimateResponse }) {
 	}
 	return (
 		<Tabs defaultValue={SERIES[0].id}>
-			<TabsList aria-label="Climate charts">
+			{/* Four tabs do not fit on one line on a phone, so the list may wrap. */}
+			<TabsList aria-label="Climate charts" className="h-auto flex-wrap justify-start">
 				{SERIES.map((series) => (
 					<TabsTrigger key={series.id} value={series.id}>
 						{series.tab}

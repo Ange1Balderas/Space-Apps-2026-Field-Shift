@@ -28,10 +28,11 @@ const CROP_CODES: Record<CropId, string> = {
 	cover_crop: "Cc",
 };
 
+// `marked` is what a screen reader hears in a month that is in the window.
 const WINDOWS = [
-	{ key: "hot", label: "Hot" },
-	{ key: "dry", label: "Dry" },
-	{ key: "frost", label: "Frost" },
+	{ key: "hot", label: "Hot", marked: "usually hot" },
+	{ key: "dry", label: "Dry", marked: "usually dry" },
+	{ key: "frost", label: "Frost", marked: "frost possible" },
 ] as const;
 
 const cropName = (id: CropId) =>
@@ -65,6 +66,7 @@ export function FieldCalendar({
 	const crops = [...new Set(calendar.months.flatMap((month) => month.crops))];
 	const hasWindows = WINDOWS.some(({ key }) => windows[key].length > 0);
 	const hasUnknown = calendar.months.some((month) => month.unknown);
+	const hasShared = calendar.months.some((month) => month.crops.length > 1);
 
 	return (
 		<div className="space-y-2">
@@ -76,19 +78,21 @@ export function FieldCalendar({
 				</caption>
 				<thead>
 					<tr>
-						<td className="w-14" />
+						<th scope="col" className="w-14">
+							<span className="sr-only">Year or climate window</span>
+						</th>
+						{/* Three months start with J and two each with M and A, so the full name is read out. */}
 						{MONTH_NAMES.map((name) => (
 							<th key={name} scope="col" className="font-normal text-muted-foreground">
-								<abbr title={name} className="no-underline">
-									{name.charAt(0)}
-								</abbr>
+								<span aria-hidden="true">{name.charAt(0)}</span>
+								<span className="sr-only">{name}</span>
 							</th>
 						))}
 					</tr>
 				</thead>
 				<tbody>
 					{hasWindows
-						? WINDOWS.map(({ key, label }) => (
+						? WINDOWS.map(({ key, label, marked: markedText }) => (
 								<tr key={key}>
 									<th scope="row" className="text-left font-normal text-muted-foreground">
 										{label}
@@ -103,7 +107,7 @@ export function FieldCalendar({
 														marked ? "bg-chart-3" : "bg-transparent",
 													)}
 												/>
-												<span className="sr-only">{marked ? "yes" : "no"}</span>
+												<span className="sr-only">{marked ? markedText : "not"}</span>
 											</td>
 										);
 									})}
@@ -137,7 +141,10 @@ export function FieldCalendar({
 											<span className="sr-only">bare</span>
 										) : (
 											<>
-												<span aria-hidden="true">{CROP_CODES[month.crops[0]]}</span>
+												<span aria-hidden="true">
+													{CROP_CODES[month.crops[0]]}
+													{month.crops.length > 1 ? "+" : ""}
+												</span>
 												<span className="sr-only">
 													{month.crops.map(cropName).join(" and ")}
 												</span>
@@ -153,9 +160,10 @@ export function FieldCalendar({
 				{crops.length > 0
 					? `A filled month has a crop in the ground for at least half of it: ${crops.map((id) => `${CROP_CODES[id]} ${cropName(id)}`).join(", ")}. An empty month is bare. `
 					: "No crop of this rotation could be placed in the year. "}
+				{hasShared ? "A + after a letter means a second crop shares the month. " : ""}
 				{hasUnknown ? "A month marked ? is in a year whose crop the tool does not know. " : ""}
 				{hasWindows
-					? `Hot: a 95°F day in most of the last ten years. Dry: the air asks for more water beyond rain than in this field's average month. Frost: between the average first fall freeze and the average last spring freeze. These three rows follow the tool's own rules, from NASA POWER.`
+					? "A bar in the top three rows marks a month that is usually hot, dry or frosty here. Hot: a 95°F day in more than 5 of the last 10 years. Dry: evaporation runs further ahead of rain than in this field's average month. Frost: between the average first fall freeze and the average last spring freeze. These are the tool's own rules, from NASA POWER."
 					: ""}
 			</p>
 		</div>

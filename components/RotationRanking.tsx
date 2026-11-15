@@ -266,7 +266,7 @@ export function RotationRanking({
 						{/* Says the new leader once when a slider or switch changes it. */}
 						<p className="sr-only" aria-live="polite">
 							{best && best.total !== null
-								? `Best match for these priorities: ${best.rotation.name}.`
+								? `Best match of those compared: ${best.rotation.name}.`
 								: ""}
 						</p>
 						{top.length === 0 ? (

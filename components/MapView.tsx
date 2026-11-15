@@ -53,8 +53,10 @@ export function MapView() {
 			setLocationNote(locationProblem(null));
 			return;
 		}
+		if (locating) return;
 		setLocating(true);
-		setLocationNote("");
+		// Said aloud by the status line below: a changed button label is not announced.
+		setLocationNote("Finding your location.");
 		navigator.geolocation.getCurrentPosition(
 			(position) => {
 				setLocating(false);
@@ -66,6 +68,7 @@ export function MapView() {
 					setLocationNote(result.message);
 					return;
 				}
+				setLocationNote("");
 				// Bring the point into view without animation, then choose it like a click.
 				const map = mapRef.current;
 				if (map) {
@@ -136,7 +139,8 @@ export function MapView() {
 						variant="outline"
 						size="sm"
 						className="pointer-events-auto max-sm:h-10"
-						disabled={locating}
+						// Not `disabled`: that would drop keyboard focus while the browser is asked.
+						aria-disabled={locating}
 						onClick={findMyLocation}
 					>
 						<LocateFixedIcon aria-hidden="true" />
