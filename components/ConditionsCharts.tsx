@@ -17,8 +17,6 @@ import {
 	Bar,
 	BarChart,
 	CartesianGrid,
-	Line,
-	LineChart,
 	ReferenceLine,
 	ResponsiveContainer,
 	Tooltip,
@@ -50,7 +48,9 @@ import type { ClimateResponse } from "@/lib/types";
 import { useViewStore } from "@/lib/view-store";
 
 type YearRow = ClimateResponse["years"][number];
-type Point = { year: number; value: number | null };
+// `actual` is set on a date chart, where `value` is the days from the average that the bar
+// is drawn with, and `actual` the day of the year itself.
+type Point = { year: number; value: number | null; actual?: number | null };
 
 const SEASON = `${monthName(GROWING_SEASON.firstMonth)} to ${monthName(GROWING_SEASON.lastMonth)}`;
 
@@ -124,7 +124,7 @@ const SERIES: Series[] = [
 		title: "Last spring freeze each year",
 		subtitle: (first, last) =>
 			`The last day from January to June with a low of ${FREEZE_F}°F or below, ${first} to ${last}`,
-		axisTitle: "Date",
+		axisTitle: "Each bar is that year's date, drawn from the average: up is later, down is earlier.",
 		axisWidth: 54,
 		kind: "dates",
 		words: FREEZE_DATE_WORDS,
@@ -143,7 +143,7 @@ const SERIES: Series[] = [
 		title: "First fall freeze each year",
 		subtitle: (first, last) =>
 			`The first day from July to December with a low of ${FREEZE_F}°F or below, ${first} to ${last}`,
-		axisTitle: "Date",
+		axisTitle: "Each bar is that year's date, drawn from the average: up is later, down is earlier.",
 		axisWidth: 54,
 		kind: "dates",
 		words: FREEZE_DATE_WORDS,
@@ -226,10 +226,21 @@ const TOOLTIPS = Object.fromEntries(
 		function SeriesTooltip({ active, payload, label }: TooltipContentProps) {
 			const value = payload?.[0]?.value;
 			if (!active || typeof value !== "number") return null;
+			// A date chart plots days from the average; the date itself rides along as `actual`.
+			const row = payload?.[0]?.payload as Point | undefined;
+			const actual = typeof row?.actual === "number" ? row.actual : null;
+			const days = Math.round(value);
 			return (
 				<div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm">
 					<p className="font-medium">{label}</p>
-					<p className="text-muted-foreground">{series.value(value)}</p>
+					<p className="text-muted-foreground">{series.value(actual ?? value)}</p>
+					{actual !== null ? (
+						<p className="text-muted-foreground">
+							{days === 0
+								? "On the average date"
+								: `${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"} ${days > 0 ? "later" : "earlier"} than average`}
+						</p>
+					) : null}
 				</div>
 			);
 		},
@@ -283,22 +294,30 @@ function SeriesChart({
 			<Tooltip
 				content={TOOLTIPS[series.id]}
 				// A band behind the bar, or a hairline through the point, in the theme's own colours.
-				cursor={
-					series.kind === "bars"
-						? { fill: "var(--muted)", fillOpacity: 0.6 }
-						: { stroke: "var(--border)" }
-				}
+				cursor={{ fill: "var(--muted)", fillOpacity: 0.6 }}
 				isAnimationActive={false}
 			/>
 		</>
 	);
 	// The average line crosses dark marks. A wider line in the surface colour under it keeps
 	// the dashes readable there.
+	// A date chart is drawn as bars from the average (Angel, 2026-11-15: a line of dates was
+	// hard to read): up is later than the average date, down is earlier. The axis still
+	// shows dates, and the average sits at zero.
+	const dates = series.kind === "dates";
+	const plotted: Point[] = dates
+		? points.map((point) => ({
+				year: point.year,
+				value: point.value === null ? null : point.value - average,
+				actual: point.value,
+			}))
+		: points;
+	const baseline = dates ? 0 : average;
 	const averageLine = (
 		<>
-			<ReferenceLine y={average} stroke="var(--card)" strokeWidth={3} />
+			<ReferenceLine y={baseline} stroke="var(--card)" strokeWidth={3} />
 			<ReferenceLine
-				y={average}
+				y={baseline}
 				stroke="var(--muted-foreground)"
 				strokeDasharray="5 4"
 			/>
@@ -351,34 +370,30 @@ function SeriesChart({
 									{averageLine}
 								</BarChart>
 							) : (
-								<LineChart data={points} margin={margin} aria-label={label}>
+								<BarChart data={plotted} margin={margin} barCategoryGap={2} aria-label={label}>
 									{commonAxis}
 									<YAxis
 										width={series.axisWidth}
-										// A date axis does not start at zero: it spans the dates on record.
+										// Days from the average, in tens either side, labelled as the dates they are.
 										domain={[
 											(dataMin: number) => Math.floor(dataMin / 10) * 10,
 											(dataMax: number) => Math.ceil(dataMax / 10) * 10,
 										]}
 										allowDecimals={false}
-										tickFormatter={series.tick}
+										tickFormatter={(days: number) => series.tick(average + days)}
 										tickLine={false}
 										axisLine={false}
 										tick={AXIS_TICK}
 									/>
-									{averageLine}
-									<Line
+									<Bar
 										dataKey="value"
-										stroke="var(--chart-2)"
-										// 45 points sit a few pixels apart on a phone: small dots and a thin line
-										// keep each year readable.
-										strokeWidth={1.5}
-										dot={{ r: 2, fill: "var(--chart-2)", strokeWidth: 0 }}
-										activeDot={{ r: 4 }}
-										connectNulls={false}
+										fill="var(--chart-2)"
+										radius={2}
+										maxBarSize={24}
 										isAnimationActive={false}
 									/>
-								</LineChart>
+									{averageLine}
+								</BarChart>
 							)}
 						</ResponsiveContainer>
 					) : null}
