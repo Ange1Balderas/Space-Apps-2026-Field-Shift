@@ -113,7 +113,7 @@ const CELL = "border border-border px-1 py-0.5";
 
 function Heading({ children }: { children: ReactNode }) {
 	return (
-		<h2 className="mt-3 mb-1 border-b border-border pb-0.5 font-semibold uppercase tracking-wide">
+		<h2 className="mt-2 mb-1 border-b border-border pb-0.5 font-semibold uppercase tracking-wide">
 			{children}
 		</h2>
 	);
@@ -426,7 +426,7 @@ export function PrintSummary() {
 				</>
 			) : null}
 
-			<footer className="mt-3 border-t border-border pt-1 text-[11px]">
+			<footer className="mt-2 border-t border-border pt-1 text-[11px]">
 				<p>
 					Sources: NASA POWER (weather since 1981), USDA NASS Cropland Data Layer (crops),
 					USDA NRCS SSURGO through Soil Data Access (soil)
