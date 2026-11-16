@@ -29,6 +29,7 @@ I built it to answer the challenge this way: it puts NASA Earth data, local soil
 - Terms: each science word has a plain-language definition and its source. You see it on hover, keyboard focus or tap.
 - About the data: every source and what the tool takes from it, how fine each source is, a satellite record compared with a gauge on the farm, two ways to measure a trend side by side, how the scores are worked out with every number the tool chose, and the glossary.
 - Vegetation from space: a switch on the map draws NASA's vegetation index (NDVI) in 16-day pictures going back to March 2000. It is a picture only. No score uses it.
+- What if the rain changes? A slider scores the rotations with 30% less to 10% more rain in every month of the recent average. Only water fit changes, and the ranking says when a scenario is on.
 - Print summary: one button prints a one-page sheet for the field, with the crops grown, the soil, my priorities as I set them, my current rotation and the three best matches with their seven scores, the four climate trends and the sources. What prints is what was on screen.
 
 **How it works**
@@ -52,9 +53,9 @@ At all three, the first fall freeze comes later than it did in 1981: about 3.3 d
 **Limits and what is next** (the README's "Limitations" and "What is not built" sections have the full list)
 
 - It works from one point, not a field outline. Its weather is the record of an area roughly 35 miles across, not of the field.
-- Six of the ten planned rotations are loaded.
+- Seven of the ten planned rotations are loaded.
 - NASA SMAP soil moisture is built up to the data: the county lookup, the script that turns NASA's answer into one small file per county, and a "Soil moisture now" card that labels the county's last month wetter, about normal or drier than usual. I sent the request for all 105 Kansas county centroids to NASA AppEEARS, and NASA had not finished it by the deadline, so the card stays hidden until the files exist. GRACE groundwater is not built.
-- Not built: a rainfall and temperature scenario slider, a summary written by a language model, county yields.
+- Not built: the temperature half of the scenario slider, a summary written by a language model, county yields.
 
 **Tools and languages**
 
