@@ -16,6 +16,7 @@
 // with the footer. CSS pixels print at 96 to the inch, so 12 px is 9 pt and 11 px is 8.25 pt.
 
 import type { ReactNode } from "react";
+import { describeRainChange } from "@/components/PrioritySliders";
 import { INDICATOR_LABELS, PRIORITY_LABELS, whySuggested } from "@/lib/card-text";
 import { useFieldStore } from "@/lib/field-store";
 import { FREEZE_F, GROWING_SEASON, HOT_DAY_F } from "@/lib/indicators";
@@ -262,6 +263,9 @@ export function PrintSummary() {
 				{constraints.irrigationAvailable
 					? "This field can be irrigated."
 					: "Scored as dryland: the irrigation switch was off."}
+				{(constraints.rainChangePct ?? 0) !== 0
+					? ` Rain scenario: ${describeRainChange(constraints.rainChangePct ?? 0)} in every month, your scenario rather than the record; only water fit changes.`
+					: ""}
 			</p>
 
 			<Heading>Rotations, scored for this field</Heading>

@@ -32,16 +32,32 @@ export const RECENT_YEARS = 10;
 
 export type Region = "west" | "central" | "east";
 
-/** What the farmer has told the tool about the farm. */
+/** What the farmer has told the tool about the farm, and the scenario they are trying. */
 export type Constraints = {
 	irrigationAvailable: boolean;
 	hasNoTillEquipment: boolean;
+	/**
+	 * The rain scenario (SPEC.md, feature 15, the rainfall half): every month's rain in the
+	 * recent average is scaled by this percent change before the water budget. 0, or absent,
+	 * is the record as it is. Only water fit changes; the temperature half is not built.
+	 */
+	rainChangePct?: number;
 };
 
 export const DEFAULT_CONSTRAINTS: Constraints = {
 	irrigationAvailable: false,
 	hasNoTillEquipment: true,
+	rainChangePct: 0,
 };
+
+/** The rain scenario's range, in percent (SPEC.md: "Rainfall -30% to +10%"). */
+export const RAIN_CHANGE_RANGE = { min: -30, max: 10, step: 5 } as const;
+
+/** The factor the scenario applies to every month's rain: 0.7 for -30, 1 for the record. */
+export function rainFactor(constraints: Pick<Constraints, "rainChangePct">): number {
+	const pct = constraints.rainChangePct ?? 0;
+	return 1 + Math.min(RAIN_CHANGE_RANGE.max, Math.max(RAIN_CHANGE_RANGE.min, pct)) / 100;
+}
 
 /** The four sliders, each 0 to 100. */
 export type Priorities = Record<Priority, number>;
@@ -213,6 +229,9 @@ function scoreWater(
 	}
 	const mode = waterMode(rotation, constraints);
 	const capacity = soil?.availableWaterIn ?? null;
+	// The rain scenario scales every month's rain; the record itself is left as it is.
+	const factor = rainFactor(constraints);
+	const rainIn = factor === 1 ? recent.rainIn : recent.rainIn.map((value) => value * factor);
 	const seasons: SeasonWater[] = [];
 	const skipped: string[] = [];
 	for (const season of calendar.seasons) {
@@ -222,8 +241,8 @@ function scoreWater(
 			skipped.push(nameOf(library, season.crop));
 			continue;
 		}
-		const seasonRainIn = shareOfMonths(season.daysByMonth, recent.rainIn);
-		const bareRainIn = shareOfMonths(season.bareDaysBefore, recent.rainIn);
+		const seasonRainIn = shareOfMonths(season.daysByMonth, rainIn);
+		const bareRainIn = shareOfMonths(season.bareDaysBefore, rainIn);
 		const banked = bareRainIn * scoring.fallowEfficiency.value;
 		const storedCapped = capacity !== null && banked > capacity;
 		const storedIn = storedCapped ? capacity : banked;

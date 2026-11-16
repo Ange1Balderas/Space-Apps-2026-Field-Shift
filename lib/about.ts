@@ -14,7 +14,7 @@ import { GLOSSARY, type GlossaryEntry } from "@/lib/glossary";
 import { CDL_CROPS } from "@/lib/existing-rotation";
 import { FREEZE_F, GROWING_SEASON } from "@/lib/indicators";
 import { LIBRARY, type Library, PRIORITIES } from "@/lib/library";
-import { RECENT_YEARS } from "@/lib/scoring";
+import { RAIN_CHANGE_RANGE, RECENT_YEARS } from "@/lib/scoring";
 import { monthName } from "@/lib/trend-text";
 import { MIN_TREND_POINTS, type TrendLabel } from "@/lib/trends";
 import type { ClimateResponse, CropId, ScoringConfig } from "@/lib/types";
@@ -484,6 +484,10 @@ export function toolRules(library: Library = LIBRARY): ToolRule[] {
 		{
 			title: "Trend test",
 			text: `A series needs at least ${MIN_TREND_POINTS} complete years to be tested. The p-value is two-sided, because the tool does not know in advance which way a series is heading. EPA's worked examples test one direction at a time.`,
+		},
+		{
+			title: "Rain scenario",
+			text: `The "What if the rain changes?" slider scales every month's rain in the recent average by the percent chosen, from ${RAIN_CHANGE_RANGE.min}% to +${RAIN_CHANGE_RANGE.max}%, before the water budget, so only water fit changes. The record itself, the charts, the climate windows and the field's region are left as they are. The temperature half of SPEC.md's scenario is not built: it would need each day's temperatures in the browser, which the climate answer does not carry.`,
 		},
 		{
 			title: "Soil moisture month",

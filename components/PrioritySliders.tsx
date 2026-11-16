@@ -19,7 +19,7 @@ import { INDICATOR_LABELS, PRIORITY_LABELS } from "@/lib/card-text";
 import { INDICATOR_TERMS } from "@/lib/glossary";
 import { LIBRARY, PRIORITIES, SCORING } from "@/lib/library";
 import { usePrioritiesStore } from "@/lib/priorities-store";
-import { type Constraints, DEFAULT_PRIORITIES } from "@/lib/scoring";
+import { DEFAULT_PRIORITIES, RAIN_CHANGE_RANGE } from "@/lib/scoring";
 import type { Priority } from "@/lib/types";
 
 function PrioritySlider({ priority }: { priority: Priority }) {
@@ -69,7 +69,7 @@ function FarmSwitch({
 	label,
 	help,
 }: {
-	name: keyof Constraints;
+	name: "irrigationAvailable" | "hasNoTillEquipment";
 	label: string;
 	help: string;
 }) {
@@ -99,14 +99,62 @@ function FarmSwitch({
 	);
 }
 
+/** The words for a rain scenario: "20% less rain", "10% more rain", "the rain as recorded". */
+export function describeRainChange(pct: number): string {
+	if (pct === 0) return "the rain as recorded";
+	return `${Math.abs(pct)}% ${pct < 0 ? "less" : "more"} rain`;
+}
+
+/**
+ * The rain scenario (SPEC.md, feature 15, the rainfall half). The temperature half needs each
+ * day's temperatures in the browser, which the climate answer does not carry, so it is not
+ * built, and the help says so.
+ */
+function RainScenario() {
+	const labelId = useId();
+	const helpId = useId();
+	const pct = usePrioritiesStore((state) => state.constraints.rainChangePct ?? 0);
+	const setRainChange = usePrioritiesStore((state) => state.setRainChange);
+	return (
+		<div className="space-y-1.5 border-t pt-3">
+			<div className="flex items-baseline justify-between gap-3">
+				<span id={labelId} className="text-sm font-medium">
+					What if the rain changes?
+				</span>
+				<span aria-hidden="true" className="text-xs tabular-nums text-muted-foreground">
+					{pct === 0 ? "as recorded" : `${pct > 0 ? "+" : "−"}${Math.abs(pct)}%`}
+				</span>
+			</div>
+			<Slider
+				value={[pct]}
+				min={RAIN_CHANGE_RANGE.min}
+				max={RAIN_CHANGE_RANGE.max}
+				step={RAIN_CHANGE_RANGE.step}
+				aria-labelledby={labelId}
+				aria-describedby={helpId}
+				aria-valuetext={describeRainChange(pct)}
+				onValueChange={([next]) => setRainChange(next)}
+				className="min-h-11"
+			/>
+			<p id={helpId} className="text-xs text-muted-foreground">
+				Scores the rotations with {describeRainChange(pct)} in every month of the recent
+				average, from {RAIN_CHANGE_RANGE.min}% to +{RAIN_CHANGE_RANGE.max}%. Only{" "}
+				<Term id="water-fit">water fit</Term> changes. Heat exposure does not: the
+				temperature half of this scenario is not built.
+			</p>
+		</div>
+	);
+}
+
 export function PrioritySliders() {
 	const headingId = useId();
 	const groupRef = useRef<HTMLDivElement>(null);
 	const priorities = usePrioritiesStore((state) => state.priorities);
+	const rainChangePct = usePrioritiesStore((state) => state.constraints.rainChangePct ?? 0);
 	const resetPriorities = usePrioritiesStore((state) => state.resetPriorities);
-	const changed = PRIORITIES.some(
-		(priority) => priorities[priority] !== DEFAULT_PRIORITIES[priority],
-	);
+	const changed =
+		rainChangePct !== 0 ||
+		PRIORITIES.some((priority) => priorities[priority] !== DEFAULT_PRIORITIES[priority]);
 	const someRotationNeedsNoTill = LIBRARY.rotations.some(
 		(rotation) => rotation.needsNoTill,
 	);
@@ -159,6 +207,7 @@ export function PrioritySliders() {
 					/>
 				) : null}
 			</div>
+			<RainScenario />
 		</div>
 	);
 }

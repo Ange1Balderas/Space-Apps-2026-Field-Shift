@@ -11,7 +11,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { GlossedText, Term } from "@/components/Glossary";
-import { PrioritySliders } from "@/components/PrioritySliders";
+import { describeRainChange, PrioritySliders } from "@/components/PrioritySliders";
 import { RotationCard } from "@/components/RotationCard";
 import { SourceBadge } from "@/components/SourceBadge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -185,7 +185,11 @@ export function RotationRanking({
 								{yearlyRain !== null && regionName
 									? `About ${Math.round(yearlyRain)} in of rain a year here, which the tool counts as ${regionName} Kansas. `
 									: ""}
-								Scores use the weather of {recent.firstYear} to {recent.lastYear}.
+								Scores use the weather of {recent.firstYear} to {recent.lastYear}
+								{(constraints.rainChangePct ?? 0) !== 0
+									? `, with ${describeRainChange(constraints.rainChangePct ?? 0)} in every month: your scenario, not the record`
+									: ""}
+								.
 							</p>
 							<div className="flex flex-wrap gap-1.5">
 								<SourceBadge source="NASA POWER" />

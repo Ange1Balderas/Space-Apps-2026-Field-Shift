@@ -144,3 +144,15 @@ Three reviewers in parallel (the `ui-reviewer` on the page and the button, the `
 After the fixes the forced-visible page measured about 947 px of the 960 px a 10 in page allows at 96 px to the inch, with no soil moisture row. A field with more corrected years or a long map unit name could run to a second page; nothing guards that, and the type was not made smaller to buy room.
 
 Angel answered "Yes, push now" at about 20:20 CST. `git push origin main` sent `bdc98ad..d8fe439` (Phase 6 and this feature). Vercel served the new build about 40 s later: `public/data/counties.geojson` answered 200 on the public URL, `public/data/counties/20055.json` 404 as expected. In the app's browser pane on the public URL, the Finney sample loaded, the "Print summary" button was in the panel, the hidden page held both tables and began "Finney County sample · 37.965°N, 100.723°W · Printed November 15, 2026", and the soil moisture card was absent. The console held one 404, the missing county file. The print dialog itself was not opened on the public URL.
+
+---
+
+# The scenario slider, rain half (feature 15): implementation, 21:15 to 21:35 CST on 2026-11-15
+
+Angel's choice, with the deadline under three hours away and credits to spend; the temperature half stays unbuilt for the reason given in "Not built, and why" above.
+
+- **`lib/scoring.ts`**: `Constraints.rainChangePct` (optional, 0 by default), `RAIN_CHANGE_RANGE` (-30 to +10 in steps of 5, SPEC.md's "Rainfall -30% to +10%"), and `rainFactor()`. `scoreWater` scales every month of the recent average's rain by the factor before the season's rain and the bare-period rain are summed, so water fit, and nothing else, changes; the record, the charts, the climate windows and the field's region are untouched. The water detail carries the scaled rain, so the evidence lines on a card say what was scored.
+- **`lib/priorities-store.ts`**: `setRainChange`, clamped to the range; Reset puts the rain back to the record along with the sliders.
+- **`components/PrioritySliders.tsx`**: a "What if the rain changes?" slider under the farm switches, with its value read out as "20% less rain", and help that says only water fit changes and why heat exposure does not. The ranking's sentence becomes "Scores use the weather of 2016 to 2025, with 20% less rain in every month: your scenario, not the record." The printable summary says the same under the priorities. The About tab gained the rule "Rain scenario".
+- **Tests** (`lib/rain-scenario.test.ts`, 3): the factor and its clamp; on the Finney sample with continuous wheat, water fit is unchanged at 0, lower at -30 and higher at +10; the six other indicators are unchanged and the season's rain in the detail is 0.7 of the record.
+- **Checks**: typecheck, lint and 444 tests pass. In the app's browser pane on the dev server, Thomas County sample: the slider is in the panel (aria range -30 to 10), six keyboard steps left read "5% less rain", the ranking sentence changed as above, Reset appeared, and the water fit scores on the cards moved. No `ui-reviewer` pass this time, to save Angel's credits for the deadline.
