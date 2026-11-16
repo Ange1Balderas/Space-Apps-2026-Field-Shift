@@ -146,17 +146,27 @@ function RainScenario() {
 					</Button>
 				) : null}
 			</div>
-			<Slider
-				value={[pct]}
-				min={RAIN_CHANGE_RANGE.min}
-				max={RAIN_CHANGE_RANGE.max}
-				step={RAIN_CHANGE_RANGE.step}
-				aria-labelledby={headingId}
-				aria-describedby={helpId}
-				aria-valuetext={describeRainChange(pct)}
-				onValueChange={([next]) => setRainChange(next)}
-				className="min-h-11"
-			/>
+			{/* The track fills from the left end, so a tick marks where the record (0) sits. */}
+			<div className="relative">
+				<span
+					aria-hidden="true"
+					className="pointer-events-none absolute top-1/2 h-3.5 w-px -translate-y-1/2 bg-muted-foreground"
+					style={{
+						left: `${(100 * (0 - RAIN_CHANGE_RANGE.min)) / (RAIN_CHANGE_RANGE.max - RAIN_CHANGE_RANGE.min)}%`,
+					}}
+				/>
+				<Slider
+					value={[pct]}
+					min={RAIN_CHANGE_RANGE.min}
+					max={RAIN_CHANGE_RANGE.max}
+					step={RAIN_CHANGE_RANGE.step}
+					aria-labelledby={headingId}
+					aria-describedby={helpId}
+					aria-valuetext={describeRainChange(pct)}
+					onValueChange={([next]) => setRainChange(next)}
+					className="min-h-11"
+				/>
+			</div>
 			<p id={helpId} className="text-xs text-muted-foreground">
 				Scores the rotations with less or more rain than recorded, the same change in every
 				month, from {Math.abs(RAIN_CHANGE_RANGE.min)}% less to {RAIN_CHANGE_RANGE.max}% more.
