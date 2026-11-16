@@ -15,7 +15,7 @@
 
 import { buildCalendar, type RotationCalendar } from "@/lib/calendar";
 import { seasonDemand, shareOfMonths } from "@/lib/crop-water";
-import { INDICATOR_IDS, type Library, PRIORITIES } from "@/lib/library";
+import { INDICATOR_IDS, type Library, PRIORITIES, SCORING } from "@/lib/library";
 import type {
 	ClimateResponse,
 	Crop,
@@ -50,8 +50,15 @@ export const DEFAULT_CONSTRAINTS: Constraints = {
 	rainChangePct: 0,
 };
 
-/** The rain scenario's range, in percent (SPEC.md: "Rainfall -30% to +10%"). */
-export const RAIN_CHANGE_RANGE = { min: -30, max: 10, step: 5 } as const;
+/**
+ * The rain scenario's range, in percent, from config/scoring.json (SPEC.md: "Rainfall -30% to
+ * +10%"). A tool choice, so it is listed with the assumptions on the About tab.
+ */
+export const RAIN_CHANGE_RANGE = {
+	min: SCORING.rainScenario.minPct,
+	max: SCORING.rainScenario.maxPct,
+	step: SCORING.rainScenario.stepPct,
+} as const;
 
 /** The scenario's percent change, clamped to the range; 0 is the record. */
 export function rainChangeOf(constraints: Pick<Constraints, "rainChangePct">): number {

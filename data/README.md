@@ -65,6 +65,8 @@ None of these is a published fact. Each is a choice this tool made, kept in one 
 | `soilBuildingPoints` | 25 each | Points for a nitrogen-fixing crop, a high-residue crop, a cover crop and a deep-rooted crop |
 | `marketScores` | 100, 50, 0 | Local elevator, regional buyer, contract only |
 | `simplicity` | 20 per extra crop, 30 without no-till equipment | Taken off 100 |
+| `soilMoisture.nearNormalZ`, `soilMoisture.minDaysPerMonth` | 0.43 standard deviations (sourced to NOAA CPC's thirds), 5 readings | See "Soil moisture from NASA SMAP" below |
+| `rainScenario` | −30% to +10%, in steps of 5 | How far the "What if the rain changes?" slider can take every month's rain from the record (SPEC.md, feature 15). A what-if, not a forecast |
 | `priorityIndicators` | see the file | Save water weighs water fit. Protect soil weighs soil protection and soil building. Income weighs heat exposure, pest break and market fit. Simplicity weighs simplicity |
 
 Each crop's `market` in `crops.json` is also a tool assumption: the four grains go to a local elevator, and alfalfa needs a regional buyer. A cover crop is not sold: its `market` entry is there only because the shape requires one, and the scoring ignores it.

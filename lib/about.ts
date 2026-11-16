@@ -386,6 +386,12 @@ export function assumptions(library: Library = LIBRARY): Assumption[] {
 			).join(" ")} A slider's weight is shared equally between its indicators.`,
 		},
 		{
+			key: "rainScenario",
+			label: "Rain scenario range",
+			value: `${signedPercent(scoring.rainScenario.minPct)} to ${signedPercent(scoring.rainScenario.maxPct)}, in steps of ${scoring.rainScenario.stepPct}`,
+			text: "How far the \"What if the rain changes?\" slider can take every month's rain from the record. The range and the steps are the tool's own choices, taken from its build plan; they are a what-if, not a forecast of any kind.",
+		},
+		{
 			key: "soilMoisture",
 			label: "Soil moisture: about normal, and enough readings",
 			value: scoring.soilMoisture.nearNormalZ

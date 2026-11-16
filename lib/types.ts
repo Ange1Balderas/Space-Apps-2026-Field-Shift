@@ -108,6 +108,8 @@ export type ScoringConfig = {
     nearNormalZ: Sourced<number>;  // |z| below this is "about normal"; the middle third of a normal distribution
     minDaysPerMonth: number;       // a month with fewer good readings than this is left out
   };
+  // The rain scenario's range (SPEC.md, feature 15: "Rainfall -30% to +10%"), a tool choice.
+  rainScenario: { minPct: number; maxPct: number; stepPct: number };
 };
 
 // public/data/counties/{fips}.json, written by scripts/build_county_json.py from the AppEEARS

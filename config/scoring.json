@@ -32,5 +32,6 @@
       "assumption": "The Climate Prediction Center splits a 30-year record into thirds. SMAP's record is about 11 years, too short for thirds of its own, so the tool uses the z-score SPEC.md asks for and the point where a normal distribution splits into thirds: 0.43 standard deviations either side of the mean. A month within 0.43 of its usual value is about normal; beyond it, wetter or drier than usual. The Center's thirds describe its temperature and rain outlooks; applying them to soil moisture, and reading them as 0.43 standard deviations, are the tool's own steps."
     },
     "minDaysPerMonth": 5
-  }
+  },
+  "rainScenario": { "minPct": -30, "maxPct": 10, "stepPct": 5 }
 }

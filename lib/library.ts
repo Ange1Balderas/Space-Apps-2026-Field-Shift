@@ -298,6 +298,15 @@ export function scoringProblems(value: unknown): Problems {
 		}
 	}
 
+	// Feature 15: the rain scenario's range, a tool choice that has to hold the record (0).
+	const scenario = value.rainScenario;
+	problems.push(...numbers(["minPct", "maxPct", "stepPct"])(scenario, "scoring.rainScenario"));
+	if (isRecord(scenario) && [scenario.minPct, scenario.maxPct, scenario.stepPct].every(isNumber)) {
+		if (!((scenario.minPct as number) <= 0 && (scenario.maxPct as number) >= 0 && (scenario.stepPct as number) > 0)) {
+			problems.push("scoring.rainScenario: expected minPct at or below 0, maxPct at or above 0 and a step above 0");
+		}
+	}
+
 	// Each indicator is weighed by exactly one slider, so no indicator is counted twice or lost.
 	const map = value.priorityIndicators;
 	if (!isRecord(map)) {
