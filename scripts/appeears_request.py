@@ -2,11 +2,16 @@
 """
 Submit the SMAP point request to NASA AppEEARS, watch it, and download its results.
 
-    python scripts/appeears_request.py submit     sign in, send data/appeears-smap-request.json
+    python scripts/appeears_request.py submit [request.json]
+                                                  sign in if needed, send the request (default
+                                                  data/appeears-smap-request.json)
     python scripts/appeears_request.py status     how far along the request is
     python scripts/appeears_request.py wait       check every minute, download when done
     python scripts/appeears_request.py download   fetch the result files into data/raw/
     python scripts/appeears_request.py login      renew the token without a new request
+    python scripts/appeears_request.py list       every request of the account, with its state
+
+`status`, `wait` and `download` take an optional task id, for a request sent another way.
 
 Needs Python 3.9 or newer and no package. Run it from the repo root.
 
@@ -124,16 +129,39 @@ def login():
     return session
 
 
-def need_task(session):
+def need_task(session, task_id=None):
+    """The token, and the task to work on: the one given on the command line, else the session's."""
     token = session.get("token")
-    task_id = session.get("task_id")
-    if not token or not task_id:
-        sys.exit("No submitted request on this machine yet. Run: python scripts/appeears_request.py submit")
+    task_id = task_id or session.get("task_id")
+    if not token:
+        sys.exit("No session on this machine yet. Run: python scripts/appeears_request.py submit (or login)")
+    if not task_id:
+        sys.exit("No task id. Run `submit`, or give one: python scripts/appeears_request.py status <task_id>")
     return token, task_id
 
 
-def submit(session):
-    with REQUEST_FILE.open(encoding="utf-8") as handle:
+def list_tasks(session):
+    """Every request of this account that AppEEARS still lists, newest first."""
+    token = session.get("token")
+    if not token:
+        sys.exit("No session on this machine yet. Run: python scripts/appeears_request.py login")
+    code, _, parsed = call("GET", "/task", token=token)
+    if code == 403:
+        sys.exit("AppEEARS refused the token (HTTP 403). It has expired: run `login`.")
+    if code != 200 or not isinstance(parsed, list):
+        sys.exit(("Could not list the requests (HTTP %d). " % code + message_of(parsed)).strip())
+    for task in parsed:
+        progress = task.get("progress") or {}
+        summary = progress.get("summary")
+        print("%s  %-32s %-10s %s  submitted %s" % (
+            task.get("task_id"), task.get("task_name"), task.get("status"),
+            ("%s%%" % summary) if summary is not None else "",
+            task.get("created", "?")[:19]))
+    return parsed
+
+
+def submit(session, request_file=REQUEST_FILE):
+    with Path(request_file).open(encoding="utf-8") as handle:
         request = json.load(handle)
     points = len(request["params"]["coordinates"])
     layers = len(request["params"]["layers"])
@@ -151,9 +179,9 @@ def submit(session):
     return session
 
 
-def task_status(session):
+def task_status(session, task_id=None):
     """Prints the task's state and returns it: pending, processing, done or error."""
-    token, task_id = need_task(session)
+    token, task_id = need_task(session, task_id)
     code, headers, parsed = call("GET", "/status/" + task_id, token=token)
     if code == 303 or (code == 200 and not isinstance(parsed, dict)):
         # Done: the API points at the task object. Read it for the final word.
@@ -177,8 +205,8 @@ def task_status(session):
     return state
 
 
-def download(session):
-    token, task_id = need_task(session)
+def download(session, task_id=None):
+    token, task_id = need_task(session, task_id)
     code, _, parsed = call("GET", "/bundle/" + task_id, token=token)
     if code == 403:
         sys.exit("AppEEARS refused the token (HTTP 403). It has expired: run `login`.")
@@ -209,11 +237,11 @@ def download(session):
     return saved
 
 
-def wait(session):
+def wait(session, task_id=None):
     while True:
-        state = task_status(session)
+        state = task_status(session, task_id)
         if state == "done":
-            download(session)
+            download(session, task_id)
             return
         if state == "error":
             sys.exit("AppEEARS reports an error for this task. Check it on the Explore page.")
@@ -230,12 +258,14 @@ def main(argv):
         print("\nNext: python scripts/appeears_request.py wait")
     elif command == "login":
         save_session(login())
+    elif command == "list":
+        list_tasks(load_session())
     elif command == "status":
-        task_status(load_session())
+        task_status(load_session(), argv[2] if len(argv) > 2 else None)
     elif command == "wait":
-        wait(load_session())
+        wait(load_session(), argv[2] if len(argv) > 2 else None)
     elif command == "download":
-        download(load_session())
+        download(load_session(), argv[2] if len(argv) > 2 else None)
     else:
         print(__doc__)
         sys.exit(0 if command == "help" else 2)

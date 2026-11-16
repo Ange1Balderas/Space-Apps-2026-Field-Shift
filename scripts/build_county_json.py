@@ -153,6 +153,10 @@ def main(argv):
     labels_check = []
     for fips in sorted(names):
         by_month = kept.get(fips, {})
+        if not by_month:
+            # No file: the app then finds no record and shows nothing for the county
+            # (SPEC.md: hide SMAP rather than show placeholders).
+            continue
         months = [
             {"year": y, "month": m, "mean": round(statistics.fmean(values), 4), "days": len(values)}
             for (y, m), values in sorted(by_month.items())
@@ -210,7 +214,7 @@ def main(argv):
         print("At a 0.43 cut-off: %d drier, %d about normal, %d wetter." % (drier, len(labels_check) - drier - wetter, wetter))
     missing = [fips for fips in names if fips not in kept]
     if missing:
-        print("No kept readings at all for %d counties: %s" % (len(missing), ", ".join(missing)))
+        print("No file written for %d counties with no kept readings: %s" % (len(missing), ", ".join(missing)))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,42 @@
+{
+  "task_type": "point",
+  "task_name": "field-shift-kansas-smap-samples",
+  "params": {
+    "dates": [
+      {
+        "startDate": "03-31-2015",
+        "endDate": "11-15-2026"
+      }
+    ],
+    "layers": [
+      {
+        "product": "SPL3SMP_E.006",
+        "layer": "Soil_Moisture_Retrieval_Data_AM_soil_moisture"
+      },
+      {
+        "product": "SPL3SMP_E.006",
+        "layer": "Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag"
+      }
+    ],
+    "coordinates": [
+      {
+        "id": "20013",
+        "category": "Brown County",
+        "latitude": 39.8264282,
+        "longitude": -95.5642196
+      },
+      {
+        "id": "20055",
+        "category": "Finney County",
+        "latitude": 38.0442685,
+        "longitude": -100.737324
+      },
+      {
+        "id": "20193",
+        "category": "Thomas County",
+        "latitude": 39.3509093,
+        "longitude": -101.0555311
+      }
+    ]
+  }
+}
