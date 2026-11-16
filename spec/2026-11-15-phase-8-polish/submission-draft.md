@@ -29,6 +29,8 @@ I built it to answer the challenge this way: it puts NASA Earth data, local soil
 - Terms: each science word has a plain-language definition and its source. You see it on hover, keyboard focus or tap.
 - About the data: every source and what the tool takes from it, how fine each source is, a satellite record compared with a gauge on the farm, two ways to measure a trend side by side, how the scores are worked out with every number the tool chose, and the glossary.
 - Vegetation from space: a switch on the map draws NASA's vegetation index (NDVI) in 16-day pictures going back to March 2000. It is a picture only. No score uses it.
+- County outlines on the map, with the chosen point's county marked.
+- Each crop's potential water demand comes with its trend since 1984, tested like the climate charts.
 - What if the rain changes? A slider scores the rotations with 30% less to 10% more rain in every month of the recent average. Only water fit changes, and the ranking says when a scenario is on.
 - Print summary: one button prints a one-page sheet for the field, with the crops grown, the soil, my priorities as I set them, my current rotation and the three best matches with their seven scores, the four climate trends and the sources. What prints is what was on screen.
 
