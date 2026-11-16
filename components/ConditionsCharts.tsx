@@ -248,9 +248,9 @@ function SeriesChart({
 	trend: TrendSummary | undefined;
 }) {
 	const headingId = useId();
-	// The Field tab stays in the page while the About tab is open, only hidden. A chart
+	// The Conditions tab stays in the page while another tab is open, only hidden. A chart
 	// cannot measure a hidden box, so it is drawn only while its tab is the one on screen.
-	const onScreen = useViewStore((state) => state.view === "field");
+	const onScreen = useViewStore((state) => state.view === "conditions");
 	const firstYear = years[0].year;
 	const lastYear = years[years.length - 1].year;
 	const points: Point[] = years.map((row) => ({ year: row.year, value: row[series.id] }));

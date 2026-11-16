@@ -12,6 +12,8 @@ Project report, 7 slides (PDF): [docs/Field-Shift-Kansas-demo-deck.pdf](docs/Fie
 
 ## What it does
 
+The panel beside the map has four tabs: Field (the crops grown and the soil), Rotations (the priorities and the ranked cards), Conditions (the climate charts and the soil moisture) and About the data. A switch in the header turns the page, and the map, dark or light; the choice is remembered on the device, and with no choice the page follows the device's setting.
+
 - Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. The map draws the 105 county outlines in thin gray, and the chosen point's county in the accent colour. "Use my location" chooses the point where the device is, once the browser allows it. A point outside the state gets a short message instead of data.
 - **Crops grown here:** the crop at that point in each of the last 8 years, read from the USDA Cropland Data Layer. Any year can be changed by hand, a changed year is marked as yours, and one button brings the detected crops back.
 - **Soil:** the soil map unit under the point from the USDA soil survey (SSURGO), with its texture, available water, organic matter, slope, erodibility by water and by wind, and hydrologic group.

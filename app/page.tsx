@@ -4,6 +4,7 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { MapView } from "@/components/MapView";
 import { PrintSummary } from "@/components/PrintSummary";
 import { SidePanel } from "@/components/SidePanel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ToneBadge } from "@/components/tone-badge";
 import { isMockMode } from "@/lib/data-mode";
 
@@ -24,6 +25,9 @@ export default function Home() {
 					{isMockMode() ? (
 						<ToneBadge tone="neutral">Mock data: cached samples only</ToneBadge>
 					) : null}
+					<span className="ml-auto">
+						<ThemeToggle />
+					</span>
 					<p className="w-full text-sm text-muted-foreground">
 						Compare crop rotations for a Kansas field using NASA Earth data, USDA
 						soil and crop data, and your own priorities.

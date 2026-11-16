@@ -4,7 +4,7 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import { LocateFixedIcon, MapPinIcon, PlusIcon } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import MapGL, {
 	Layer,
 	type MapRef,
@@ -19,7 +19,8 @@ import { VegetationControl, type VegetationStatus } from "@/components/Vegetatio
 import { COUNTIES_FILE, countyAt, loadCounties } from "@/lib/counties";
 import { selectionOf, useFieldStore } from "@/lib/field-store";
 import { KANSAS_BOUNDS } from "@/lib/kansas";
-import { tokenColor } from "@/lib/map-colors";
+import { resetTokenColors, tokenColor } from "@/lib/map-colors";
+import { useThemeStore } from "@/lib/theme-store";
 import { locationProblem, locationResult } from "@/lib/location";
 import { SAMPLE_FIELDS } from "@/lib/samples";
 import {
@@ -31,8 +32,12 @@ import {
 	vegetationTileUrl,
 } from "@/lib/vegetation";
 
-// OpenFreeMap Positron: the muted basemap SPEC.md names under "UI rules". No API key.
+// OpenFreeMap Positron: the muted basemap SPEC.md names under "UI rules". No API key. In
+// dark mode the map takes OpenFreeMap's dark style of the same data, so the page is dark
+// throughout; both have a first line layer (for the vegetation picture to go under) and a
+// first symbol layer (for the county lines to go under), read from the style when it loads.
 const BASEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+const DARK_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 
 // Space kept between Kansas and the edge of the map, in pixels.
 const FIT_OPTIONS = { padding: 24 };
@@ -93,12 +98,29 @@ export function MapView() {
 	// County outlines (SPEC.md, "UI rules": thin gray county outlines; the selected county in
 	// the accent colour). MapLibre needs plain colour strings, so the tokens are resolved once
 	// the map exists, in the browser. The lines go under the basemap's place names.
-	const [countyColors, setCountyColors] = useState<{
-		line: string;
-		selected: string;
-		casing: string;
-	} | null>(null);
+	const [mapReady, setMapReady] = useState(false);
 	const [layerAboveLines, setLayerAboveLines] = useState<string | undefined>(undefined);
+	const theme = useThemeStore((state) => state.theme);
+	// The tokens change with the theme, so the colours are read again when it changes.
+	const countyColors = useMemo(() => {
+		if (!mapReady) return null;
+		resetTokenColors();
+		return {
+			line: tokenColor("--muted-foreground"),
+			selected: tokenColor("--chart-1"),
+			casing: tokenColor("--background"),
+		};
+		// `theme` is what changes the tokens; it is read here only to recompute.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [mapReady, theme]);
+	/** The style's first line and first symbol layers, where the pictures and the lines go. */
+	const readStyleAnchors = (map: ReturnType<MapRef["getMap"]>) => {
+		const layers = map.getStyle()?.layers ?? [];
+		setLayerAbovePictures(
+			(layers.find((layer) => layer.type === "line") ?? layers.find((layer) => layer.type === "symbol"))?.id,
+		);
+		setLayerAboveLines(layers.find((layer) => layer.type === "symbol")?.id);
+	};
 
 	// NASA's vegetation layer (SPEC.md, feature 13). It is off until asked for. Before it is
 	// drawn, one tile over the middle of Kansas is asked for: if NASA cannot serve it, the
@@ -329,26 +351,19 @@ export function MapView() {
 						bounds: KANSAS_BOUNDS,
 						fitBoundsOptions: FIT_OPTIONS,
 					}}
-					mapStyle={BASEMAP_STYLE_URL}
+					mapStyle={theme === "dark" ? DARK_STYLE_URL : BASEMAP_STYLE_URL}
 					style={{ width: "100%", height: "100%" }}
 					cursor="crosshair"
+					onStyleData={(event) => {
+						// A new style (the theme changed) has its own layer names.
+						if (event.target.isStyleLoaded()) readStyleAnchors(event.target);
+					}}
 					onLoad={(event) => {
 						event.target
 							.getCanvas()
 							.setAttribute("aria-describedby", keyboardHintId);
-						const layers = event.target.getStyle().layers;
-						setLayerAbovePictures(
-							(
-								layers.find((layer) => layer.type === "line") ??
-								layers.find((layer) => layer.type === "symbol")
-							)?.id,
-						);
-						setLayerAboveLines(layers.find((layer) => layer.type === "symbol")?.id);
-						setCountyColors({
-							line: tokenColor("--muted-foreground"),
-							selected: tokenColor("--chart-1"),
-							casing: tokenColor("--background"),
-						});
+						readStyleAnchors(event.target);
+						setMapReady(true);
 						setStatus("ready");
 					}}
 					onClick={(event) => {
