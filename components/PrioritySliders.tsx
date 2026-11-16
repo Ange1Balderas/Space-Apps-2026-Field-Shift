@@ -105,6 +105,10 @@ function FarmSwitch({
 	);
 }
 
+/** Where the record (0) sits along the rain slider's track, 0 to 1. */
+const RECORD_POSITION =
+	(0 - RAIN_CHANGE_RANGE.min) / (RAIN_CHANGE_RANGE.max - RAIN_CHANGE_RANGE.min);
+
 /**
  * The rain scenario (SPEC.md, feature 15, the rainfall half), a group of its own under the
  * priorities, with its own way back to the record. The temperature half needs each day's
@@ -146,13 +150,15 @@ function RainScenario() {
 					</Button>
 				) : null}
 			</div>
-			{/* The track fills from the left end, so a tick marks where the record (0) sits. */}
+			{/* The track fills from the left end, so a tick marks where the record (0) sits. The
+			    thumb (16 px) is kept inside the track, so its centre is pulled toward the middle
+			    by half its width times how far it is from the middle; the tick follows the same rule. */}
 			<div className="relative">
 				<span
 					aria-hidden="true"
 					className="pointer-events-none absolute top-1/2 h-3.5 w-px -translate-y-1/2 bg-muted-foreground"
 					style={{
-						left: `${(100 * (0 - RAIN_CHANGE_RANGE.min)) / (RAIN_CHANGE_RANGE.max - RAIN_CHANGE_RANGE.min)}%`,
+						left: `calc(${RECORD_POSITION * 100}% + ${(0.5 - RECORD_POSITION) * 16}px)`,
 					}}
 				/>
 				<Slider
