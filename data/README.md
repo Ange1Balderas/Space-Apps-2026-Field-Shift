@@ -98,5 +98,5 @@ Added in Phase 6, on the evening of 2026-11-15, and written with AI like the res
 ## Not loaded yet
 
 - Alfalfa's stage lengths, heat-sensitive months, residue class and usual dates; everything for cover crops.
-- Four of the ten rotations in SPEC.md: corn-wheat, corn-soybean-wheat with double-crop soybean, wheat-cover crop-sorghum, and alfalfa then corn or wheat.
+- Three of the ten rotations in SPEC.md: corn-soybean-wheat with double-crop soybean, wheat-cover crop-sorghum, and alfalfa then corn or wheat. Corn-wheat (irrigated, west and central, as SPEC.md's table has it) was added on the evening of 2026-11-15 with no benefit sentence yet: SPEC.md's own reason for it, less irrigation demand from a winter crop, has no public source stored, so the card shows "Benefits (0)" rather than an unsourced claim. Its risk is the corn pollination sentence from K-State C560, the same as wheat-corn-fallow's.
 - Which rotations need no-till equipment: every rotation has `needsNoTill: false` until a source says otherwise.

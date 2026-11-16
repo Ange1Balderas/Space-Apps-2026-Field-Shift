@@ -457,7 +457,7 @@ describe("the three sample fields", () => {
 
 	it("hides a rotation that needs irrigation until the farm has it", () => {
 		const without = fieldScores(samples.thomas, false);
-		expect(without.hiddenForIrrigation.map((item) => item.id)).toEqual(["continuous-corn"]);
+		expect(without.hiddenForIrrigation.map((item) => item.id)).toEqual(["continuous-corn", "corn-wheat"]);
 		expect(without.candidates.map((score) => score.rotation.id)).not.toContain("continuous-corn");
 		expect(fieldScores(samples.thomas, true).candidates.map((score) => score.rotation.id)).toContain("continuous-corn");
 	});

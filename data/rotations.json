@@ -123,5 +123,33 @@
         "source": "K-State, The Value of Crop Residue (MF2604, October 2003), which calls soybean a low residue crop. https://bookstore.ksre.ksu.edu/download/value-of-crop-residue_MF2604 ; USDA NRCS, Nebraska Conservation Planning Sheet No. 4, Crop Residue Management (revised December 2006): residue from low residue crops provides less cover. https://www.mssoy.org/sites/default/files/documents/residue-mgmt-nrcs-2006.pdf"
       }
     ]
+  },
+  {
+    "id": "corn-wheat",
+    "name": "Corn-wheat",
+    "cycleYears": 2,
+    "plantings": [
+      {
+        "crop": "corn",
+        "plantYear": 1
+      },
+      {
+        "crop": "winter_wheat",
+        "plantYear": 1
+      }
+    ],
+    "water": "irrigated",
+    "regions": [
+      "west",
+      "central"
+    ],
+    "needsNoTill": false,
+    "benefits": [],
+    "risks": [
+      {
+        "text": "Under hot, dry conditions corn can be poorly or incompletely pollinated. K-State also puts the loss from one day of moisture stress in the week after silking at up to 8 percent of yield.",
+        "source": "K-State Corn Production Handbook (C560, September 2007). https://bookstore.ksre.ksu.edu/pubs/C560.pdf"
+      }
+    ]
   }
 ]

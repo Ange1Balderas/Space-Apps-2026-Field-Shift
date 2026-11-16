@@ -37,7 +37,7 @@ describe("the data files as committed", () => {
 		expect(Object.keys(CALENDAR).sort()).toEqual([...CROP_IDS].sort());
 	});
 
-	it("hold the six rotations Phase 3 starts with", () => {
+	it("hold the six rotations Phase 3 starts with, and corn-wheat from 2026-11-15", () => {
 		expect(ROTATIONS.map((rotation) => rotation.id)).toEqual([
 			"continuous-wheat",
 			"wheat-fallow",
@@ -45,6 +45,7 @@ describe("the data files as committed", () => {
 			"wheat-corn-fallow",
 			"continuous-corn",
 			"corn-soybean",
+			"corn-wheat",
 		]);
 	});
 
