@@ -453,7 +453,7 @@ export function toolRules(library: Library = LIBRARY): ToolRule[] {
 	return [
 		{
 			title: "Recent weather",
-			text: `Water fit and heat exposure use the average of the last ${RECENT_YEARS} full years on record, not the whole record. The penalty for rising heat is the exception: it follows the trend over the whole record.`,
+			text: `Water fit and heat exposure use the average of the last ${RECENT_YEARS} full years on record, not the whole record. Two things follow the whole record instead: the penalty for rising heat, and the trend of each crop's potential water demand on its evidence line, worked out year by year from the first year with reference evapotranspiration (1984 in NASA POWER's answers) and tested the same way as the climate charts.`,
 		},
 		{
 			title: "A crop's season",

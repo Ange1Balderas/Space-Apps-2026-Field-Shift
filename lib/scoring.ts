@@ -13,9 +13,10 @@
 // months, not a daily soil-water model; crop water demand is potential demand; one fallow
 // efficiency and one usable share of rain stand for all of Kansas.
 
-import { buildCalendar, type RotationCalendar } from "@/lib/calendar";
+import { buildCalendar, type CropSeason, type RotationCalendar } from "@/lib/calendar";
 import { seasonDemand, shareOfMonths } from "@/lib/crop-water";
 import { INDICATOR_IDS, type Library, PRIORITIES, SCORING } from "@/lib/library";
+import { analyzeTrend, type TrendSummary } from "@/lib/trends";
 import type {
 	ClimateResponse,
 	Crop,
@@ -160,10 +161,15 @@ export type IndicatorResult = {
 	why: string;
 };
 
+/** The trend of a crop's potential demand over the whole record (SPEC.md, formula 2: "plus its trend"). */
+export type DemandTrend = TrendSummary & { firstYear: number; lastYear: number; years: number };
+
 export type SeasonWater = {
 	crop: CropId;
-	/** Potential demand over the season, inches. */
+	/** Potential demand over the season, inches, on the recent average. */
 	demandIn: number;
+	/** The same demand worked out for each year on record and tested for a trend; null with too few years. */
+	demandTrend: DemandTrend | null;
 	/** Rain that falls while the crop is in the ground, inches. */
 	seasonRainIn: number;
 	/** The part of that rain counted as usable, inches. */
@@ -237,10 +243,44 @@ export function waterMode(
 	return rotation.water;
 }
 
+/**
+ * A crop's potential demand in each year on record, and its trend (SPEC.md, formula 2:
+ * "the 10-year average plus its trend"). A year counts when all twelve months have reference
+ * ET; NASA POWER's sunlight, and so its reference ET, starts in 1984. A winter crop's season
+ * is read against one calendar year's twelve months, as the recent average is, so the
+ * series is comparable year to year rather than season to season.
+ */
+export function demandTrend(
+	season: Pick<CropSeason, "startDay" | "lengthDays">,
+	crop: Pick<Crop, "kc" | "stageDays">,
+	climate: Pick<ClimateResponse, "monthlyByYear">,
+): DemandTrend | null {
+	const byYear = new Map<number, number[]>();
+	for (const row of climate.monthlyByYear) {
+		if (!Number.isFinite(row.et0In) || row.et0In <= 0) continue;
+		const months = byYear.get(row.year) ?? new Array<number>(12).fill(Number.NaN);
+		months[row.month - 1] = row.et0In;
+		byYear.set(row.year, months);
+	}
+	const years: number[] = [];
+	const values: number[] = [];
+	for (const [year, months] of [...byYear].sort((a, b) => a[0] - b[0])) {
+		if (months.some((value) => !Number.isFinite(value))) continue;
+		const demand = seasonDemand(season, crop, months);
+		if (demand === null) return null;
+		years.push(year);
+		values.push(demand);
+	}
+	const trend = analyzeTrend(years, values);
+	if (!trend) return null;
+	return { ...trend, firstYear: years[0], lastYear: years[years.length - 1], years: years.length };
+}
+
 function scoreWater(
 	rotation: Rotation,
 	calendar: RotationCalendar,
 	recent: RecentClimate | null,
+	climate: Pick<ClimateResponse, "monthlyByYear">,
 	soil: SoilResponse | null,
 	library: Library,
 	constraints: Constraints,
@@ -275,6 +315,7 @@ function scoreWater(
 		seasons.push({
 			crop: season.crop,
 			demandIn,
+			demandTrend: crop ? demandTrend(season, crop, climate) : null,
 			seasonRainIn,
 			effectiveRainIn,
 			bareRainIn,
@@ -552,7 +593,7 @@ export function scoreRotation(
 	const calendar = buildCalendar(rotation, library, unknownYears);
 	const recent = recentClimate(field.climate);
 	const knownYears = rotation.cycleYears - unknownYears.length;
-	const water = scoreWater(rotation, calendar, recent, field.soil, library, constraints, knownYears);
+	const water = scoreWater(rotation, calendar, recent, field.climate, field.soil, library, constraints, knownYears);
 	const heat = scoreHeat(calendar, recent, field.climate, library);
 	const region = regionFor(annualRainIn(field.climate), library.scoring.regionRainBandsIn);
 	return {

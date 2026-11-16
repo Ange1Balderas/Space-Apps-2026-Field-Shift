@@ -151,7 +151,9 @@ describe("computedAdvantages", () => {
 describe("the card lines for wheat-fallow at the Finney County sample", () => {
 	it("give the numbers behind the scores, each with where it comes from", () => {
 		const lines = evidenceLines(wheatFallow, LIBRARY);
-		expect(lines[0].text).toMatch(/^Winter wheat: potential water demand \d+\.\d in\. Rain in its season \d+\.\d in/);
+		expect(lines[0].text).toMatch(
+			/^Winter wheat: potential water demand \d+\.\d in\. Since \d{4}: (likely trend|possible trend|no clear trend), .* per decade \(Mann-Kendall p = .*, \d+ years\)\. Rain in its season \d+\.\d in/,
+		);
 		expect(lines[0].source).toMatch(/NASA POWER/);
 		expect(lines.some((line) => /days a year at or above 95°F in June/.test(line.text))).toBe(true);
 		expect(lines[lines.length - 1].text).toBe("The field is bare in 15 of the cycle's 24 months.");

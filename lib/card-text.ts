@@ -7,6 +7,20 @@
 import type { Library } from "@/lib/library";
 import { INDICATOR_IDS } from "@/lib/library";
 import { describeRainChange, type RotationScore } from "@/lib/scoring";
+import {
+	describeChange,
+	formatPValue,
+	type SeriesWords,
+	TREND_LABEL_TEXT,
+} from "@/lib/trend-text";
+
+/** Words for the trend of a crop's potential water demand. */
+const DEMAND_WORDS: SeriesWords = {
+	singular: "inch of demand",
+	plural: "inches of demand",
+	rise: "more",
+	fall: "less",
+};
 import type { ClimateResponse, CropId, IndicatorId, Priority } from "@/lib/types";
 
 export const INDICATOR_LABELS: Record<IndicatorId, string> = {
@@ -85,9 +99,13 @@ export function evidenceLines(
 	for (const season of score.water?.seasons ?? []) {
 		if (seen.has(season.crop)) continue;
 		seen.add(season.crop);
+		const trend = season.demandTrend;
+		const demandTrendWords = trend
+			? ` Since ${trend.firstYear}: ${TREND_LABEL_TEXT[trend.label].toLowerCase()}, ${describeChange(trend.perDecade, DEMAND_WORDS)} (Mann-Kendall ${formatPValue(trend.pValue)}, ${trend.years} years).`
+			: "";
 		lines.push({
 			text:
-				`${cropName(library, season.crop)}: potential water demand ${one(season.demandIn)} in. ` +
+				`${cropName(library, season.crop)}: potential water demand ${one(season.demandIn)} in.${demandTrendWords} ` +
 				`Rain in its season ${one(season.seasonRainIn)} in, of which ${one(season.effectiveRainIn)} in is counted as usable; ` +
 				`${one(season.storedIn)} in stored from ${one(season.bareRainIn)} in of rain on the bare field before planting` +
 				`${season.storedCapped ? " (limited by what this soil can hold)" : ""}${scenario}.`,
