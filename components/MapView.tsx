@@ -33,11 +33,12 @@ import {
 } from "@/lib/vegetation";
 
 // OpenFreeMap Positron: the muted basemap SPEC.md names under "UI rules". No API key. In
-// dark mode the map takes OpenFreeMap's dark style of the same data, so the page is dark
-// throughout; both have a first line layer (for the vegetation picture to go under) and a
-// first symbol layer (for the county lines to go under), read from the style when it loads.
+// dark mode the map takes OpenFreeMap's Fiord style of the same data, a muted blue-grey
+// (Angel found the near-black "dark" style too dark, 2026-11-15); both have a first line
+// layer (for the vegetation picture to go under) and a first symbol layer (for the county
+// lines to go under), read from whichever style is loaded.
 const BASEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
-const DARK_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+const DARK_STYLE_URL = "https://tiles.openfreemap.org/styles/fiord";
 
 // Space kept between Kansas and the edge of the map, in pixels.
 const FIT_OPTIONS = { padding: 24 };
@@ -355,8 +356,10 @@ export function MapView() {
 					style={{ width: "100%", height: "100%" }}
 					cursor="crosshair"
 					onStyleData={(event) => {
-						// A new style (the theme changed) has its own layer names.
-						if (event.target.isStyleLoaded()) readStyleAnchors(event.target);
+						// A new style (the theme changed) has its own layer names. They are read as
+						// soon as the style is parsed: the county and vegetation layers are added
+						// again right after, and need a layer that exists to go under.
+						if (event.dataType === "style") readStyleAnchors(event.target);
 					}}
 					onLoad={(event) => {
 						event.target
