@@ -15,3 +15,13 @@ Date: 2026-11-15. Normal mode, unattended. Nothing is pushed.
 ## Left for Angel
 
 Recorded in `implementation.md` with the reason for each: the scenario slider, the LLM summary, the county yields, the unnumbered stretch items.
+
+## The printable summary (feature 18), added the evening of 2026-11-15
+
+Angel's choice, while NASA's AppEEARS queue held the Phase 6 request. SPEC.md: "One-page print view of the field, conditions and top rotations."
+
+1. Move the scoring that `components/RotationRanking.tsx` did in `useMemo` into one hook, `lib/use-ranking.ts`, so the page on paper and the cards on screen come from the same ranking.
+2. `components/PrintSummary.tsx`: a print-only element in `app/page.tsx` (`hidden print:block`, the app root `print:hidden`). The field and its point; the eight crop years, with the farmer's corrections marked; the soil map unit and its seven values; the four priorities and the irrigation switch; the field's own rotation and the three best matches in one table of their total and seven scores, with why the best is suggested and how many more were scored; the four climate series as a table of average, trend label and the trend sentence; the county's soil moisture when the app has it; the disclaimer, the sources and the AI note. Text and tables only, no charts, sized to fit one letter page with half-inch margins.
+3. A "Print summary" button beside "Back to the map" in the Field panel, calling the browser's print dialog.
+4. `app/globals.css`: `@page` margins and `html, body { height: auto }` on paper, so the viewport-height layout does not clip the page.
+5. Typecheck, lint, tests, build; force the summary visible in the browser pane to read it and measure its height; a review workflow (UI, wording and facts, the refactor) with every finding put to two refuters.

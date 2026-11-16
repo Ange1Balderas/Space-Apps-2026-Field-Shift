@@ -117,3 +117,22 @@ The results below are from before the second UI review, except where a later sec
 | More rotations | Three of the candidates need a decision or a new sourced value each. The fourth, corn-wheat, would reshuffle rankings Angel has already reviewed. |
 
 "Cut whatever is not done by noon Sunday" (SPEC.md): by that rule the first three rows are cut unless Angel decides otherwise in the morning.
+
+---
+
+# The printable summary (feature 18): implementation, the evening of 2026-11-15
+
+Built at Angel's request while the Phase 6 AppEEARS request sat in NASA's queue. Angel present; nothing pushed by Claude.
+
+## What was built
+
+- **`lib/use-ranking.ts`** (new): `useFieldRanking(climate, history, soil, cropEdits)`, the scoring and ranking that `components/RotationRanking.tsx` used to do inline: the farmer's priorities and switches from their store, the field's own rotation from the detected years and the corrections, `scoreField` once per field and switch, `rank` on every slider move, and the climate windows. `RotationRanking` now calls it; its own code is otherwise unchanged. While the crop history is still loading the hook works nothing out: the cards show a skeleton then anyway, and it keeps `new Date()` out of the server prerender of the printable summary, which Next.js (cache components) refuses in a client component. That refusal showed in the dev log on the first run and the production build; moving the call behind the loading check cleared it.
+- **`components/PrintSummary.tsx`** (new): the page on paper, `hidden` on screen and `print:block` on paper, rendered from `app/page.tsx` beside the app, whose root is `print:hidden`. Everything on it is computed from the same stores and the same hook as the panel, so it prints what was on screen: the field name and point, the county when known; the disclaimer sentence (CLAUDE.md rule 9); the crop years with "(yours)" on corrected ones; the soil map unit and its values, "not sourced yet" where a value is null; the four priorities and whether the irrigation switch was on; the own rotation and the three best matches as one table (total and seven scores, "—" for a score that could not be worked out, the best marked, the own rotation's left-out years noted), the "why suggested" sentence of the best, and how many more rotations were scored and left off; the four climate series as a table of long-term average, trend label and the same trend sentence the charts show; the county's SMAP status when the app has it; a footer with the sources used on the page, the scoring caveat, the AI note and "Check with your local K-State extension agent". No chart is printed. Each state the panel can be in has its sentence: climate still loading, climate failed (no scores), soil failed, crop history failed with no years filled in.
+- **`components/FieldPanel.tsx`**: a "Print summary" button with a printer icon beside "Back to the map", shown once a field is selected; it calls `window.print()`.
+- **`app/globals.css`**: `@media print { @page { margin: 0.5in } html, body { height: auto; overflow: visible } }`.
+
+## Verified
+
+- `npm run typecheck`, `npm run lint`, `npm run test` (437): clean. `npm run build`: see the last line of this section.
+- In the app's browser pane on the dev server, Finney County sample: the "Print summary" button is in the panel; the summary element is in the page and hidden. Forced visible by script at 720 px wide (a letter page inside half-inch margins at 96 dpi), it read correctly from top to bottom (crops, soil, priorities, the four-row rotation table with the same scores as the cards, the conditions table with the same averages and trend sentences as the charts) and measured 748 px tall, under the 960 px of a 10 in page, with the soil moisture row absent because no county file is built yet. The print dialog itself cannot be opened from the pane; the layout on paper rests on Tailwind's `print:` variant and the measurement above.
+- The review workflow's findings and what was done with them follow in the next section once it has run.

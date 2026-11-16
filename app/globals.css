@@ -283,3 +283,16 @@ code {
     scroll-behavior: auto !important;
   }
 }
+/* On paper (SPEC.md, feature 18): the app is hidden by its own `print:hidden`, and the
+   printable summary (components/PrintSummary.tsx) is the page. The overflow reset is a
+   safety net: `body` hides sideways overflow on screen, and the app root is viewport-high. */
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+
+  html,
+  body {
+    overflow: visible;
+  }
+}

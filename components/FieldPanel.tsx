@@ -10,7 +10,7 @@
 // retry on their own.
 
 import { motion } from "framer-motion";
-import { MapPinIcon } from "lucide-react";
+import { MapPinIcon, PrinterIcon } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
 import { ConditionsCharts } from "@/components/ConditionsCharts";
 import { FieldSummary } from "@/components/FieldSummary";
@@ -181,11 +181,23 @@ export function FieldPanel() {
 			</p>
 
 			{selection ? (
-				<p className="mb-3 lg:hidden">
-					<Button asChild variant="outline" size="sm" className="h-10">
+				<div className="mb-3 flex flex-wrap gap-2">
+					<Button asChild variant="outline" size="sm" className="h-10 lg:hidden">
 						<a href="#map">Back to the map</a>
 					</Button>
-				</p>
+					{/* Feature 18: the browser's print dialog prints the one-page summary
+					    (components/PrintSummary.tsx) in place of the app. */}
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						className="h-10"
+						onClick={() => window.print()}
+					>
+						<PrinterIcon aria-hidden="true" />
+						Print summary
+					</Button>
+				</div>
 			) : null}
 
 			{/* The key restarts the short fade whenever the state or the place changes. */}

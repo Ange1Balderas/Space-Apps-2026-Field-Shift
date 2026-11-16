@@ -9,27 +9,20 @@
 // once.
 
 import { motion, useReducedMotion } from "framer-motion";
-import { type ReactNode, useMemo } from "react";
+import type { ReactNode } from "react";
 import { GlossedText, Term } from "@/components/Glossary";
 import { PrioritySliders } from "@/components/PrioritySliders";
 import { RotationCard } from "@/components/RotationCard";
 import { SourceBadge } from "@/components/SourceBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { whySuggested } from "@/lib/card-text";
-import { climateWindows } from "@/lib/climate-windows";
-import { type ExistingRotation, existingRotation } from "@/lib/existing-rotation";
+import type { ExistingRotation } from "@/lib/existing-rotation";
 import type { Loadable } from "@/lib/field-store";
 import { LIBRARY } from "@/lib/library";
 import { transitionBase } from "@/lib/motion";
-import { usePrioritiesStore } from "@/lib/priorities-store";
-import { cropLabel, rotationYears } from "@/lib/rotation-edit";
-import {
-	annualRainIn,
-	type RankedRotation,
-	rank,
-	recentClimate,
-	scoreField,
-} from "@/lib/scoring";
+import { cropLabel } from "@/lib/rotation-edit";
+import { annualRainIn, type RankedRotation, recentClimate } from "@/lib/scoring";
+import { useFieldRanking } from "@/lib/use-ranking";
 import type {
 	ClimateResponse,
 	HistoryResponse,
@@ -107,43 +100,13 @@ export function RotationRanking({
 	soil: Loadable<SoilResponse>;
 	cropEdits: Readonly<Record<number, number>>;
 }) {
-	const priorities = usePrioritiesStore((state) => state.priorities);
-	const constraints = usePrioritiesStore((state) => state.constraints);
 	const reducedMotion = useReducedMotion();
-
-	const climateData = climate.status === "ready" ? climate.data : null;
-	const soilData = soil.status === "ready" ? soil.data : null;
-	const historyData = history.status === "ready" ? history.data : null;
-
-	// The field's own rotation, from the detected years and the farmer's corrections.
-	const own = useMemo(
-		() =>
-			existingRotation(
-				rotationYears(historyData, cropEdits, new Date().getFullYear()),
-			),
-		[historyData, cropEdits],
-	);
-
-	// Scored once per field and per switch. A slider move only changes the weights below.
-	const scores = useMemo(
-		() =>
-			climateData
-				? scoreField(
-						{ climate: climateData, soil: soilData },
-						LIBRARY,
-						constraints,
-						own,
-					)
-				: null,
-		[climateData, soilData, own, constraints],
-	);
-	const ranking = useMemo(
-		() => (scores ? rank(scores, priorities, LIBRARY.scoring) : null),
-		[scores, priorities],
-	);
-	const windows = useMemo(
-		() => (climateData ? climateWindows(climateData) : null),
-		[climateData],
+	// The same scoring the printable summary uses (lib/use-ranking.ts).
+	const { constraints, climateData, soilData, own, ranking, windows } = useFieldRanking(
+		climate,
+		history,
+		soil,
+		cropEdits,
 	);
 
 	const waiting =
