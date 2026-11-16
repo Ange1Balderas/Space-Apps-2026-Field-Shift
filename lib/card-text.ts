@@ -6,7 +6,7 @@
 
 import type { Library } from "@/lib/library";
 import { INDICATOR_IDS } from "@/lib/library";
-import type { RotationScore } from "@/lib/scoring";
+import { describeRainChange, type RotationScore } from "@/lib/scoring";
 import type { ClimateResponse, CropId, IndicatorId, Priority } from "@/lib/types";
 
 export const INDICATOR_LABELS: Record<IndicatorId, string> = {
@@ -74,6 +74,14 @@ export function evidenceLines(
 ): CardLine[] {
 	const lines: CardLine[] = [];
 	const seen = new Set<CropId>();
+	// With a rain scenario on, the rain figures are the scenario's, not the record's, and the
+	// line and its source say so. The demand figure comes from evaporative demand, left as recorded.
+	const pct = score.water?.rainChangePct ?? 0;
+	const scenario = pct !== 0 ? ` (rain at ${describeRainChange(pct)}: your scenario, not the record)` : "";
+	const waterSource =
+		pct !== 0
+			? "NASA POWER rain scaled by your scenario, NASA POWER weather, FAO-56 method and crop coefficients"
+			: "NASA POWER rain and weather, FAO-56 method and crop coefficients";
 	for (const season of score.water?.seasons ?? []) {
 		if (seen.has(season.crop)) continue;
 		seen.add(season.crop);
@@ -82,14 +90,14 @@ export function evidenceLines(
 				`${cropName(library, season.crop)}: potential water demand ${one(season.demandIn)} in. ` +
 				`Rain in its season ${one(season.seasonRainIn)} in, of which ${one(season.effectiveRainIn)} in is counted as usable; ` +
 				`${one(season.storedIn)} in stored from ${one(season.bareRainIn)} in of rain on the bare field before planting` +
-				`${season.storedCapped ? " (limited by what this soil can hold)" : ""}.`,
-			source: "NASA POWER rain and weather, FAO-56 method and crop coefficients",
+				`${season.storedCapped ? " (limited by what this soil can hold)" : ""}${scenario}.`,
+			source: waterSource,
 		});
 	}
 	if (score.water?.irrigationNeedIn != null) {
 		lines.push({
-			text: `Irrigation needed to close the gap: about ${one(score.water.irrigationNeedIn)} in a year, averaged over the cycle.`,
-			source: "NASA POWER rain and weather, FAO-56 method and crop coefficients",
+			text: `Irrigation needed to close the gap: about ${one(score.water.irrigationNeedIn)} in a year, averaged over the cycle${scenario}.`,
+			source: waterSource,
 		});
 	}
 	const heatSeen = new Set<CropId>();

@@ -1,12 +1,16 @@
 // AI-assisted: written with Claude, reviewed by Angel Balderas.
 
 import { describe, expect, it } from "vitest";
+import { evidenceLines } from "@/lib/card-text";
 import { LIBRARY } from "@/lib/library";
 import {
 	DEFAULT_CONSTRAINTS,
+	describeRainChange,
 	RAIN_CHANGE_RANGE,
+	rainChangeOf,
 	rainFactor,
 	scoreRotation,
+	signedPercent,
 } from "@/lib/scoring";
 import type { ClimateResponse, SoilResponse } from "@/lib/types";
 import finney from "@/public/data/samples/finney.json";
@@ -50,5 +54,30 @@ describe("the rain scenario", () => {
 		expect(dry.water?.seasons[0].seasonRainIn).toBeCloseTo(
 			(base.water?.seasons[0].seasonRainIn ?? 0) * 0.7,
 		);
+	});
+
+	it("names the scenario wherever a scaled number is shown, and nowhere when it is off", () => {
+		const base = scoreRotation(wheat, field, LIBRARY);
+		const dry = scoreRotation(wheat, field, LIBRARY, { ...DEFAULT_CONSTRAINTS, rainChangePct: -20 });
+		expect(base.water?.rainChangePct).toBe(0);
+		expect(dry.water?.rainChangePct).toBe(-20);
+		expect(dry.indicators.waterFit.why).toContain("20% less rain (your scenario)");
+		expect(base.indicators.waterFit.why).not.toContain("scenario");
+		const dryLines = evidenceLines(dry, LIBRARY);
+		expect(dryLines[0].text).toContain("your scenario, not the record");
+		expect(dryLines[0].source).toContain("scaled by your scenario");
+		const baseLines = evidenceLines(base, LIBRARY);
+		expect(baseLines[0].text).not.toContain("scenario");
+		expect(baseLines[0].source).toBe("NASA POWER rain and weather, FAO-56 method and crop coefficients");
+	});
+
+	it("writes the words for a scenario", () => {
+		expect(describeRainChange(0)).toBe("the rain as recorded");
+		expect(describeRainChange(-20)).toBe("20% less rain");
+		expect(describeRainChange(10)).toBe("10% more rain");
+		expect(signedPercent(-30)).toBe("−30%");
+		expect(signedPercent(10)).toBe("+10%");
+		expect(rainChangeOf({})).toBe(0);
+		expect(rainChangeOf({ rainChangePct: -45 })).toBe(-30);
 	});
 });

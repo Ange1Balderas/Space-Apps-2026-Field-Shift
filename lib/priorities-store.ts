@@ -2,8 +2,10 @@
 
 "use client";
 
-// The farmer's four priorities and what they have told the tool about the farm. Both belong
-// to the farmer, not to one field, so they stay as they are when another field is picked.
+// The farmer's four priorities, what they have told the tool about the farm, and the rain
+// scenario they are trying. All belong to the farmer, not to one field, so they stay as they
+// are when another field is picked: a what-if set once can be compared across fields, and the
+// ranking says in its own words when the scenario is on.
 
 import { create } from "zustand";
 import {
@@ -36,12 +38,8 @@ export const usePrioritiesStore = create<PrioritiesStore>()((set) => ({
 				[priority]: Math.min(100, Math.max(0, value)),
 			},
 		})),
-	// Reset puts the sliders back, and the rain back to the record; the farm switches stay.
-	resetPriorities: () =>
-		set((state) => ({
-			priorities: DEFAULT_PRIORITIES,
-			constraints: { ...state.constraints, rainChangePct: 0 },
-		})),
+	// Reset puts the four sliders back; the farm switches and the rain scenario have their own controls.
+	resetPriorities: () => set({ priorities: DEFAULT_PRIORITIES }),
 	constraints: DEFAULT_CONSTRAINTS,
 	setConstraint: (name, value) =>
 		set((state) => ({ constraints: { ...state.constraints, [name]: value } })),

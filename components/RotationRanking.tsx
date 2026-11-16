@@ -11,7 +11,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { GlossedText, Term } from "@/components/Glossary";
-import { describeRainChange, PrioritySliders } from "@/components/PrioritySliders";
+import { PrioritySliders } from "@/components/PrioritySliders";
 import { RotationCard } from "@/components/RotationCard";
 import { SourceBadge } from "@/components/SourceBadge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +21,13 @@ import type { Loadable } from "@/lib/field-store";
 import { LIBRARY } from "@/lib/library";
 import { transitionBase } from "@/lib/motion";
 import { cropLabel } from "@/lib/rotation-edit";
-import { annualRainIn, type RankedRotation, recentClimate } from "@/lib/scoring";
+import {
+	annualRainIn,
+	describeRainChange,
+	rainChangeOf,
+	type RankedRotation,
+	recentClimate,
+} from "@/lib/scoring";
 import { useFieldRanking } from "@/lib/use-ranking";
 import type {
 	ClimateResponse,
@@ -185,11 +191,7 @@ export function RotationRanking({
 								{yearlyRain !== null && regionName
 									? `About ${Math.round(yearlyRain)} in of rain a year here, which the tool counts as ${regionName} Kansas. `
 									: ""}
-								Scores use the weather of {recent.firstYear} to {recent.lastYear}
-								{(constraints.rainChangePct ?? 0) !== 0
-									? `, with ${describeRainChange(constraints.rainChangePct ?? 0)} in every month: your scenario, not the record`
-									: ""}
-								.
+								Scores use the weather of {recent.firstYear} to {recent.lastYear}.
 							</p>
 							<div className="flex flex-wrap gap-1.5">
 								<SourceBadge source="NASA POWER" />
@@ -201,6 +203,14 @@ export function RotationRanking({
 							published crop values. It is not a forecast of yield or price, and
 							it is yours to weigh against what you know of the field.
 						</p>
+
+						{rainChangeOf(constraints) !== 0 ? (
+							// Plainly visible whenever the scenario is on: these scores are not the record.
+							<p role="status" className="text-sm font-medium">
+								Scenario on: {describeRainChange(rainChangeOf(constraints))} in every month.
+								These scores are a what-if, not the record.
+							</p>
+						) : null}
 
 						{addedByIrrigation.length > 0 ? (
 							<p className="text-xs text-muted-foreground">

@@ -53,10 +53,26 @@ export const DEFAULT_CONSTRAINTS: Constraints = {
 /** The rain scenario's range, in percent (SPEC.md: "Rainfall -30% to +10%"). */
 export const RAIN_CHANGE_RANGE = { min: -30, max: 10, step: 5 } as const;
 
+/** The scenario's percent change, clamped to the range; 0 is the record. */
+export function rainChangeOf(constraints: Pick<Constraints, "rainChangePct">): number {
+	const pct = constraints.rainChangePct ?? 0;
+	return Math.min(RAIN_CHANGE_RANGE.max, Math.max(RAIN_CHANGE_RANGE.min, pct));
+}
+
 /** The factor the scenario applies to every month's rain: 0.7 for -30, 1 for the record. */
 export function rainFactor(constraints: Pick<Constraints, "rainChangePct">): number {
-	const pct = constraints.rainChangePct ?? 0;
-	return 1 + Math.min(RAIN_CHANGE_RANGE.max, Math.max(RAIN_CHANGE_RANGE.min, pct)) / 100;
+	return 1 + rainChangeOf(constraints) / 100;
+}
+
+/** The words for a rain scenario: "20% less rain", "10% more rain", "the rain as recorded". */
+export function describeRainChange(pct: number): string {
+	if (pct === 0) return "the rain as recorded";
+	return `${Math.abs(pct)}% ${pct < 0 ? "less" : "more"} rain`;
+}
+
+/** A percent with its sign, with a real minus sign: "−30%", "+10%", "0%". */
+export function signedPercent(pct: number): string {
+	return pct === 0 ? "0%" : `${pct < 0 ? "−" : "+"}${Math.abs(pct)}%`;
 }
 
 /** The four sliders, each 0 to 100. */
@@ -159,6 +175,8 @@ export type WaterDetail = {
 	seasons: SeasonWater[];
 	/** Inches a year, averaged over the cycle. Set for an irrigated rotation. */
 	irrigationNeedIn: number | null;
+	/** The rain scenario the seasons' rain was scaled by, in percent; 0 is the record. */
+	rainChangePct: number;
 };
 
 export type HeatDetail = { crop: CropId; months: number[]; hotDaysPerMonth: number };
@@ -266,7 +284,9 @@ function scoreWater(
 		);
 	}
 	const left = skipped.length > 0 ? ` Not counted: ${skipped.join(", ")} (not sourced yet).` : "";
-	const period = `${recent.firstYear} to ${recent.lastYear}`;
+	const pct = rainChangeOf(constraints);
+	// The "why" names the scenario, so the sentence is never a false claim about the record.
+	const period = `${recent.firstYear} to ${recent.lastYear}${pct !== 0 ? ` weather with ${describeRainChange(pct)} (your scenario)` : ""}`;
 	// What the rotation would score on rain alone: the share of each crop's potential demand
 	// that rain and stored soil water cover, averaged over its crops.
 	const onRain =
@@ -292,12 +312,12 @@ function scoreWater(
 				score: Math.min(pumping, onRain),
 				why: `Irrigating it would take about ${one(irrigationNeedIn)} in a year, which scores ${Math.round(pumping)} against a cap of ${scoring.irrigationNeedCapIn} in. ${coverage} The score is the lower of the two.${left}`,
 			},
-			detail: { mode, seasons, irrigationNeedIn },
+			detail: { mode, seasons, irrigationNeedIn, rainChangePct: pct },
 		};
 	}
 	return {
 		result: { score: onRain, why: `${coverage}${left}` },
-		detail: { mode, seasons, irrigationNeedIn: null },
+		detail: { mode, seasons, irrigationNeedIn: null, rainChangePct: pct },
 	};
 }
 

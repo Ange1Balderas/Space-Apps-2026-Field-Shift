@@ -136,7 +136,7 @@ describe("computedAdvantages", () => {
 			({
 				...own,
 				calendar: { ...own.calendar, bareShare: null },
-				water: { mode: "irrigated", seasons: [], irrigationNeedIn: inches },
+				water: { mode: "irrigated", seasons: [], irrigationNeedIn: inches, rainChangePct: 0 },
 			}) as typeof own;
 		expect(computedAdvantages(need(12.3), need(20.7))).toEqual([
 			{

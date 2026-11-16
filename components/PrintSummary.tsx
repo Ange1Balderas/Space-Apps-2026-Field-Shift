@@ -16,7 +16,6 @@
 // with the footer. CSS pixels print at 96 to the inch, so 12 px is 9 pt and 11 px is 8.25 pt.
 
 import type { ReactNode } from "react";
-import { describeRainChange } from "@/components/PrioritySliders";
 import { INDICATOR_LABELS, PRIORITY_LABELS, whySuggested } from "@/lib/card-text";
 import { useFieldStore } from "@/lib/field-store";
 import { FREEZE_F, GROWING_SEASON, HOT_DAY_F } from "@/lib/indicators";
@@ -28,7 +27,13 @@ import {
 	moistureLabel,
 } from "@/lib/moisture";
 import { cropLabel, rotationYears } from "@/lib/rotation-edit";
-import { annualRainIn, type RankedRotation, recentClimate } from "@/lib/scoring";
+import {
+	annualRainIn,
+	describeRainChange,
+	rainChangeOf,
+	type RankedRotation,
+	recentClimate,
+} from "@/lib/scoring";
 import {
 	describeTrend,
 	FREEZE_DATE_WORDS,
@@ -263,8 +268,8 @@ export function PrintSummary() {
 				{constraints.irrigationAvailable
 					? "This field can be irrigated."
 					: "Scored as dryland: the irrigation switch was off."}
-				{(constraints.rainChangePct ?? 0) !== 0
-					? ` Rain scenario: ${describeRainChange(constraints.rainChangePct ?? 0)} in every month, your scenario rather than the record; only water fit changes.`
+				{rainChangeOf(constraints) !== 0
+					? ` Rain scenario: ${describeRainChange(rainChangeOf(constraints))} in every month, a what-if rather than the record; only water fit changes.`
 					: ""}
 			</p>
 
@@ -286,9 +291,12 @@ export function PrintSummary() {
 						{yearlyRain !== null && regionName
 							? `About ${Math.round(yearlyRain)} in of rain a year here, which the tool counts as ${regionName} Kansas. `
 							: ""}
-						Scores use the weather of {recent.firstYear} to {recent.lastYear}. Each score
-						runs from 0 to 100 and compares rotations with each other; it is not a forecast
-						of yield or price.
+						Scores use the weather of {recent.firstYear} to {recent.lastYear}
+						{rainChangeOf(constraints) !== 0
+							? `, with ${describeRainChange(rainChangeOf(constraints))} in every month: a what-if, not the record`
+							: ""}
+						. Each score runs from 0 to 100 and compares rotations with each other; it is
+						not a forecast of yield or price.
 					</p>
 					{rows.length === 0 ? (
 						<p>No rotation could be scored for this field.</p>
