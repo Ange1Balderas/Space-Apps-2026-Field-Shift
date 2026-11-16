@@ -100,7 +100,9 @@ export function MapView() {
 	// the accent colour). MapLibre needs plain colour strings, so the tokens are resolved once
 	// the map exists, in the browser. The lines go under the basemap's place names.
 	const [mapReady, setMapReady] = useState(false);
-	const [layerAboveLines, setLayerAboveLines] = useState<string | undefined>(undefined);
+	// The basemap layers the pictures and the county lines go under, with the style they belong
+	// to: an anchor from another style is not used (see `linesAnchor` below).
+	const [anchors, setAnchors] = useState<{ styleUrl: string; pictures?: string; lines?: string } | null>(null);
 	const theme = useThemeStore((state) => state.theme);
 	// The tokens change with the theme, so the colours are read again when it changes.
 	const countyColors = useMemo(() => {
@@ -115,12 +117,13 @@ export function MapView() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [mapReady, theme]);
 	/** The style's first line and first symbol layers, where the pictures and the lines go. */
-	const readStyleAnchors = (map: ReturnType<MapRef["getMap"]>) => {
+	const readStyleAnchors = (map: ReturnType<MapRef["getMap"]>, styleUrl: string) => {
 		const layers = map.getStyle()?.layers ?? [];
-		setLayerAbovePictures(
-			(layers.find((layer) => layer.type === "line") ?? layers.find((layer) => layer.type === "symbol"))?.id,
-		);
-		setLayerAboveLines(layers.find((layer) => layer.type === "symbol")?.id);
+		setAnchors({
+			styleUrl,
+			pictures: (layers.find((layer) => layer.type === "line") ?? layers.find((layer) => layer.type === "symbol"))?.id,
+			lines: layers.find((layer) => layer.type === "symbol")?.id,
+		});
 	};
 
 	// NASA's vegetation layer (SPEC.md, feature 13). It is off until asked for. Before it is
@@ -138,7 +141,6 @@ export function MapView() {
 	} | null>(null);
 	// The basemap layer the pictures go under: its first line layer, so rivers, roads, county
 	// lines and place names stay on top of the picture and only the plain ground is covered.
-	const [layerAbovePictures, setLayerAbovePictures] = useState<string | undefined>(undefined);
 	// The question (day and try) for which the map reported a tile it could not load.
 	const [vegetationGaps, setVegetationGaps] = useState<string | null>(null);
 	const vegetationAsk = `${vegetationDay}:${vegetationTry}`;
@@ -223,6 +225,15 @@ export function MapView() {
 			{ enableHighAccuracy: false, timeout: 15_000, maximumAge: 3_600_000 },
 		);
 	};
+
+	// With NASA's picture on, the map keeps the light basemap whatever the theme: the dark
+	// style's black roads and labels over the green picture were unreadable (Angel, 2026-11-15).
+	const mapStyleUrl = vegetationOn || theme !== "dark" ? BASEMAP_STYLE_URL : DARK_STYLE_URL;
+	// An anchor is used only while it belongs to the style the map is asked for now. During a
+	// style change the old names are gone, so the layers are added on top and moved under the
+	// labels once the new style's names have been read; they are never left unplaced.
+	const picturesAnchor = anchors?.styleUrl === mapStyleUrl ? anchors.pictures : undefined;
+	const linesAnchor = anchors?.styleUrl === mapStyleUrl ? anchors.lines : undefined;
 
 	return (
 		<section
@@ -352,20 +363,20 @@ export function MapView() {
 						bounds: KANSAS_BOUNDS,
 						fitBoundsOptions: FIT_OPTIONS,
 					}}
-					mapStyle={theme === "dark" ? DARK_STYLE_URL : BASEMAP_STYLE_URL}
+					mapStyle={mapStyleUrl}
 					style={{ width: "100%", height: "100%" }}
 					cursor="crosshair"
 					onStyleData={(event) => {
 						// A new style (the theme changed) has its own layer names. They are read as
 						// soon as the style is parsed: the county and vegetation layers are added
 						// again right after, and need a layer that exists to go under.
-						if (event.dataType === "style") readStyleAnchors(event.target);
+						if (event.dataType === "style") readStyleAnchors(event.target, mapStyleUrl);
 					}}
 					onLoad={(event) => {
 						event.target
 							.getCanvas()
 							.setAttribute("aria-describedby", keyboardHintId);
-						readStyleAnchors(event.target);
+						readStyleAnchors(event.target, mapStyleUrl);
 						setMapReady(true);
 						setStatus("ready");
 					}}
@@ -413,7 +424,7 @@ export function MapView() {
 							<Layer
 								id="county-outlines"
 								type="line"
-								beforeId={layerAboveLines}
+								beforeId={linesAnchor}
 								paint={{
 									"line-color": countyColors.line,
 									"line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 9, 1.2],
@@ -424,7 +435,7 @@ export function MapView() {
 							<Layer
 								id="county-selected-casing"
 								type="line"
-								beforeId={layerAboveLines}
+								beforeId={linesAnchor}
 								filter={["==", ["get", "fips"], selectedCountyFips ?? ""]}
 								paint={{
 									"line-color": countyColors.casing,
@@ -435,7 +446,7 @@ export function MapView() {
 							<Layer
 								id="county-selected"
 								type="line"
-								beforeId={layerAboveLines}
+								beforeId={linesAnchor}
 								filter={["==", ["get", "fips"], selectedCountyFips ?? ""]}
 								paint={{
 									"line-color": countyColors.selected,
@@ -459,7 +470,7 @@ export function MapView() {
 							<Layer
 								id={VEGETATION_SOURCE_ID}
 								type="raster"
-								beforeId={layerAbovePictures}
+								beforeId={picturesAnchor}
 								// Not see-through: the colours on the map have to be the legend's colours.
 								paint={{ "raster-opacity": 1 }}
 							/>
