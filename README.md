@@ -50,7 +50,7 @@ How the trend is worked out: a Mann-Kendall test (with the correction for tied v
 - The library holds 7 of the 10 planned rotations. A published value with no source yet is left out. The rotations themselves, the scoring model and the numbers the tool chose are its own design; the About the data tab lists them.
 - The vegetation layer is a picture only: no score uses it. The dates it offers are the ones NASA listed when `scripts/gibs-vegetation-layer.mjs` was last run.
 - Soil moisture is the county's, read at its center on a 9 km grid from a satellite footprint about 36 km across, for roughly the top 5 cm of soil. It is one month against about eleven other years, a short record, and it is a status only: no score uses it. There is no groundwater record: GRACE is not built.
-- Kansas only. A point outside the state gets a short message instead of data.
+- Kansas only, by choice: the tool was built for the Kansas City local event and checked against Kansas fields. A point outside the state gets a short message instead of data. The sources are not Kansas-specific (NASA POWER covers the world; the Cropland Data Layer and the soil survey cover the whole United States); what is Kansas-specific is the rotation library, the planting and harvest windows, and the rain bands that sort a field into west, central or east. Extending it to another state means adding that state's usual rotations and dates with their sources, not new data plumbing.
 
 ## What is not built
 
