@@ -12,7 +12,7 @@ Project report, 7 slides (PDF): [docs/Field-Shift-Kansas-demo-deck.pdf](docs/Fie
 
 ## What it does
 
-- Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. "Use my location" chooses the point where the device is, once the browser allows it. A point outside the state gets a short message instead of data.
+- Click anywhere on the map of Kansas, or press Enter while the map has keyboard focus, to choose a point. The map draws the 105 county outlines in thin gray, and the chosen point's county in the accent colour. "Use my location" chooses the point where the device is, once the browser allows it. A point outside the state gets a short message instead of data.
 - **Crops grown here:** the crop at that point in each of the last 8 years, read from the USDA Cropland Data Layer. Any year can be changed by hand, a changed year is marked as yours, and one button brings the detected crops back.
 - **Soil:** the soil map unit under the point from the USDA soil survey (SSURGO), with its texture, available water, organic matter, slope, erodibility by water and by wind, and hydrologic group.
 - **Rotations:** the field's own rotation and the library rotations usual in that part of Kansas, each scored from 0 to 100 on seven indicators (water fit, heat and drought exposure, soil protection, soil building, pest and disease break, market fit, simplicity) and shown as cards: the field's own rotation, then the three best matches, with the rest behind a disclosure. Each card has the seven scores, a field calendar, and five fields: why it is suggested, the evidence, its benefits, the information gaps and the risks to verify locally, every sentence with its source. Four sliders (save water, protect soil, income, simplicity) set how much each indicator counts, and a switch says whether the field can be irrigated; the cards re-order as they change. Six of the ten planned rotations are loaded. A year of the field's own rotation whose crop the tool has no values for is named and left out of its score.
@@ -56,7 +56,6 @@ How the trend is worked out: a Mann-Kendall test (with the correction for tied v
 - Switches for no-till equipment and market access. The no-till switch is built and appears once a loaded rotation needs no-till; the market switch is not defined yet.
 - The four remaining rotations: corn-wheat, corn-soybean-wheat with double-crop soybean, wheat-cover crop-sorghum, and alfalfa then corn or wheat.
 - The trend of each crop's water demand.
-- The county outline drawn on the map. The outline file exists for the county lookup; drawing it is not done.
 
 ## Run it locally
 

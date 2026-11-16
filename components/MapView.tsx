@@ -16,8 +16,10 @@ import { ErrorState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VegetationControl, type VegetationStatus } from "@/components/VegetationControl";
+import { COUNTIES_FILE, countyAt, loadCounties } from "@/lib/counties";
 import { selectionOf, useFieldStore } from "@/lib/field-store";
 import { KANSAS_BOUNDS } from "@/lib/kansas";
+import { tokenColor } from "@/lib/map-colors";
 import { locationProblem, locationResult } from "@/lib/location";
 import { SAMPLE_FIELDS } from "@/lib/samples";
 import {
@@ -58,6 +60,45 @@ export function MapView() {
 	const selection = useFieldStore((state) => selectionOf(state.panel));
 	const selectPoint = useFieldStore((state) => state.selectPoint);
 	const selectSample = useFieldStore((state) => state.selectSample);
+	// The county the chosen point is in, from the point alone (the same outlines the panel's
+	// soil moisture lookup uses, fetched once and shared). It does not wait for the county's
+	// data file, so the highlight neither blinks between two fields in one county nor goes
+	// missing when that file fails. The old highlight stays until the new county is known.
+	const [foundCountyFips, setFoundCountyFips] = useState<string | null>(null);
+	// Nothing chosen, or a spot outside Kansas: no highlight, whatever was found before.
+	const selectedCountyFips = selection ? foundCountyFips : null;
+	const selectionKey = selection ? `${selection.lat},${selection.lon}` : null;
+	useEffect(() => {
+		if (!selection) return;
+		let current = true;
+		loadCounties(async (url) => {
+			const response = await fetch(url);
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			return response.json();
+		}).then(
+			(counties) => {
+				if (current) setFoundCountyFips(countyAt(selection.lat, selection.lon, counties)?.fips ?? null);
+			},
+			() => {
+				if (current) setFoundCountyFips(null);
+			},
+		);
+		return () => {
+			current = false;
+		};
+		// The point is what matters, not the selection object.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectionKey]);
+
+	// County outlines (SPEC.md, "UI rules": thin gray county outlines; the selected county in
+	// the accent colour). MapLibre needs plain colour strings, so the tokens are resolved once
+	// the map exists, in the browser. The lines go under the basemap's place names.
+	const [countyColors, setCountyColors] = useState<{
+		line: string;
+		selected: string;
+		casing: string;
+	} | null>(null);
+	const [layerAboveLines, setLayerAboveLines] = useState<string | undefined>(undefined);
 
 	// NASA's vegetation layer (SPEC.md, feature 13). It is off until asked for. Before it is
 	// drawn, one tile over the middle of Kansas is asked for: if NASA cannot serve it, the
@@ -302,6 +343,12 @@ export function MapView() {
 								layers.find((layer) => layer.type === "symbol")
 							)?.id,
 						);
+						setLayerAboveLines(layers.find((layer) => layer.type === "symbol")?.id);
+						setCountyColors({
+							line: tokenColor("--muted-foreground"),
+							selected: tokenColor("--chart-1"),
+							casing: tokenColor("--background"),
+						});
 						setStatus("ready");
 					}}
 					onClick={(event) => {
@@ -334,6 +381,51 @@ export function MapView() {
 					}}
 				>
 					<NavigationControl position="top-right" showCompass={false} />
+					{/* The 105 county outlines, from the file the county lookup uses. The map fetches
+					    it itself; a failed fetch is one missing layer, not a failed map. */}
+					{countyColors ? (
+						<Source
+							id="counties"
+							type="geojson"
+							data={COUNTIES_FILE}
+							attribution="County outlines: U.S. Census Bureau"
+						>
+							{/* Lighter and thinner when the whole state is in view, where 105 cells
+							    would otherwise outrank the roads and the state line; crisper closer in. */}
+							<Layer
+								id="county-outlines"
+								type="line"
+								beforeId={layerAboveLines}
+								paint={{
+									"line-color": countyColors.line,
+									"line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 9, 1.2],
+									"line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.35, 9, 0.7],
+								}}
+							/>
+							{/* A light casing keeps the accent line visible over the vegetation picture. */}
+							<Layer
+								id="county-selected-casing"
+								type="line"
+								beforeId={layerAboveLines}
+								filter={["==", ["get", "fips"], selectedCountyFips ?? ""]}
+								paint={{
+									"line-color": countyColors.casing,
+									"line-width": 4,
+									"line-opacity": 0.8,
+								}}
+							/>
+							<Layer
+								id="county-selected"
+								type="line"
+								beforeId={layerAboveLines}
+								filter={["==", ["get", "fips"], selectedCountyFips ?? ""]}
+								paint={{
+									"line-color": countyColors.selected,
+									"line-width": 2,
+								}}
+							/>
+						</Source>
+					) : null}
 					{/* A new day, or another try, is a new source: the key makes the map drop the old
 					    pictures and ask for them again. */}
 					{vegetationStatus === "ready" ? (
