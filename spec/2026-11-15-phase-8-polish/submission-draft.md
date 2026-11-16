@@ -18,6 +18,10 @@ I built it to answer the challenge this way: it puts NASA Earth data, local soil
 
 ## Detailed project description
 
+**Why I built it**
+
+My grandpa farms here in Kansas. I had him in mind the whole time and wanted to make something he could actually use: not a forecast or a verdict, but the facts about his field, the crop rotations side by side, and where every number comes from, so he can weigh it against what he already knows.
+
 **What it does**
 
 - Click anywhere on the map of Kansas, use your location, or pick a sample field (Finney, Thomas or Brown County).
@@ -52,9 +56,9 @@ At all three, the first fall freeze comes later than it did in 1981: about 3.3 d
 - Every sentence on a card has its source, and every number the tool chose is listed on the About the data tab. A source badge opens its entry there.
 - It names its own gaps on every card, and tells the farmer to check with the local K-State extension agent.
 
-**Limits and what is next**
+**Limits and what is next** (the README's "Limitations" and "What is not built" sections have the full list)
 
-- Kansas only, by choice. I competed at the Kansas City local event, so I built the tool for the state I could check it against. The data behind it is not Kansas-specific: NASA POWER covers the world, and the USDA Cropland Data Layer and soil survey cover the whole United States. What is Kansas-specific is the rotation library, the planting and harvest windows, and the rain bands that sort a field into west, central or east. With more time, extending it to the rest of the country means adding each region's usual rotations and dates with their sources, not new data plumbing. (the README's "Limitations" and "What is not built" sections have the full list)
+- Kansas only, by choice. I competed at the Kansas City local event, so I built the tool for the state I could check it against. The data behind it is not Kansas-specific: NASA POWER covers the world, and the USDA Cropland Data Layer and soil survey cover the whole United States. What is Kansas-specific is the rotation library, the planting and harvest windows, and the rain bands that sort a field into west, central or east. With more time, extending it to the rest of the country means adding each region's usual rotations and dates with their sources, not new data plumbing.
 
 - It works from one point, not a field outline. Its weather is the record of an area roughly 35 miles across, not of the field.
 - Seven of the ten planned rotations are loaded.
