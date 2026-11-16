@@ -1,62 +1,71 @@
 # Phase 6: Preprocessed NASA data. Implementation notes
 
-Date: 2026-11-15 (Sunday), 00:16 to 00:20 CST, unattended. Status: **blocked, not done.** One piece is delivered: the county centroids and a request ready for Angel to submit. No county shows a soil moisture status, which is this phase's "done when". Committed locally, not pushed.
+Two sittings on 2026-11-15. The night one (00:16 to 00:20 CST, unattended) is kept below as it was written. The evening one (from about 18:30 CST, on Angel's laptop, Angel present) built the whole SMAP pipeline and the status on screen, so that the data drops into place the moment NASA's request finishes.
 
-## Why it is blocked
+**Status at the end of the evening sitting: everything is built except the data itself.** The AppEEARS request has to be signed in to and sent by Angel (`python scripts/appeears_request.py submit`, which asks for the Earthdata Login at the prompt). Until the results are downloaded and `scripts/build_county_json.py` has run, `public/data/counties/` does not exist, every county answers "no record", and the soil moisture card stays hidden, as SPEC.md's fallback says ("hide them rather than show placeholders"). The phase's "done when", any county showing its soil moisture status, is therefore **not met yet**. GRACE (feature 14) is cut, as SPEC.md says to do first.
+
+## What was built in the evening sitting
+
+- **`scripts/appeears_request.py`** (standard library). `submit` asks for the username at the prompt and the password with `getpass`, signs in with HTTP Basic to `POST /login`, sends `data/appeears-smap-request.json` to `POST /task`, and keeps the task id and the 48-hour token in `data/raw/appeears-session.json`, which Git ignores. `status` reads `GET /status/{task_id}` (and the task object once that answers 303), `wait` checks every minute and downloads when done, `download` lists `GET /bundle/{task_id}` and follows each file's 302 to its presigned link without the bearer token. The endpoints and the answer shapes are from the AppEEARS API documentation, read the same evening. Nothing prints the token or the password. Compiled and smoke-tested without a session (`status` says to run `submit`); **not run against NASA**, since that needs Angel's login.
+- **`scripts/kansas_county_outlines.py`** → `public/data/counties.geojson`: the Census Bureau's generalized "Counties 5M" layer for Kansas (TIGERweb `Generalized_ACS2023/State_County`, layer 12), 105 polygons, 2,519 vertices, four decimal places, 62,404 bytes. The script refuses anything but 105 distinct Kansas FIPS codes with every vertex inside the Kansas rectangle. Ran on 2026-11-15 at about 19:12 CST.
+- **`lib/counties.ts`**: the outline file's shape check, an even-odd point-in-polygon test, `countyAt(lat, lon)`, and `loadCounties`, which fetches the file once per page and forgets a failed fetch. Tests (`lib/counties.test.ts`): the three sample fields land in Finney (20055), Thomas (20193) and Brown (20013) counties; a Nebraska point and a Missouri point land in none; the fetch is shared and a failure is retried.
+- **`scripts/build_county_json.py`**: reads the AppEEARS CSV (columns found by name: `ID`, `Date`, and the layer columns ending in `AM_soil_moisture` and `AM_retrieval_qual_flag`), keeps the 6 a.m. reading on days whose quality flag is 0 or 8 and whose value lies in 0.02 to 0.5, averages each calendar month per county, drops months with fewer than `soilMoisture.minDaysPerMonth` days, takes the last full calendar month with enough days and sets it against the same month in the other years as a z-score (null with fewer than three other years or no spread), and writes `public/data/counties/{fips}.json` (`CountyMoisture` in `lib/types.ts`) for all 105 counties, with empty months and no latest month for a county with no kept readings. The label is not decided here. **Dry run only**: a made-up CSV in the expected layout (3 counties, every second day from 2015-03-31 to 2026-11-14, with fill values and bad flags mixed in) was written to the scratch folder and the script run on it with its output sent to the scratch folder too; 105 files came out, the three with data had 134 months each and a z-score for October 2026, and the column lookup, the "last full month" rule (October, since the record ended on 14 November) and the minimum-days rule behaved. The real CSV's columns are not known for certain: AppEEARS's API page does not describe the point CSV, and the one example found (a MODIS notebook) shows `ID, Latitude, Longitude, Date` and `Product_Version_Layer` columns, which is what the script looks for. If the real file differs, the script stops with the column names it found.
+- **`lib/types.ts`**: `CountyMoisture`, and `ScoringConfig.soilMoisture` (`nearNormalZ: Sourced<number>`, `minDaysPerMonth`). **`config/scoring.json`**: `nearNormalZ` 0.43, sourced to NOAA's Climate Prediction Center ("thirds") with the assumption that reading the thirds as 0.43 standard deviations, and applying them to soil moisture, are the tool's steps; `minDaysPerMonth` 5, a round number. **`lib/library.ts`** checks both.
+- **`lib/moisture.ts`**: the file's shape check, `moistureLabel(z)` from the config's cut-off, the words of the card (`describeMoisture`, "17% water by volume", "October 2026"), the record span. Tests in `lib/moisture.test.ts` (9).
+- **`lib/field-client.ts`** `loadMoisture`: the county from the shared outlines, then the county's static file; a 404 is "no record", a point in no outline is "no county". The outlines' request has its own abort controller, and each caller waits on the shared promise only as long as its own signal allows (`untilAborted`), so a first click cancelled by a second cannot fail the second: the UI review found that race and it was fixed. **`lib/field-store.ts`**: a fourth part, `moisture`, loaded for clicked points and sample fields alike, with its own retry.
+- **`components/SoilMoisture.tsx`**, at the end of the Conditions section: the label badge (info tint for wetter, warning tint for drier, plain for about normal, the same token pairs as the notice component), "Short record" beside it while the record is under 30 years, the county and month, the sentence with the month's mean against the usual, and a footnote with the glossary term soil moisture anomaly, the county-not-field caveat and "no score uses it". Loading, error with retry, "outside Kansas" (inside the rectangle, outside every outline) and "no recent month with enough readings" states; the no-record state renders nothing. The Conditions section's description and spacing were updated.
+- **The About tab**: a new source group, "Prepared in advance", with the NASA SMAP entry (five links: the NSIDC product page, the user guide, AppEEARS, its layer listing and its quality decoding; resolution and SPEC.md's confidence wording "Medium: an area average, not one field"), which also appears in the resolution table; NOAA's Climate Prediction Center as a method source; the Census entry extended with the outlines layer; the new assumption entry; the rule "Soil moisture month". `data/glossary.json` gained soil moisture anomaly (group Water, the tool's own rule, with the user guide quoted for what the satellite measures). `data/README.md` has a new section, "Soil moisture from NASA SMAP".
+
+## Sources opened, and what each settled
+
+- **AppEEARS API documentation** (https://appeears.earthdatacloud.nasa.gov/api/): login, task, status, bundle endpoints and their answers. It does not describe the point CSV's columns.
+- **AppEEARS product listing** for `SPL3SMP_E.006` (public, no login): the AM soil moisture layer's valid range 0.02 to 0.5 and fill value -9999; the quality layer's fill 65534. **AppEEARS quality decoding** for the AM flag: bit 0 "Recommended Quality", 0 = "Soil moisture retrieval has recommended quality".
+- **NSIDC user guide, SPL3SMP_E version 6** (O'Neill and others, 2021; the PDF was fetched and its text read): "surface soil moisture (representing approximately the top 5 cm of the soil column on average, given in m3/m3)"; the AM group is the descending pass with "6:00 a.m. ... Local Solar Time (LST) at the equator", the PM group the ascending 6:00 p.m. pass, with no stated preference between them; "The native spatial resolution of the radiometer footprint is approximately 36 km", interpolated "to a 9 km grid resolution"; "Coverage spans from 31 March 2015 to present"; and, on printed page 13, "A retrieval_qual_flag value of either 0 or 8 indicates high-quality retrievals".
+- **NOAA Climate Prediction Center, Forecast Tools**: the three classes "divide the 1981-2010 climatological distribution into thirds". The current discussion page uses 1991-2020 normals; the tool quotes the page's own words and does not state a base period of its own.
+- **U.S. Census Bureau TIGERweb**, `Generalized_ACS2023/State_County` layers 11 (500K) and 12 (5M): the outlines.
+
+## Checks
+
+- `npm run typecheck`, `npm run lint`: clean. `npm run test`: 437 tests in 32 files pass (420 before this phase; 17 new in `lib/counties.test.ts` and `lib/moisture.test.ts`; one existing wording assertion in `lib/about.test.ts` updated, and that file's badge test extended to the SMAP entry). `npm run build`: see the last section.
+- **`data-verifier`** (about 72,000 tokens): every quoted phrase found in the user guide; the CPC quote faithful; 0.43 correct as the thirds point of a normal distribution; every link answering 200; 9 km ≈ 5.6 mi and 36 km ≈ 22 mi right. Corrected from its findings: the 6 a.m. quote now carries "(LST) at the equator"; the card no longer says the reading covers "an area about 9 km across" (9 km is the grid, the footprint about 36 km); the assumption text says applying the Center's thirds to soil moisture is the tool's step; the outlines script's docstring states where its 500K figures came from, gives the rounding step as about 11 m north-south and 9 m east-west, and no longer claims "a few hundred metres"; the CPC source got a purpose line. Its one alarming finding, a z of -7.55 for Finney County, was the made-up dry-run file, placed in `public/data/counties/` for a few minutes to see the card's ready state and removed afterwards.
+- **`ui-reviewer`** (about 60,000 tokens): tokens, heading target, loading state, retry and focus, status message and phone wrapping all fine. Fixed from its findings: the outline-fetch race (must fix); spacing between the charts and the card (must fix); the two `EmptyState` blocks with a second h3 replaced by one-line muted text; "climate normal" reworded so no term lacks a tooltip; plainer empty-state wording; "Short record" now sits right after the label; the Conditions description mentions the soil; `sourcesProblems` requires purpose, resolution and confidence of prepared sources too; "Cut-off not sourced yet" when the config has no cut-off; `useId` for the heading; a taller skeleton; one count of years instead of two that differed by one; the badge hidden on the no-month state; `SHORT_RECORD_YEARS` drives the badge; "centre" → "center" throughout the new text; `LIVE_SOURCES` renamed `FIELD_SOURCES`. On its recommendation, and SPEC.md's, the no-record state is hidden rather than shown as an empty state; Angel can reverse that.
+- **In the browser** (the app's pane, the dev server, 1280 px wide and the mobile preset): with no county files, the Finney sample loads its three facts and the card is absent. With the dry-run file for Finney in place for the check: "Drier than usual", "Short record", "Finney County, October 2026", "October 2026 averaged 10% water by volume in the top layer of soil, from 7 readings. The usual October here is 13%, over the 11 other years on record.", the footnote, and the NASA SMAP badge; the glossary term, the SMAP source, the assumption and the rule all present on the About tab. At the phone preset the card was 343 px wide with no sideways scroll. A transient 500 appeared once while the term id existed before its glossary entry, and cleared on the next load.
+
+## What is left, in order
+
+1. **Angel**: `python scripts/appeears_request.py submit` in the terminal (username, then password at the prompts), then `python scripts/appeears_request.py wait`. AppEEARS may take minutes or hours for 105 points, 4 layers and 11 years; nothing here can hurry it.
+2. `python scripts/build_county_json.py`, then look at `public/data/counties/20055.json`, `20193.json` and `20013.json`; if the CSV's columns differ from the expected ones, adjust the two suffixes at the top of the script.
+3. The three samples and two clicked points on the local build; the per-year day counts behind one z-score, to see whether `minDaysPerMonth` of 5 keeps enough days.
+4. Commit the 105 files with `builtAt`, push, and check the public URL.
+5. README: the status paragraph, "What it does", "Data used", "What is not built", "AI use". Written in this sitting on the assumption that the files are not yet built; one paragraph to flip when they are.
+
+## Files AI wrote or changed in this sitting (Claude), for Angel to review
+
+New: `scripts/appeears_request.py`, `scripts/kansas_county_outlines.py`, `scripts/build_county_json.py`, `public/data/counties.geojson` (the script's output), `lib/counties.ts`, `lib/counties.test.ts`, `lib/moisture.ts`, `lib/moisture.test.ts`, `components/SoilMoisture.tsx`. Changed: `lib/types.ts`, `config/scoring.json`, `lib/library.ts`, `lib/glossary.ts`, `data/glossary.json`, `data/sources.json`, `lib/about.ts`, `lib/about.test.ts`, `components/AboutData.tsx`, `lib/field-client.ts`, `lib/field-store.ts`, `components/FieldPanel.tsx`, `data/README.md`, `README.md`, and this folder's `plan.md` and this file.
+
+---
+
+# The night sitting (00:16 to 00:20 CST), as written then
+
+Status then: **blocked, not done.** One piece delivered: the county centroids and a request ready for Angel to submit. No county shows a soil moisture status, which is this phase's "done when". Committed locally, not pushed.
+
+## Why it was blocked
 
 SMAP comes through NASA AppEEARS and GRACE through `earthaccess`. Both need an Earthdata Login, and this machine has none set up: no `~/.netrc` and no environment variable (checked by existence only, nothing read). It also has no Python environment for the project. SPEC.md's own fallback is to hide SMAP rather than show placeholders, and to cut GRACE first.
 
-## What was built
+## What was built then
 
 - `scripts/kansas_county_centroids.py`. It asks the U.S. Census Bureau's TIGERweb service for every county of state 20 with its centroid, and refuses the answer unless it holds 105 counties, each with its own Kansas FIPS code and a centroid inside the Kansas rectangle of `lib/kansas.ts`. It needs Python 3.9 or newer and no package. It sends nothing to NASA.
 - `data/kansas-county-centroids.csv`: `fips`, `county`, `latitude`, `longitude`, 105 rows. SPEC.md's Saturday prep asks for this file.
-- `data/appeears-smap-request.json`: the body of an AppEEARS point request for all 105 centroids, 31 March 2015 to 15 November 2026, four layers of `SPL3SMP_E.006`: the morning and the evening soil moisture, each with its quality flag. **It was never submitted.**
+- `data/appeears-smap-request.json`: the body of an AppEEARS point request for all 105 centroids, 31 March 2015 to 15 November 2026, four layers of `SPL3SMP_E.006`: the morning and the evening soil moisture, each with its quality flag.
 
 AI wrote the script. The two data files are its output.
 
-## Verified
+## Verified then
 
 - The script ran on 2026-11-15 at about 00:19 CST and printed "105 counties, every centroid inside the Kansas rectangle."
 - The CSV has 105 rows and 105 distinct FIPS codes, from 20001 (Allen County) to 20209 (Wyandotte County). Latitudes run from 37.15 to 39.83 and longitudes from -101.81 to -94.76. The three sample counties are in it: Finney 20055, Thomas 20193, Brown 20013.
 - The product is real and available. AppEEARS's public product listing, read the same night, gives `SPL3SMP_E.006` as "Enhanced L3 Radiometer Soil Moisture", 9000 m, daily, from 2015-03-31 to the present, from the NSIDC DAAC (https://doi.org/10.5067/M20OXIZHY3RJ). Its layer listing holds the four layer names used, with soil moisture valid from 0.02 to 0.5 and -9999 for no value.
 - The request's shape follows AppEEARS's API documentation, "Submit task" and "Task object": `task_type`, `task_name`, `params.dates` as month-day-year, `params.layers` as product and layer, `params.coordinates` as latitude and longitude with an optional `id` and `category`.
 
-Not verified: that AppEEARS accepts this request, how long it takes, and what the result file looks like. None of that can be known without signing in.
-
-## For Angel, in the morning
-
-These three commands are AppEEARS's own examples with this project's file. The first asks for your Earthdata password at the prompt and stores nothing.
-
-1. Sign in and get a token. Put your Earthdata username in place of `YOUR_USERNAME`:
-
-```bash
-curl --request POST --user YOUR_USERNAME --header "Content-Length: 0" "https://appeears.earthdatacloud.nasa.gov/api/login"
-```
-
-2. Submit the request, from the repo root, with the token from step 1 in place of `YOUR_TOKEN`. The answer holds a `task_id`:
-
-```bash
-curl --request POST --data @data/appeears-smap-request.json --header "Content-Type: application/json" --header "Authorization: Bearer YOUR_TOKEN" "https://appeears.earthdatacloud.nasa.gov/api/task"
-```
-
-3. Ask how it is going, with the `task_id` from step 2. The request is also listed on the AppEEARS website, under Explore, once you are signed in there:
-
-```bash
-curl --header "Authorization: Bearer YOUR_TOKEN" "https://appeears.earthdatacloud.nasa.gov/api/task/YOUR_TASK_ID"
-```
-
-When it is done, download the results file (a `.csv`) into `data/raw/`, which Git ignores, and say so. Do not paste the token or the password into the chat or into a file in the repo.
-
-## What is left of this phase, once the results exist
-
-1. `scripts/build_county_json.py`: from the daily values, the mean of each month in each county, and this month set against the same month in the other years (SPEC.md, "Anomalies"). Then `public/data/counties/{fips}.json`.
-2. A decision for Angel: SPEC.md names the three labels (wetter than usual, about normal, drier than usual) but not where one ends and the next begins. That cut-off is a tool assumption for `config/scoring.json`. Also which reading to use, morning or evening, and which quality flags to keep.
-3. Which county a point is in. That needs the county outlines (`public/data/counties.geojson`), which are not in the repo yet.
-4. The status on screen with "short record" beside it, a source badge, the glossary term soil moisture anomaly, and SMAP's row in the resolution table.
-5. GRACE, if at all: `grace_kansas.py` needs a Python environment with `earthaccess` and `xarray`, and the login.
-
-## Left alone
-
-- No soil moisture from another dataset in SMAP's place.
-- No screen, card or badge for SMAP or GRACE.
-- The county outline on the map, which SPEC.md's layout mentions. It needs the outline file and is not part of this slice.
+Not verified then, and still not: that AppEEARS accepts this request, how long it takes, and what the result file looks like.

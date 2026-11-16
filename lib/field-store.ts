@@ -9,8 +9,10 @@ import {
 	type Loaded,
 	loadClimate,
 	loadHistory,
+	loadMoisture,
 	loadSampleField,
 	loadSoil,
+	type MoistureResult,
 } from "@/lib/field-client";
 import { isInKansasBounds } from "@/lib/kansas";
 import { findSampleField } from "@/lib/samples";
@@ -36,7 +38,7 @@ export type Loadable<T> =
 	| { status: "ready"; data: T; origin: DataOrigin }
 	| { status: "error"; message: string };
 
-export type FieldPart = "climate" | "history" | "soil";
+export type FieldPart = "climate" | "history" | "soil" | "moisture";
 
 /** Everything the panel can show. Exactly one of these at a time. */
 export type FieldPanelState =
@@ -48,6 +50,8 @@ export type FieldPanelState =
 			climate: Loadable<ClimateResponse>;
 			history: Loadable<HistoryResponse>;
 			soil: Loadable<SoilResponse>;
+			/** The county's soil moisture (Phase 6). From files built in advance, for samples too. */
+			moisture: Loadable<MoistureResult>;
 			/**
 			 * The farmer's own corrections to the detected crops: year to CDL class code.
 			 * A year that is not here shows what the Cropland Data Layer says.
@@ -74,6 +78,7 @@ type FieldStore = {
 let activeRequest: AbortController | null = null;
 
 const LOADING = { status: "loading" } as const;
+/** The three facts a sample field's file holds. Soil moisture is loaded on its own. */
 const FIELD_PARTS = ["climate", "history", "soil"] as const;
 
 function failed(error: unknown): Loadable<never> {
@@ -133,8 +138,10 @@ export const useFieldStore = create<FieldStore>()((set, get) => {
 			loadPart(request, part, () => loadClimate(lat, lon, signal));
 		} else if (part === "history") {
 			loadPart(request, part, () => loadHistory(lat, lon, signal));
-		} else {
+		} else if (part === "soil") {
 			loadPart(request, part, () => loadSoil(lat, lon, signal));
+		} else {
+			loadPart(request, part, () => loadMoisture(lat, lon, signal));
 		}
 	}
 
@@ -149,9 +156,13 @@ export const useFieldStore = create<FieldStore>()((set, get) => {
 				climate: LOADING,
 				history: LOADING,
 				soil: LOADING,
+				moisture: LOADING,
 				cropEdits: {},
 			},
 		});
+
+		// The county's soil moisture comes from files built in advance, for a sample too.
+		loadOne(request, selection, "moisture");
 
 		const sample = selection.sampleId
 			? findSampleField(selection.sampleId)
@@ -207,8 +218,8 @@ export const useFieldStore = create<FieldStore>()((set, get) => {
 		retry(part) {
 			const { panel } = get();
 			if (panel.kind !== "field" || !activeRequest) return;
-			if (panel.selection.sampleId) {
-				// A sample's facts come from one file, so one retry reloads all of them.
+			if (panel.selection.sampleId && part !== "moisture") {
+				// A sample's three facts come from one file, so one retry reloads all of them.
 				loadAll(panel.selection);
 				return;
 			}

@@ -96,10 +96,16 @@ describe("the source list as committed", () => {
 	});
 
 	it("has the entry that each source badge opens", () => {
-		// The three sources read for a field, and the NASA layer on the map.
+		// The three sources read for a field, the NASA layer on the map, and the county data
+		// prepared in advance.
 		for (const id of Object.values(SOURCE_BADGE_ENTRIES)) {
-			expect(["live", "map"], id).toContain(source(id).kind);
+			expect(["live", "map", "prepared"], id).toContain(source(id).kind);
 		}
+		expect(source(SOURCE_BADGE_ENTRIES["NASA SMAP"]).kind).toBe("prepared");
+		expect(source(SOURCE_BADGE_ENTRIES["NASA SMAP"]).resolution).toBeTruthy();
+		expect(source(SOURCE_BADGE_ENTRIES["NASA SMAP"]).confidence).toBe(
+			"Medium: an area average, not one field",
+		);
 		expect(source(SOURCE_BADGE_ENTRIES["NASA GIBS MODIS"]).resolution).toContain("820 ft (250 m)");
 	});
 
@@ -128,7 +134,7 @@ describe("sourcesProblems", () => {
 		const broken = loose();
 		entryOf(broken, "nasa-power").resolution = null;
 		expect(sourcesProblems(broken).join("\n")).toContain(
-			"sources[nasa-power].resolution: a source read for each field has to state it",
+			"sources[nasa-power].resolution: a source that describes a field has to state it",
 		);
 	});
 

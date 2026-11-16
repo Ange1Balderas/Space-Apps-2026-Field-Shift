@@ -427,9 +427,57 @@
       {
         "label": "The query the rectangle came from",
         "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STUSAB%3D%27KS%27&returnExtentOnly=true&outSR=4326&f=json"
+      },
+      {
+        "label": "The county outlines (the generalized 1:5,000,000 layer)",
+        "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2023/State_County/MapServer/12"
       }
     ],
-    "purpose": "The rectangle around Kansas that the map opens on and that the tool uses to decide whether a point is inside the state. It is a rectangle, not the state line, so ground just outside Kansas can pass where the border is not straight.",
+    "purpose": "The rectangle around Kansas that the map opens on and that the tool uses to decide whether a point is inside the state. It is a rectangle, not the state line, so ground just outside Kansas can pass where the border is not straight. Also the outline of each of the 105 counties, simplified, from which the tool finds the county a point is in for its soil moisture record (public/data/counties.geojson, written by scripts/kansas_county_outlines.py).",
+    "resolution": null,
+    "confidence": null
+  },
+  {
+    "id": "nasa-smap",
+    "kind": "prepared",
+    "name": "NASA SMAP",
+    "links": [
+      {
+        "label": "SMAP Enhanced L3 soil moisture, version 6 (NSIDC)",
+        "url": "https://nsidc.org/data/spl3smp_e/versions/6"
+      },
+      {
+        "label": "User guide (PDF)",
+        "url": "https://nsidc.org/sites/default/files/documents/user-guide/spl3smp_e-v006-userguide.pdf"
+      },
+      {
+        "label": "NASA AppEEARS, where the county samples were read",
+        "url": "https://appeears.earthdatacloud.nasa.gov/"
+      },
+      {
+        "label": "The layers AppEEARS lists for the product, with their valid range",
+        "url": "https://appeears.earthdatacloud.nasa.gov/api/product/SPL3SMP_E.006"
+      },
+      {
+        "label": "AppEEARS's decoding of the quality flag",
+        "url": "https://appeears.earthdatacloud.nasa.gov/api/quality/SPL3SMP_E.006/Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag"
+      }
+    ],
+    "purpose": "Soil moisture in roughly the top 5 cm (2 inches) of soil, as a share of the soil's volume, read by the SMAP satellite's radiometer on its morning pass (about 6 a.m. local solar time), daily since 31 March 2015. A script asked NASA AppEEARS for the daily values at the center of each of the 105 Kansas counties, and the app holds one small file per county: the average of each month, and the last full month set against the same month in the other years. It is shown as a status, wetter or drier than usual. No score uses it.",
+    "resolution": "A 9 km grid cell (about 5.6 miles across), interpolated from a radiometer footprint of about 36 km (22 miles). The tool reads the cell at the center of the county, so the figure is the county's, not the field's.",
+    "confidence": "Medium: an area average, not one field"
+  },
+  {
+    "id": "noaa-cpc",
+    "kind": "method",
+    "name": "NOAA Climate Prediction Center",
+    "links": [
+      {
+        "label": "Forecast tools: how above, near and below normal are defined",
+        "url": "https://www.cpc.ncep.noaa.gov/products/predictions/long_range/tools.php"
+      }
+    ],
+    "purpose": "How the Center defines above, near and below normal: the thirds of a climatological distribution. The tool borrows the thirds, by analogy, for its soil moisture label.",
     "resolution": null,
     "confidence": null
   }

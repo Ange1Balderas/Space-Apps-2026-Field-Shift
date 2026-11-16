@@ -8,20 +8,32 @@
 
 import { climatePoint, isClimateResponse } from "@/lib/climate";
 import { isHistoryResponse, isSoilResponse } from "@/lib/contracts";
+import { type County, countyAt, loadCounties } from "@/lib/counties";
 import { fieldPoint } from "@/lib/kansas";
+import { isCountyMoisture } from "@/lib/moisture";
 import type { SampleField } from "@/lib/samples";
 import type {
 	ClimateResponse,
+	CountyMoisture,
 	HistoryResponse,
 	SoilResponse,
 } from "@/lib/types";
 
 /**
  * Where the numbers on screen came from:
- * "live" from the source just now, "sample" from a sample field's cached file, or
- * "sample-fallback" when the source failed and the route answered with the cached sample.
+ * "live" from the source just now, "sample" from a sample field's cached file,
+ * "sample-fallback" when the source failed and the route answered with the cached sample, or
+ * "prepared" from a file built in advance (the county soil moisture).
  */
-export type DataOrigin = "live" | "sample" | "sample-fallback";
+export type DataOrigin = "live" | "sample" | "sample-fallback" | "prepared";
+
+/** The county's soil moisture record, or why there is none to show. */
+export type MoistureResult =
+	| { kind: "county"; county: County; data: CountyMoisture }
+	/** The point is in no county outline: outside the state line, inside the rectangle. */
+	| { kind: "no-county" }
+	/** The county has no file yet: its SMAP data has not been built. */
+	| { kind: "no-record"; county: County };
 
 export type Loaded<T> = { data: T; origin: DataOrigin };
 
@@ -84,6 +96,18 @@ async function fetchJson(
 		clearTimeout(timer);
 		signal.removeEventListener("abort", cancel);
 	}
+}
+
+/** Settles with the promise, or rejects as soon as the signal is aborted, whichever is first. */
+export function untilAborted<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+	if (signal.aborted) return Promise.reject(signal.reason ?? new Error("aborted"));
+	return new Promise<T>((resolve, reject) => {
+		const onAbort = () => reject(signal.reason ?? new Error("aborted"));
+		signal.addEventListener("abort", onAbort, { once: true });
+		promise.then(resolve, reject).finally(() => {
+			signal.removeEventListener("abort", onAbort);
+		});
+	});
 }
 
 function errorMessageFrom(body: unknown): string | null {
@@ -176,6 +200,47 @@ export function loadHistory(
 		"crop history",
 		signal,
 	);
+}
+
+/**
+ * The soil moisture record of the county a point is in, from the files built in advance
+ * (public/data/counties.geojson and public/data/counties/{fips}.json). Static files, so no
+ * route and no live service: the county outlines are fetched once and shared.
+ */
+export async function loadMoisture(
+	lat: number,
+	lon: number,
+	signal: AbortSignal,
+): Promise<Loaded<MoistureResult>> {
+	// The outlines are shared by every selection, so their request is not tied to this
+	// selection's signal: a first click cancelled by a second must not fail the second. Each
+	// caller waits for the shared promise only as long as its own signal allows.
+	const shared = loadCounties(async (url) => {
+		const { response, body } = await fetchJson(url, new AbortController().signal);
+		if (!response.ok) {
+			throw new Error(`The county outlines could not be loaded (HTTP ${response.status}).`);
+		}
+		return body;
+	});
+	const counties = await untilAborted(shared, signal);
+	const county = countyAt(lat, lon, counties);
+	if (!county) return { data: { kind: "no-county" }, origin: "prepared" };
+
+	const { response, body } = await fetchJson(`/data/counties/${county.fips}.json`, signal);
+	if (response.status === 404) {
+		return { data: { kind: "no-record", county }, origin: "prepared" };
+	}
+	if (!response.ok) {
+		throw new Error(
+			`The soil moisture record for ${county.name} could not be loaded (HTTP ${response.status}).`,
+		);
+	}
+	if (!isCountyMoisture(body)) {
+		throw new Error(
+			`The soil moisture record for ${county.name} arrived in a form this page could not read.`,
+		);
+	}
+	return { data: { kind: "county", county, data: body }, origin: "prepared" };
 }
 
 /** Soil facts at any Kansas point, through /api/soil. */

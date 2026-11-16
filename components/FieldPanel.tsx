@@ -17,6 +17,7 @@ import { FieldSummary } from "@/components/FieldSummary";
 import { Section } from "@/components/layout/page";
 import { Notice } from "@/components/notice";
 import { RotationRanking } from "@/components/RotationRanking";
+import { SoilMoisture } from "@/components/SoilMoisture";
 import { EmptyState, ErrorState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,14 +35,14 @@ import { useViewStore } from "@/lib/view-store";
 // message announce themselves through the notice's role="alert".
 function statusMessage(panel: FieldPanelState): string {
 	if (panel.kind !== "field") return "";
-	const parts = [panel.climate, panel.history, panel.soil];
+	const parts = [panel.climate, panel.history, panel.soil, panel.moisture];
 	if (parts.some((part) => part.status === "loading")) {
 		return `Loading field facts for ${panel.selection.name}`;
 	}
 	const failed = parts.filter((part) => part.status === "error").length;
 	return failed === 0
 		? `Field facts loaded for ${panel.selection.name}`
-		: `Field facts loaded for ${panel.selection.name}, ${failed} of 3 could not be loaded`;
+		: `Field facts loaded for ${panel.selection.name}, ${failed} of ${parts.length} could not be loaded`;
 }
 
 function formatDate(isoTime: string): string {
@@ -271,7 +272,8 @@ export function FieldPanel() {
 				{panel.kind === "field" ? (
 					<Section
 						title="Conditions"
-						description="How the climate at this place has changed, year by year."
+						description="How the climate at this place has changed, year by year, and how wet the soil is now."
+						contentClassName="space-y-4"
 					>
 						{panel.climate.status === "loading" ? <ChartSkeleton /> : null}
 
@@ -297,6 +299,14 @@ export function FieldPanel() {
 								<ConditionsCharts climate={panel.climate.data} />
 							</div>
 						) : null}
+
+						<SoilMoisture
+							moisture={panel.moisture}
+							onRetry={() => {
+								focusPanel();
+								retry("moisture");
+							}}
+						/>
 					</Section>
 				) : null}
 

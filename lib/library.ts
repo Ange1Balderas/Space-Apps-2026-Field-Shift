@@ -285,6 +285,19 @@ export function scoringProblems(value: unknown): Problems {
 		...numbers(["perExtraCrop", "missingNoTillPenalty"])(value.simplicity, "scoring.simplicity"),
 	);
 
+	// Phase 6: how a soil moisture month is labelled.
+	const moisture = value.soilMoisture;
+	if (!isRecord(moisture)) {
+		problems.push("scoring.soilMoisture: expected an object");
+	} else {
+		const positiveNumber: Check = (found, where) =>
+			isNumber(found) && found > 0 ? [] : [`${where}: expected a number above zero`];
+		problems.push(...sourced(positiveNumber)(moisture.nearNormalZ, "scoring.soilMoisture.nearNormalZ"));
+		if (!Number.isInteger(moisture.minDaysPerMonth) || (moisture.minDaysPerMonth as number) < 1) {
+			problems.push("scoring.soilMoisture.minDaysPerMonth: expected a whole number, 1 or more");
+		}
+	}
+
 	// Each indicator is weighed by exactly one slider, so no indicator is counted twice or lost.
 	const map = value.priorityIndicators;
 	if (!isRecord(map)) {

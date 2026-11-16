@@ -406,5 +406,19 @@
     "own": true,
     "sourceName": null,
     "source": null
+  },
+  {
+    "id": "soil-moisture-anomaly",
+    "group": "water",
+    "term": "Soil moisture anomaly",
+    "match": [
+      "soil moisture anomaly"
+    ],
+    "definition": "How far a month's soil moisture is from the usual for that month at that place: the month's average, less the average of the same month in the other years on record, divided by how much those years vary (a z-score). Within {nearNormalZ} standard deviations of usual counts as about normal; beyond that, wetter or drier than usual.",
+    "here": "The soil moisture is NASA SMAP's: the water in roughly the top 5 cm (2 inches) of soil as a share of the soil's volume, read by the satellite's radiometer on its morning pass (about 6 a.m. local solar time) and given on a 9 km grid interpolated from a footprint about 36 km across. The tool reads the grid cell at the center of the county, so the label describes the county, not the field. A month counts when at least {minDaysPerMonth} days have a reading of recommended quality.",
+    "note": "SMAP's record began on 31 March 2015, so a month has about eleven other years to be set against, where a climate normal uses thirty. The panel says \"short record\" beside the label for that reason.",
+    "own": true,
+    "sourceName": "NSIDC SMAP user guide",
+    "source": "What is measured, from the product's user guide (NSIDC, SMAP Enhanced L3 Radiometer Global and Polar Grid Daily 9 km EASE-Grid Soil Moisture, Version 6, O'Neill and others, 2021): \"surface soil moisture (representing approximately the top 5 cm of the soil column on average, given in m3/m3)\"; the AM groups retrieve data on each descending pass where \"6:00 a.m. is the Local Solar Time (LST) at the equator\"; \"The native spatial resolution of the radiometer footprint is approximately 36 km\", interpolated \"to a 9 km grid resolution\"; \"Coverage spans from 31 March 2015 to present.\" https://nsidc.org/sites/default/files/documents/user-guide/spl3smp_e-v006-userguide.pdf The z-score and the cut-off are the tool's own (config/scoring.json)."
   }
 ]

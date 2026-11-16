@@ -52,7 +52,10 @@ export const ABOUT_PARTS = [
 
 const ASSUMPTIONS = assumptions();
 const TOOL_RULES = toolRules();
-const LIVE_SOURCES = SOURCES.filter((source) => source.kind === "live");
+// The sources that describe one field: read live, or prepared in advance for its county.
+const FIELD_SOURCES = SOURCES.filter(
+	(source) => source.kind === "live" || source.kind === "prepared",
+);
 const INDICATOR_ENTRIES = GLOSSARY.filter((entry) => entry.group === "scores");
 
 const ENTRY_CLASS =
@@ -419,7 +422,7 @@ export function AboutData() {
 								</tr>
 							</thead>
 							<tbody>
-								{LIVE_SOURCES.map((source) => (
+								{FIELD_SOURCES.map((source) => (
 									<tr key={source.id} className="border-b align-top last:border-b-0">
 										<th scope="row" className="px-2 py-1.5 font-medium">
 											{source.name}

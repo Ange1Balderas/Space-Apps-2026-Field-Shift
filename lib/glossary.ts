@@ -50,6 +50,7 @@ export const TERM_IDS = [
 	"sens-slope",
 	"linear-slope",
 	"ndvi",
+	"soil-moisture-anomaly",
 	"water-fit",
 	"heat-exposure",
 	"soil-protection",
@@ -127,6 +128,10 @@ export const GLOSSARY_VALUES: Readonly<Record<string, string>> = {
 	// NASA writes "16-Day" and "250m" (data/vegetation-layer.json).
 	vegetationPeriod: VEGETATION.period.toLowerCase(),
 	vegetationResolution: vegetationResolutionText(),
+	nearNormalZ: SCORING.soilMoisture.nearNormalZ
+		? String(SCORING.soilMoisture.nearNormalZ.value)
+		: "a cut-off not sourced yet",
+	minDaysPerMonth: String(SCORING.soilMoisture.minDaysPerMonth),
 };
 
 const PLACEHOLDER = /\{(\w+)\}/g;

@@ -102,4 +102,35 @@ export type ScoringConfig = {
   marketScores: { local: number; regional: number; contract: number }; // formula 8
   simplicity: { perExtraCrop: number; missingNoTillPenalty: number };  // formula 9
   priorityIndicators: Record<Priority, IndicatorId[]>;                 // which indicators each slider weighs
+  // Added for Phase 6 on 2026-11-15 (SPEC.md, "Anomalies"): how a county's soil moisture
+  // month is labelled against the same month in the other years of the record.
+  soilMoisture: {
+    nearNormalZ: Sourced<number>;  // |z| below this is "about normal"; the middle third of a normal distribution
+    minDaysPerMonth: number;       // a month with fewer good readings than this is left out
+  };
+};
+
+// public/data/counties/{fips}.json, written by scripts/build_county_json.py from the AppEEARS
+// point sample of SMAP SPL3SMP_E at the county's centroid (SPEC.md, feature 12 and "Anomalies").
+// Soil moisture is a volume fraction, cm³ of water per cm³ of soil. `z` is this month's mean
+// against the mean and standard deviation of the same calendar month in the other years.
+export type CountyMoisture = {
+  fips: string; county: string;
+  source: "NASA SMAP"; product: string; layer: string;
+  /** The first and last day of the record that was read, as YYYY-MM-DD. */
+  firstDate: string; lastDate: string;
+  /** How a day was kept: the quality rule applied, in words. */
+  qualityRule: string;
+  /** Every month with enough good readings, oldest first. `mean` is the volume fraction. */
+  months: { year: number; month: number; mean: number; days: number }[];
+  /** The last full calendar month with enough readings, set against the same month before it. */
+  latest: {
+    year: number; month: number; mean: number; days: number;
+    /** Mean and standard deviation of the same month in the other years, and how many years. */
+    normalMean: number | null; normalStd: number | null; normalYears: number;
+    /** Null when fewer than three other years have the month, or when they do not vary. */
+    z: number | null;
+  } | null;
+  /** When the file was written, as an ISO time. */
+  builtAt: string;
 };

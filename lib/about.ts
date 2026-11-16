@@ -35,6 +35,11 @@ export const SOURCE_KINDS = [
 		title: "Crop and rotation values",
 		note: "The crop values and the benefits and risks of each rotation were compiled with an AI assistant from these publications. A second AI pass checked each value against its source before it was loaded, and some wording was corrected afterwards without a new check. Which crops a rotation holds, in what order, and where in Kansas it is usual are this project's own design. Several publications were written for other places, and most of their names say where.",
 	},
+	{
+		id: "prepared",
+		title: "Prepared in advance",
+		note: "Too large to read live, so a script read it once for the center of every Kansas county and the app holds one small file per county. A chosen point shows its county's file.",
+	},
 	{ id: "map", title: "Map", note: "" },
 ] as const;
 
@@ -108,10 +113,10 @@ export function sourcesProblems(value: unknown): string[] {
 				problems.push(`${where}.${key}: expected null or text`);
 			}
 		}
-		if (entry.kind === "live") {
+		if (entry.kind === "live" || entry.kind === "prepared") {
 			for (const key of ["purpose", "resolution", "confidence"] as const) {
 				if (!isText(entry[key])) {
-					problems.push(`${where}.${key}: a source read for each field has to state it`);
+					problems.push(`${where}.${key}: a source that describes a field has to state it`);
 				}
 			}
 		}
@@ -137,6 +142,7 @@ export const SOURCE_BADGE_ENTRIES = {
 	"USDA NASS CDL": "usda-cdl",
 	"USDA NRCS SSURGO": "usda-ssurgo",
 	"NASA GIBS MODIS": "nasa-gibs-ndvi",
+	"NASA SMAP": "nasa-smap",
 } as const;
 
 /** The id of the element that shows a source on the About tab. */
@@ -192,6 +198,7 @@ export function citations(
 	}
 	cite(library.scoring.effectiveRainFraction, "The usable share of rain", "");
 	cite(library.scoring.fallowEfficiency, "Fallow efficiency", "");
+	cite(library.scoring.soilMoisture.nearNormalZ, "The about-normal band for soil moisture", "");
 	for (const entry of glossary) {
 		if (entry.source) cite({ source: entry.source }, "Definitions", entry.term);
 	}
@@ -378,6 +385,16 @@ export function assumptions(library: Library = LIBRARY): Assumption[] {
 					)}.`,
 			).join(" ")} A slider's weight is shared equally between its indicators.`,
 		},
+		{
+			key: "soilMoisture",
+			label: "Soil moisture: about normal, and enough readings",
+			value: scoring.soilMoisture.nearNormalZ
+				? `${scoring.soilMoisture.nearNormalZ.value} standard deviations, and ${scoring.soilMoisture.minDaysPerMonth} readings`
+				: `${NOT_SOURCED}, and ${scoring.soilMoisture.minDaysPerMonth} readings`,
+			text: `A county's soil moisture month counts as about normal while it is within this many standard deviations of the same month's average over the other years of NASA SMAP's record; beyond that it is wetter or drier than usual. A month needs at least ${scoring.soilMoisture.minDaysPerMonth} readings of recommended quality to count at all, a round number the tool chose.`,
+			source: scoring.soilMoisture.nearNormalZ?.source,
+			assumption: scoring.soilMoisture.nearNormalZ?.assumption,
+		},
 	];
 }
 
@@ -467,6 +484,10 @@ export function toolRules(library: Library = LIBRARY): ToolRule[] {
 		{
 			title: "Trend test",
 			text: `A series needs at least ${MIN_TREND_POINTS} complete years to be tested. The p-value is two-sided, because the tool does not know in advance which way a series is heading. EPA's worked examples test one direction at a time.`,
+		},
+		{
+			title: "Soil moisture month",
+			text: "The soil moisture shown is the last full calendar month of NASA SMAP's record that has enough readings, set against the same month in the other years. The reading is the satellite's 6 a.m. pass at the center of the county; the 6 p.m. pass is not used, a choice of the tool's, since the product's user guide states no preference and one reading a day keeps the months comparable. A day counts when its quality flag is 0 or 8, the two values the user guide calls high quality. A z-score needs at least three other years with that month; with fewer, the month is shown without a label.",
 		},
 	];
 }
