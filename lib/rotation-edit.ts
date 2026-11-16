@@ -17,6 +17,12 @@ const SHORT_LABELS: Readonly<Record<number, string>> = {
 	26: "Wheat then soybeans",
 	37: "Other hay",
 	61: "Fallow",
+	// USDA's "Developed/Open Space" and its three intensities (Angel, 2026-11-15: the
+	// slash-joined names broke across three lines in a chip).
+	121: "Open space",
+	122: "Developed, low",
+	123: "Developed, medium",
+	124: "Developed, high",
 	176: "Grass or pasture",
 	225: "Wheat then corn",
 	236: "Wheat then sorghum",
